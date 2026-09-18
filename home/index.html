@@ -24,7 +24,7 @@
     .games { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-top: 14px; }
     .card { overflow: hidden; border: 1px solid #d0d0d0; border-radius: 8px; background: #fff; box-shadow: 0 2px 5px #0001; }
     .game-icon { display: grid; place-items: center; min-height: 130px; padding: 16px; background: linear-gradient(135deg, var(--gold), var(--orange)); color: #fff; font-size: 20px; font-weight: 700; text-align: center; text-decoration: none; cursor: pointer; }
-    .game-icon:hover, .game-icon:focus-visible { filter: brightness(.9); outline: 3px solid var(--gold-dark); outline-offset: -3px; }
+    .game-icon:hover, .game-icon:focus-visible { filter: brightness(.92); outline: 3px solid var(--gold-dark); outline-offset: -3px; }
     .card-body { padding: 14px; }
     .card h3 { margin: 0 0 6px; font-size: 17px; }
     .meta { color: var(--muted); font-size: 14px; }
@@ -49,34 +49,39 @@
     <section id="catalog" aria-labelledby="catalog-title">
       <div class="section-title"><h2 id="catalog-title">Games</h2></div>
       <div class="games">
-        <article class="card"><a class="game-icon" href="../piggy-alpha-july-2020/" data-game-id="piggy-alpha-july-2020" data-place="Piggy_ALPHA_JULY_2020.rbxl" aria-label="Play Piggy Alpha July 2020">Piggy</a><div class="card-body"><h3>Piggy [ALPHA] JULY 2020</h3><div class="meta">2020 · 0 playing</div></div></article>
-        <article class="card"><a class="game-icon" href="../ride-a-box-down-stairs/" data-game-id="ride-a-box-down-stairs" data-place="Ride_a_Box_Down_Stairs.rbxl" aria-label="Play Ride a Box Down Stairs">Ride a Box</a><div class="card-body"><h3>Ride a Box Down Stairs</h3><div class="meta">2020 · 0 playing</div></div></article>
-        <article class="card"><a class="game-icon" href="../tower-of-hell-2020/" data-game-id="tower-of-hell-2020" data-place="Tower_of_Hell_2020.rbxl" aria-label="Play Tower of Hell 2020">Tower of Hell</a><div class="card-body"><h3>Tower of Hell 2020</h3><div class="meta">2020 · 0 playing</div></div></article>
-        <article class="card"><a class="game-icon" href="../natural-disaster-survival/" data-game-id="natural-disaster-survival" data-place="Natural_Disaster_Survival.rbxl" aria-label="Play Natural Disaster Survival">Natural Disaster</a><div class="card-body"><h3>Natural Disaster Survival</h3><div class="meta">2020 · 0 playing</div></div></article>
+        <article class="card"><a class="game-icon" href="/piggy-alpha-july-2020" data-game-id="piggy-alpha-july-2020" data-place="Piggy_ALPHA_JULY_2020.rbxl" aria-label="Play Piggy Alpha July 2020">Piggy</a><div class="card-body"><h3>Piggy [ALPHA] JULY 2020</h3><div class="meta">2020 · 0 playing</div></div></article>
+        <article class="card"><a class="game-icon" href="/ride-a-box-down-stairs" data-game-id="ride-a-box-down-stairs" data-place="Ride_a_Box_Down_Stairs.rbxl" aria-label="Play Ride a Box Down Stairs">Ride a Box</a><div class="card-body"><h3>Ride a Box Down Stairs</h3><div class="meta">2020 · 0 playing</div></div></article>
+        <article class="card"><a class="game-icon" href="/tower-of-hell-2020" data-game-id="tower-of-hell-2020" data-place="Tower_of_Hell_2020.rbxl" aria-label="Play Tower of Hell 2020">Tower of Hell</a><div class="card-body"><h3>Tower of Hell 2020</h3><div class="meta">2020 · 0 playing</div></div></article>
+        <article class="card"><a class="game-icon" href="/natural-disaster-survival" data-game-id="natural-disaster-survival" data-place="Natural_Disaster_Survival.rbxl" aria-label="Play Natural Disaster Survival">Natural Disaster</a><div class="card-body"><h3>Natural Disaster Survival</h3><div class="meta">2020 · 0 playing</div></div></article>
       </div>
       <p id="launch-status" class="status" role="status" aria-live="polite"></p>
     </section>
-    <section id="about" class="feed"><h2>Welcome to bloxtip!</h2><p>Clicking an icon adds only the game path and asks the installed client to open the place.</p></section>
+    <section id="about" class="feed"><h2>Welcome to bloxtip!</h2><p>Clicking an icon only updates the game path and asks the installed client to open the place.</p></section>
   </main>
   <footer>© 2026 bloxtip</footer>
   <script>
     const statusEl = document.querySelector('#launch-status');
     const launcherUrl = 'https://raw.githubusercontent.com/amr010920/bloxtip/main/launch_bloxtip.bat';
-    let fallbackTimer;
+    let fallbackTimer = null;
 
-    document.querySelectorAll('.game-icon').forEach((icon) => icon.addEventListener('click', (event) => {
-      event.preventDefault();
-      const gameId = icon.dataset.gameId;
-      const place = icon.dataset.place;
-      const gamePath = `/${gameId}`;
-      history.pushState({ gameId }, '', gamePath);
-      statusEl.textContent = `Loading client for ${gameId}…`;
-      window.location.href = `bloxtip://play?place=${encodeURIComponent(place)}&game=${encodeURIComponent(gameId)}`;
-      clearTimeout(fallbackTimer);
-      fallbackTimer = setTimeout(() => {
-        statusEl.innerHTML = `Client not detected at ${gamePath}. <a href="${launcherUrl}" download>Download the launcher</a>, then click the icon again.`;
-      }, 2200);
-    }));
+    document.querySelectorAll('.game-icon').forEach((icon) => {
+      icon.addEventListener('click', (event) => {
+        event.preventDefault();
+        const gameId = icon.dataset.gameId;
+        const place = icon.dataset.place;
+        const gamePath = '/' + gameId;
+
+        history.pushState({ gameId }, '', gamePath);
+        statusEl.textContent = `Loading client for ${gameId}…`;
+
+        window.location.href = `bloxtip://play?place=${encodeURIComponent(place)}&game=${encodeURIComponent(gameId)}`;
+
+        clearTimeout(fallbackTimer);
+        fallbackTimer = setTimeout(() => {
+          statusEl.innerHTML = `Client not detected. <a href="${launcherUrl}" download>Download the launcher</a>, then click the icon again.`;
+        }, 2200);
+      });
+    });
   </script>
 </body>
 </html>
