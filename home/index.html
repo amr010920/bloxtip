@@ -5,17 +5,18 @@
   <title>bloxtip | Home</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="../styles.css">
 </head>
 <body data-page="home">
-  <header class="site-header"><button class="hamburger" aria-label="Menu">☰</button><a class="logo" href="/home/" aria-label="bloxtip home"><b>B</b></a><nav><a class="active" href="/home/">Games</a><a href="#catalog">Catalog</a><a href="/creation/">Create</a><a href="#download">Download</a></nav><label class="search"><input placeholder="Search"><span>⌕</span></label><a class="user-name" href="/creation/">Guest</a><a class="nav-icon" href="/creation/">▤</a><a class="nav-icon" href="#settings">⚙</a></header>
+  <header class="site-header"><button class="hamburger" aria-label="Menu">☰</button><a class="logo" href="../home/" aria-label="bloxtip home"><b>B</b></a><nav><a class="active" href="../home/">Games</a><a href="../creation/">Create</a><a href="#catalog">Catalog</a></nav><span class="user-name">Guest</span></header>
   <div class="announcement">We are reverting 2017 back to 0.300 as it has a lot of issues we can fix later.</div>
   <main id="home-content" class="home-content">
-    <section class="friends-block"><div class="section-title"><h2>Friends (0)</h2><button>See All</button></div><div class="friends empty-friends"><span class="friend-plus">+</span><span>No friends yet</span><a href="/creation/">Create an account to add friends</a></div></section>
-    <section><div class="section-title"><h2>Recently Played</h2><button>Show More</button></div><div class="game-row" id="game-row"></div></section>
+    <section class="friends-block"><div class="section-title"><h2>Friends (0)</h2><button>See All</button></div><div class="friends empty-friends"><span class="friend-plus">+</span><span>No friends yet</span></div></section>
+    <section><div class="rowHeader"><h3>Recently Played</h3><a class="seeAllButton" href="#catalog">Show More</a></div><div class="game-row" id="game-row" aria-live="polite"></div></section>
     <section class="feed"><h2>My Feed</h2><div class="feed-card"><strong>Welcome to bloxtip!</strong><p>Discover revival games and create your own place.</p></div></section>
-    <section class="archive-panel"><div><h2>Default RBXL places</h2><p>Check the bundled places archive before downloading.</p><strong id="zip-status">Archive checker is ready.</strong></div><button class="gold-button" id="check-zip">Check archive</button></section>
+    <section class="archive-panel"><div><h2>Default RBXL places</h2><p>Games in this row are loaded from the bundled archive.</p><strong id="zip-status">Loading places…</strong></div><button id="check-zip" type="button">Reload places</button></section>
   </main>
-  <footer>© 2026 bloxtip · <a href="/creation/">Create an account</a></footer>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script><script src="/app.js"></script>
-</body></html>
+  <footer>© 2026 bloxtip · <a href="../creation/">Create an account</a></footer>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script><script src="../app.js"></script>
+</body>
+</html>
