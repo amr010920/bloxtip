@@ -30,6 +30,7 @@
     .play { width: 100%; margin-top: 12px; padding: 10px 14px; border: 0; border-radius: 5px; background: var(--gold-dark); color: #fff; cursor: pointer; font: inherit; font-weight: 700; }
     .play:hover, .play:focus { background: #9d7014; }
     .status { min-height: 1.5em; margin-top: 18px; color: var(--muted); }
+    .status a { color: var(--gold-dark); font-weight: 700; }
     .feed { margin-top: 34px; padding: 20px; border-radius: 8px; background: #fff; }
     footer { padding: 24px 20px; color: var(--muted); text-align: center; }
     footer a { color: var(--gold-dark); }
@@ -60,12 +61,25 @@
   </main>
   <footer>© 2026 bloxtip</footer>
   <script>
-    document.querySelectorAll('.play').forEach((button) => button.addEventListener('click', () => {
-      const place = button.dataset.place;
-      const uri = `bloxtip://play?place=${encodeURIComponent(place)}`;
-      document.querySelector('#launch-status').textContent = `Opening ${place}…`;
-      window.location.href = uri;
-    }));
+    const statusEl = document.querySelector('#launch-status');
+    const launcherUrl = 'https://raw.githubusercontent.com/amr010920/bloxtip/main/launch_bloxtip.bat';
+    let fallbackTimer = null;
+
+    document.querySelectorAll('.play').forEach((button) => {
+      button.addEventListener('click', () => {
+        const place = button.dataset.place;
+        const uri = `bloxtip://play?place=${encodeURIComponent(place)}`;
+
+        clearTimeout(fallbackTimer);
+        statusEl.textContent = `Loading client for ${place}…`;
+
+        window.location.href = uri;
+
+        fallbackTimer = setTimeout(() => {
+          statusEl.innerHTML = `Client not detected. <a href="${launcherUrl}" download>Download the launcher</a>, run it, then try Play again.`;
+        }, 2200);
+      });
+    });
   </script>
 </body>
 </html>
