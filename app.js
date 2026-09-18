@@ -1,9 +1,107 @@
-const accountKey='bloxtip-account';
-const games=[['Piggy [ALPHA] JULY 2020','2020','Piggy'],['Ride a Box Down Stairs','2020','Ride a Box'],['Tower of Hell 2020','2020','Tower of Hell'],['Natural Disaster Survival','2020','Natural Disaster'],['Doomspire BrickBattle','2020','Doomspire'],['Escape McDonalds','2020','Escape McDonalds']];
-const getAccount=()=>{try{return JSON.parse(localStorage.getItem(accountKey))}catch{return null}};
-function cards(){return games.map(g=>`<article class="game-card"><div class="game-art">${g[2]}</div><div class="game-body"><div class="game-name">${g[0]}</div><div class="game-meta"><span>0 Playing</span><span>${g[1]}</span></div><div class="rating"></div></div></article>`).join('')}
-function updateHeader(){const a=getAccount();document.querySelectorAll('.user-name').forEach(e=>e.textContent=a?a.username:'Guest')}
-function renderHome(){const row=document.querySelector('#game-row');if(row)row.innerHTML=cards();const button=document.querySelector('#check-zip');button?.addEventListener('click',checkArchive);updateHeader()}
-async function checkArchive(){const status=document.querySelector('#zip-status'),button=document.querySelector('#check-zip');button.disabled=true;button.textContent='Checking…';status.className='';status.textContent='Reading default rbxl places.zip…';try{const r=await fetch('/default%20rbxl%20places.zip',{cache:'no-store'});if(!r.ok)throw Error(`HTTP ${r.status}`);const zip=await JSZip.loadAsync(await r.arrayBuffer());const files=Object.keys(zip.files).filter(n=>/\.rbxlx?$/i.test(n));status.className='zip-ok';status.textContent=`✓ Archive is available and contains ${files.length} RBXL place${files.length===1?'':'s'}.`}catch(e){status.className='zip-error';status.textContent=`Could not check archive: ${e.message}`}button.disabled=false;button.textContent='Check again'}
-function renderCreation(){const root=document.querySelector('#creation-content');if(!root)return;const a=getAccount();root.innerHTML=`<section class="account-panel"><h1>${a?'Your bloxtip account':'Create your bloxtip account'}</h1><p>${a?'Manage your local account for this demo.':'Join the community and start creating your own places.'}</p>${a?`<div class="account-message success">Signed in as <strong>${a.username}</strong>.</div><button class="gold-button" id="sign-out">Sign out</button>`:`<form id="account-form"><div class="form-row"><label>Username</label><input name="username" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" required placeholder="your_username"></div><div class="form-row"><label>Email</label><input name="email" type="email" required placeholder="you@example.com"></div><div class="form-row"><label>Password</label><input name="password" type="password" minlength="8" required placeholder="At least 8 characters"></div><button class="gold-button">Create account</button></form>`}</section>`;document.querySelector('#sign-out')?.addEventListener('click',()=>{localStorage.removeItem(accountKey);renderCreation();updateHeader()});document.querySelector('#account-form')?.addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.currentTarget);localStorage.setItem(accountKey,JSON.stringify({username:f.get('username'),email:f.get('email')}));renderCreation();updateHeader()})}
-if(document.body.dataset.page==='home')renderHome();if(document.body.dataset.page==='creation')renderCreation();updateHeader();
+const accountKey = 'bloxtip-account';
+const archivePath = '../default%20rbxl%20places.zip';
+
+const getAccount = () => {
+  try {
+    return JSON.parse(localStorage.getItem(accountKey));
+  } catch {
+    return null;
+  }
+};
+
+const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#039;'
+}[character]));
+
+const placeTitle = (filename) => filename
+  .replace(/^.*[\\/]/, '')
+  .replace(/\.rbxlx?$/i, '')
+  .replace(/[_-]+/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim() || 'Untitled place';
+
+const placeArt = (title) => title.split(' ').slice(0, 3).join(' ');
+
+function renderGames(places) {
+  const row = document.querySelector('#game-row');
+  if (!row) return;
+
+  if (!places.length) {
+    row.innerHTML = '<p class="empty-state">No RBXL places were found in the archive.</p>';
+    return;
+  }
+
+  row.innerHTML = places.map((place) => {
+    const title = escapeHtml(place.title);
+    return `<article class="game-card" data-place="${escapeHtml(place.filename)}">
+      <div class="game-art">${escapeHtml(placeArt(place.title))}</div>
+      <div class="game-body">
+        <div class="game-name">${title}</div>
+        <div class="game-meta"><span>RBXL place</span><span>0 Playing</span></div>
+        <button class="play-button" type="button" disabled title="Launching places is not available on static hosting">Play</button>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+async function loadPlaces() {
+  const status = document.querySelector('#zip-status');
+  try {
+    if (!window.JSZip) throw new Error('The archive reader did not load.');
+
+    const response = await fetch(archivePath, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Archive request failed (${response.status}).`);
+
+    const archive = await JSZip.loadAsync(await response.arrayBuffer());
+    const places = Object.values(archive.files)
+      .filter((entry) => !entry.dir && /\.rbxlx?$/i.test(entry.name))
+      .map((entry) => ({ filename: entry.name, title: placeTitle(entry.name) }))
+      .sort((a, b) => a.title.localeCompare(b.title));
+
+    renderGames(places);
+    if (status) status.textContent = `${places.length} place${places.length === 1 ? '' : 's'} loaded from the default archive.`;
+  } catch (error) {
+    renderGames([]);
+    if (status) status.textContent = `Could not load the default places archive: ${error.message}`;
+  }
+}
+
+function updateHeader() {
+  const account = getAccount();
+  document.querySelectorAll('.user-name').forEach((element) => {
+    element.textContent = account?.username || 'Guest';
+  });
+}
+
+function renderCreation() {
+  const root = document.querySelector('#creation-content');
+  if (!root) return;
+
+  const account = getAccount();
+  root.innerHTML = `<section class="account-panel">
+    <h1>${account ? `Welcome, ${escapeHtml(account.username)}` : 'Create an account'}</h1>
+    <p>${account ? 'Your account is saved in this browser.' : 'Accounts are stored locally for this demo.'}</p>
+    ${account ? '<button id="sign-out" type="button">Sign out</button>' : '<form id="account-form"><input name="username" placeholder="Username" required maxlength="20"><button type="submit">Create account</button></form>'}
+  </section>`;
+
+  document.querySelector('#sign-out')?.addEventListener('click', () => {
+    localStorage.removeItem(accountKey);
+    window.location.reload();
+  });
+  document.querySelector('#account-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const username = new FormData(event.currentTarget).get('username').trim();
+    if (username) {
+      localStorage.setItem(accountKey, JSON.stringify({ username }));
+      window.location.reload();
+    }
+  });
+}
+
+if (document.body.dataset.page === 'home') loadPlaces();
+if (document.body.dataset.page === 'creation') renderCreation();
+updateHeader();
