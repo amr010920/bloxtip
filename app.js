@@ -49,51 +49,27 @@ function renderGames(places) {
   }).join('');
 }
 
-async function downloadPlace(filename) {
+function launchPlace(filename) {
   const status = document.querySelector('#zip-status');
-  if (!window.JSZip) throw new Error('The archive reader did not load.');
+  if (!filename) {
+    if (status) status.textContent = 'No place was provided for launch.';
+    return;
+  }
 
-  const response = await fetch(archivePath, { cache: 'no-store' });
-  if (!response.ok) throw new Error(`Archive request failed (${response.status}).`);
-
-  const archive = await JSZip.loadAsync(await response.arrayBuffer());
-  const entry = archive.file(filename);
-  if (!entry) throw new Error(`Could not find ${filename} in the archive.`);
-
-  const blob = await entry.async('blob');
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = filename.split(/[\\/]/).pop();
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-
-  if (status) status.textContent = `${link.download} is downloading. Open it with your bloxtip client.`;
+  if (status) status.textContent = `Launching ${filename}…`;
+  window.location.href = `bloxtip://play?place=${encodeURIComponent(filename)}`;
 }
 
 function bindPlayButtons() {
-  document.querySelector('#game-row')?.addEventListener('click', async (event) => {
+  document.querySelector('#game-row')?.addEventListener('click', (event) => {
     const button = event.target.closest('.play-button');
     if (!button) return;
 
     event.preventDefault();
-    if (button.disabled) return;
-
     const filename = button.dataset.place;
-    const originalText = button.textContent;
-    button.disabled = true;
-    button.textContent = 'Preparing…';
+    if (!filename) return;
 
-    try {
-      await downloadPlace(filename);
-    } catch (error) {
-      const status = document.querySelector('#zip-status');
-      if (status) status.textContent = `Could not prepare the place: ${error.message}`;
-    } finally {
-      button.disabled = false;
-      button.textContent = originalText;
-    }
+    launchPlace(filename);
   });
 }
 
