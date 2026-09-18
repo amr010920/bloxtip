@@ -3,68 +3,56 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="bloxtip Roblox revival games">
   <title>bloxtip | Home</title>
   <style>
-    :root { color-scheme: light; --gold:#dfaa32; --gold-dark:#bd8918; --orange:#ff9008; --page:#e7e7e7; --text:#3d3d3d; --muted:#777; }
-    * { box-sizing:border-box; user-select:none; }
-    body { margin:0; min-width:320px; background:var(--page); color:var(--text); font:16px/1.5 Arial,sans-serif; }
-    header { background:var(--gold); border-bottom:3px solid var(--gold-dark); box-shadow:0 2px 6px #0002; }
-    .bar { display:flex; align-items:center; gap:24px; max-width:1100px; min-height:64px; margin:auto; padding:0 20px; }
-    .logo { display:grid; place-items:center; width:40px; height:40px; border-radius:6px; background:#fff; color:var(--gold-dark); font-size:26px; font-weight:700; text-decoration:none; }
-    nav { display:flex; flex-wrap:wrap; gap:18px; } nav a { color:#fff; font-weight:700; text-decoration:none; } nav a:hover { text-decoration:underline; } .user { margin-left:auto; color:#fff; font-weight:700; }
-    main { max-width:1100px; margin:auto; padding:28px 20px 48px; } h1 { margin:0 0 8px; font-size:32px; } .intro { margin-top:0; color:var(--muted); }
-    .section-title { display:flex; align-items:center; justify-content:space-between; margin-top:32px; } h2 { margin:0; font-size:22px; }
-    .games { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-top:14px; }
-    .card { overflow:hidden; border:1px solid #d0d0d0; border-radius:8px; background:#fff; box-shadow:0 2px 5px #0001; }
-    .game-icon { display:grid; place-items:center; width:100%; min-height:130px; padding:16px; border:0; background:linear-gradient(135deg,var(--gold),var(--orange)); color:#fff; cursor:pointer; font:700 20px/1.2 Arial,sans-serif; }
-    .game-icon:hover,.game-icon:focus-visible { filter:brightness(.92); outline:3px solid var(--gold-dark); outline-offset:-3px; }
-    .card-body { padding:14px; } .card h3 { margin:0 0 6px; font-size:17px; } .meta { color:var(--muted); font-size:14px; }
-    .play-button { display:none; width:100%; margin-top:12px; padding:10px 14px; border:0; border-radius:5px; background:var(--gold-dark); color:#fff; cursor:pointer; font:700 16px Arial,sans-serif; }
-    .card.open .play-button { display:block; } .play-button:hover,.play-button:focus-visible { background:#9d7014; outline:3px solid #e7c466; }
-    .status { min-height:1.5em; margin-top:18px; color:var(--muted); } .status a { color:var(--gold-dark); font-weight:700; }
-    .feed { margin-top:34px; padding:20px; border-radius:8px; background:#fff; } footer { padding:24px 20px; color:var(--muted); text-align:center; }
+    :root{--gold:#dfaa32;--gold-dark:#bd8918;--orange:#ff9008;--page:#e7e7e7;--text:#3d3d3d;--muted:#777}
+    *{box-sizing:border-box;user-select:none}
+    body{margin:0;min-width:320px;background:var(--page);color:var(--text);font:16px/1.5 Arial,sans-serif}
+    header{background:var(--gold);border-bottom:3px solid var(--gold-dark);box-shadow:0 2px 6px #0002}
+    .bar{display:flex;align-items:center;gap:24px;max-width:1100px;min-height:64px;margin:auto;padding:0 20px}
+    .logo{display:grid;place-items:center;width:40px;height:40px;border-radius:6px;background:#fff;color:var(--gold-dark);font-size:26px;font-weight:700;text-decoration:none}
+    nav{display:flex;gap:18px}nav a{color:#fff;font-weight:700;text-decoration:none}.user{margin-left:auto;color:#fff;font-weight:700}
+    main{max-width:1100px;margin:auto;padding:28px 20px 48px}h1{margin:0 0 8px;font-size:32px}.intro{margin-top:0;color:var(--muted)}
+    h2{margin:32px 0 14px;font-size:22px}.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+    .card{overflow:hidden;border:1px solid #d0d0d0;border-radius:8px;background:#fff;box-shadow:0 2px 5px #0001}
+    .game-icon{display:grid;place-items:center;width:100%;min-height:130px;padding:16px;border:0;background:linear-gradient(135deg,var(--gold),var(--orange));color:#fff;cursor:pointer;font:700 20px Arial,sans-serif}
+    .game-icon:hover,.game-icon:focus-visible{filter:brightness(.92);outline:3px solid var(--gold-dark);outline-offset:-3px}
+    .card-body{padding:14px}.card h3{margin:0 0 6px;font-size:17px}.meta{color:var(--muted);font-size:14px}
+    .play-button{display:none;width:100%;margin-top:12px;padding:10px 14px;border:0;border-radius:5px;background:var(--gold-dark);color:#fff;cursor:pointer;font:700 16px Arial,sans-serif}
+    .card.open .play-button{display:block}.play-button:hover,.play-button:focus-visible{background:#9d7014;outline:3px solid #e7c466}
+    .status{min-height:1.5em;margin-top:18px;color:var(--muted)}.feed{margin-top:34px;padding:20px;border-radius:8px;background:#fff}footer{padding:24px 20px;color:var(--muted);text-align:center}
   </style>
 </head>
 <body>
-  <header><div class="bar"><a class="logo" href="../" aria-label="bloxtip home">B</a><nav aria-label="Main navigation"><a href="./">Games</a><a href="#catalog">Catalog</a><a href="#about">About</a></nav><span class="user">Guest</span></div></header>
+  <header><div class="bar"><a class="logo" href="../" aria-label="bloxtip home">B</a><nav><a href="./">Games</a><a href="#catalog">Catalog</a><a href="#about">About</a></nav><span class="user">Guest</span></div></header>
   <main>
     <h1>Discover bloxtip</h1>
-    <p class="intro">Click a game icon to reveal its Play button. Guests can play.</p>
-    <section id="catalog" aria-labelledby="catalog-title"><div class="section-title"><h2 id="catalog-title">Games</h2></div>
-      <div class="games">
-        <article class="card"><button class="game-icon" type="button" aria-expanded="false">Piggy</button><div class="card-body"><h3>Piggy [ALPHA] JULY 2020</h3><div class="meta">2020 · 0 playing</div><button class="play-button" type="button" data-game-id="piggy-alpha-july-2020" data-place="Piggy_ALPHA_JULY_2020.rbxl">Play</button></div></article>
-        <article class="card"><button class="game-icon" type="button" aria-expanded="false">Ride a Box</button><div class="card-body"><h3>Ride a Box Down Stairs</h3><div class="meta">2020 · 0 playing</div><button class="play-button" type="button" data-game-id="ride-a-box-down-stairs" data-place="Ride_a_Box_Down_Stairs.rbxl">Play</button></div></article>
-        <article class="card"><button class="game-icon" type="button" aria-expanded="false">Tower of Hell</button><div class="card-body"><h3>Tower of Hell 2020</h3><div class="meta">2020 · 0 playing</div><button class="play-button" type="button" data-game-id="tower-of-hell-2020" data-place="Tower_of_Hell_2020.rbxl">Play</button></div></article>
-        <article class="card"><button class="game-icon" type="button" aria-expanded="false">Natural Disaster</button><div class="card-body"><h3>Natural Disaster Survival</h3><div class="meta">2020 · 0 playing</div><button class="play-button" type="button" data-game-id="natural-disaster-survival" data-place="Natural_Disaster_Survival.rbxl">Play</button></div></article>
-      </div>
-      <p id="launch-status" class="status" role="status" aria-live="polite"></p>
-    </section>
-    <section id="about" class="feed"><h2>Welcome to bloxtip!</h2><p>Click an icon first, then click Play to launch the selected place.</p></section>
+    <p class="intro">Click a game icon to show its Play button. Guests can play.</p>
+    <section id="catalog"><h2>Games</h2><div class="games">
+      <article class="card"><button class="game-icon" type="button" aria-expanded="false">Piggy</button><div class="card-body"><h3>Piggy [ALPHA] JULY 2020</h3><div class="meta">2020 · 0 playing</div><button class="play-button" type="button" data-game="piggy-alpha-july-2020" data-place="Piggy_ALPHA_JULY_2020.rbxl">Play</button></div></article>
+      <article class="card"><button class="game-icon" type="button" aria-expanded="false">Ride a Box</button><div class="card-body"><h3>Ride a Box Down Stairs</h3><div class="meta">2020 · 0 playing</div><button class="play-button" type="button" data-game="ride-a-box-down-stairs" data-place="Ride_a_Box_Down_Stairs.rbxl">Play</button></div></article>
+      <article class="card"><button class="game-icon" type="button" aria-expanded="false">Tower of Hell</button><div class="card-body"><h3>Tower of Hell 2020</h3><div class="meta">2020 · 0 playing</div><button class="play-button" type="button" data-game="tower-of-hell-2020" data-place="Tower_of_Hell_2020.rbxl">Play</button></div></article>
+      <article class="card"><button class="game-icon" type="button" aria-expanded="false">Natural Disaster</button><div class="card-body"><h3>Natural Disaster Survival</h3><div class="meta">2020 · 0 playing</div><button class="play-button" type="button" data-game="natural-disaster-survival" data-place="Natural_Disaster_Survival.rbxl">Play</button></div></article>
+    </div><p id="launch-status" class="status" role="status" aria-live="polite"></p></section>
+    <section id="about" class="feed"><h2>Welcome to bloxtip!</h2><p>Choose a game icon first, then click Play.</p></section>
   </main>
   <footer>© 2026 bloxtip</footer>
   <script>
-    const statusEl = document.querySelector('#launch-status');
-    const launcherUrl = 'https://raw.githubusercontent.com/amr010920/bloxtip/main/launch_bloxtip.bat';
-    let fallbackTimer;
-
-    document.querySelectorAll('.card').forEach((card) => {
-      const icon = card.querySelector('.game-icon');
-      const play = card.querySelector('.play-button');
-      icon.addEventListener('click', () => {
-        const open = card.classList.toggle('open');
-        icon.setAttribute('aria-expanded', String(open));
+    const status=document.getElementById('launch-status');
+    document.querySelectorAll('.card').forEach(card=>{
+      const icon=card.querySelector('.game-icon');
+      const play=card.querySelector('.play-button');
+      icon.addEventListener('click',()=>{
+        const isOpen=card.classList.toggle('open');
+        icon.setAttribute('aria-expanded',String(isOpen));
+        if(isOpen) play.focus();
       });
-      play.addEventListener('click', () => {
-        const gameId = play.dataset.gameId;
-        const place = play.dataset.place;
-        history.pushState({ gameId }, '', `./${gameId}`);
-        statusEl.textContent = `Loading client for ${gameId}…`;
-        window.location.assign(`bloxtip://play?place=${encodeURIComponent(place)}&game=${encodeURIComponent(gameId)}`);
-        clearTimeout(fallbackTimer);
-        fallbackTimer = setTimeout(() => {
-          statusEl.innerHTML = `The bloxtip client did not open. <a href="${launcherUrl}" download>Download the launcher</a> and try Play again.`;
-        }, 2200);
+      play.addEventListener('click',()=>{
+        const game=play.dataset.game;
+        const place=play.dataset.place;
+        history.pushState({},'',`./${game}`);
+        status.textContent=`Loading ${game}…`;
+        window.location.href=`bloxtip://play?place=${encodeURIComponent(place)}&game=${encodeURIComponent(game)}`;
       });
     });
   </script>
