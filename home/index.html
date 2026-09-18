@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="bloxtip Roblox revival games">
+  <title>bloxtip | Home</title>
+  <style>
+    :root { color-scheme: light; --gold: #dfaa32; --gold-dark: #bd8918; --orange: #ff9008; --page: #e7e7e7; --text: #3d3d3d; --muted: #777; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: var(--page); color: var(--text); font: 16px/1.5 Arial, sans-serif; }
+    header { background: var(--gold); border-bottom: 3px solid var(--gold-dark); box-shadow: 0 2px 6px #0002; }
+    .bar { display: flex; align-items: center; gap: 24px; max-width: 1100px; min-height: 64px; margin: auto; padding: 0 20px; }
+    .logo { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 6px; background: #fff; color: var(--gold-dark); font-size: 26px; font-weight: 700; text-decoration: none; }
+    nav { display: flex; flex-wrap: wrap; gap: 18px; }
+    nav a { color: #fff; font-weight: 700; text-decoration: none; }
+    nav a:hover, nav a:focus { text-decoration: underline; }
+    .user { margin-left: auto; color: #fff; font-weight: 700; }
+    .notice { padding: 12px 20px; background: var(--orange); color: #fff; text-align: center; font-weight: 700; }
+    main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 48px; }
+    h1 { margin: 0 0 8px; font-size: 32px; }
+    .intro { margin-top: 0; color: var(--muted); }
+    .section-title { display: flex; align-items: center; justify-content: space-between; margin-top: 32px; }
+    h2 { margin: 0; font-size: 22px; }
+    .games { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-top: 14px; }
+    .card { overflow: hidden; border: 1px solid #d0d0d0; border-radius: 8px; background: #fff; box-shadow: 0 2px 5px #0001; }
+    .art { display: grid; place-items: center; min-height: 110px; padding: 16px; background: linear-gradient(135deg, var(--gold), var(--orange)); color: #fff; font-size: 20px; font-weight: 700; text-align: center; }
+    .card-body { padding: 14px; }
+    .card h3 { margin: 0 0 6px; font-size: 17px; }
+    .meta { color: var(--muted); font-size: 14px; }
+    .feed { margin-top: 34px; padding: 20px; border-radius: 8px; background: #fff; }
+    footer { padding: 24px 20px; color: var(--muted); text-align: center; }
+    footer a { color: var(--gold-dark); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <a class="logo" href="../" aria-label="bloxtip home">B</a>
+      <nav aria-label="Main navigation"><a href="./">Games</a><a href="#catalog">Catalog</a><a href="#about">About</a></nav>
+      <span class="user">Guest</span>
+    </div>
+  </header>
+  <div class="notice">Welcome to bloxtip — a Roblox revival project.</div>
+  <main>
+    <h1>Discover bloxtip</h1>
+    <p class="intro">Explore revival games and find something fun to play.</p>
+    <section id="catalog" aria-labelledby="catalog-title">
+      <div class="section-title"><h2 id="catalog-title">Recently Played</h2></div>
+      <div class="games">
+        <article class="card"><div class="art">Piggy</div><div class="card-body"><h3>Piggy [ALPHA] JULY 2020</h3><div class="meta">2020 · 0 playing</div></div></article>
+        <article class="card"><div class="art">Ride a Box</div><div class="card-body"><h3>Ride a Box Down Stairs</h3><div class="meta">2020 · 0 playing</div></div></article>
+        <article class="card"><div class="art">Tower of Hell</div><div class="card-body"><h3>Tower of Hell 2020</h3><div class="meta">2020 · 0 playing</div></div></article>
+        <article class="card"><div class="art">Natural Disaster</div><div class="card-body"><h3>Natural Disaster Survival</h3><div class="meta">2020 · 0 playing</div></div></article>
+      </div>
+    </section>
+    <section id="about" class="feed"><h2>Welcome to bloxtip!</h2><p>Discover revival games and create your own place.</p></section>
+  </main>
+  <footer>© 2026 bloxtip</footer>
+</body>
+</html>
