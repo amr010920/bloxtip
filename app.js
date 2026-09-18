@@ -49,15 +49,30 @@ function renderGames(places) {
   }).join('');
 }
 
-function launchPlace(filename) {
+function openBloxtipProtocol(filename) {
   const status = document.querySelector('#zip-status');
+
   if (!filename) {
     if (status) status.textContent = 'No place was provided for launch.';
     return;
   }
 
-  if (status) status.textContent = `Launching ${filename}…`;
-  window.location.href = `bloxtip://play?place=${encodeURIComponent(filename)}`;
+  const protocolUrl = `bloxtip://play?place=${encodeURIComponent(filename)}`;
+
+  if (status) status.textContent = `Opening Bloxtip…`;
+
+  const link = document.createElement('a');
+  link.href = protocolUrl;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  setTimeout(() => {
+    if (status) {
+      status.textContent = 'If Bloxtip did not open, make sure the Bloxtip protocol is installed and registered on this PC.';
+    }
+  }, 1800);
 }
 
 function bindPlayButtons() {
@@ -69,7 +84,7 @@ function bindPlayButtons() {
     const filename = button.dataset.place;
     if (!filename) return;
 
-    launchPlace(filename);
+    openBloxtipProtocol(filename);
   });
 }
 
