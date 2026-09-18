@@ -27,7 +27,7 @@
     .card-body { padding: 14px; }
     .card h3 { margin: 0 0 6px; font-size: 17px; }
     .meta { color: var(--muted); font-size: 14px; }
-    .play { width: 100%; margin-top: 12px; padding: 10px 14px; border: 0; border-radius: 5px; background: var(--gold-dark); color: #fff; cursor: pointer; font: inherit; font-weight: 700; }
+    .play { display: block; width: 100%; min-height: 42px; margin-top: 12px; padding: 10px 14px; border: 0; border-radius: 5px; background: var(--gold-dark); color: #fff; cursor: pointer; font: inherit; font-weight: 700; opacity: 1; visibility: visible; }
     .play:hover, .play:focus { background: #9d7014; }
     .status { min-height: 1.5em; margin-top: 18px; color: var(--muted); }
     .status a { color: var(--gold-dark); font-weight: 700; }
@@ -46,7 +46,7 @@
   </header>
   <main>
     <h1>Discover bloxtip</h1>
-    <p class="intro">Choose a place to launch it in the bloxtip client.</p>
+    <p class="intro">Guests can play games. Choose a place to launch it in the bloxtip client.</p>
     <section id="catalog" aria-labelledby="catalog-title">
       <div class="section-title"><h2 id="catalog-title">Games</h2></div>
       <div class="games">
@@ -57,29 +57,22 @@
       </div>
       <p id="launch-status" class="status" role="status" aria-live="polite"></p>
     </section>
-    <section id="about" class="feed"><h2>Welcome to bloxtip!</h2><p>Launch a place with the installed bloxtip client.</p></section>
+    <section id="about" class="feed"><h2>Welcome to bloxtip!</h2><p>Guests are allowed to launch games with the installed bloxtip client.</p></section>
   </main>
   <footer>© 2026 bloxtip</footer>
   <script>
     const statusEl = document.querySelector('#launch-status');
     const launcherUrl = 'https://raw.githubusercontent.com/amr010920/bloxtip/main/launch_bloxtip.bat';
     let fallbackTimer = null;
-
-    document.querySelectorAll('.play').forEach((button) => {
-      button.addEventListener('click', () => {
-        const place = button.dataset.place;
-        const uri = `bloxtip://play?place=${encodeURIComponent(place)}`;
-
-        clearTimeout(fallbackTimer);
-        statusEl.textContent = `Loading client for ${place}…`;
-
-        window.location.href = uri;
-
-        fallbackTimer = setTimeout(() => {
-          statusEl.innerHTML = `Client not detected. <a href="${launcherUrl}" download>Download the launcher</a>, run it, then try Play again.`;
-        }, 2200);
-      });
-    });
+    document.querySelectorAll('.play').forEach((button) => button.addEventListener('click', () => {
+      const place = button.dataset.place;
+      clearTimeout(fallbackTimer);
+      statusEl.textContent = `Loading client for ${place}…`;
+      window.location.href = `bloxtip://play?place=${encodeURIComponent(place)}`;
+      fallbackTimer = setTimeout(() => {
+        statusEl.innerHTML = `Client not detected. <a href="${launcherUrl}" download>Download the launcher</a>, run it, then try Play again.`;
+      }, 2200);
+    }));
   </script>
 </body>
 </html>
