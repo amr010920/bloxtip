@@ -37,15 +37,64 @@ function renderGames(places) {
 
   row.innerHTML = places.map((place) => {
     const title = escapeHtml(place.title);
-    return `<article class="game-card" data-place="${escapeHtml(place.filename)}">
+    const filename = escapeHtml(place.filename);
+    return `<article class="game-card" data-place="${filename}">
       <div class="game-art">${escapeHtml(placeArt(place.title))}</div>
       <div class="game-body">
         <div class="game-name">${title}</div>
         <div class="game-meta"><span>RBXL place</span><span>0 Playing</span></div>
-        <button class="play-button" type="button" disabled title="Launching places is not available on static hosting">Play</button>
+        <button class="play-button" type="button" data-place="${filename}">Play</button>
       </div>
     </article>`;
   }).join('');
+}
+
+async function downloadPlace(filename) {
+  const status = document.querySelector('#zip-status');
+  if (!window.JSZip) throw new Error('The archive reader did not load.');
+
+  const response = await fetch(archivePath, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`Archive request failed (${response.status}).`);
+
+  const archive = await JSZip.loadAsync(await response.arrayBuffer());
+  const entry = archive.file(filename);
+  if (!entry) throw new Error(`Could not find ${filename} in the archive.`);
+
+  const blob = await entry.async('blob');
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename.split(/[\\/]/).pop();
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+
+  if (status) status.textContent = `${link.download} is downloading. Open it with your bloxtip client.`;
+}
+
+function bindPlayButtons() {
+  document.querySelector('#game-row')?.addEventListener('click', async (event) => {
+    const button = event.target.closest('.play-button');
+    if (!button) return;
+
+    event.preventDefault();
+    if (button.disabled) return;
+
+    const filename = button.dataset.place;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Preparing…';
+
+    try {
+      await downloadPlace(filename);
+    } catch (error) {
+      const status = document.querySelector('#zip-status');
+      if (status) status.textContent = `Could not prepare the place: ${error.message}`;
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  });
 }
 
 async function loadPlaces() {
@@ -85,7 +134,7 @@ function renderCreation() {
   root.innerHTML = `<section class="account-panel">
     <h1>${account ? `Welcome, ${escapeHtml(account.username)}` : 'Create an account'}</h1>
     <p>${account ? 'Your account is saved in this browser.' : 'Accounts are stored locally for this demo.'}</p>
-    ${account ? '<button id="sign-out" type="button">Sign out</button>' : '<form id="account-form"><input name="username" placeholder="Username" required maxlength="20"><button type="submit">Create account</button></form>'}
+    ${account ? '<button id="sign-out" type="button">Sign out</button>' : '<form id="account-form"><input name="username" placeholder="Username" required maxlength="20"><button type="submit">Create</button></form>'}
   </section>`;
 
   document.querySelector('#sign-out')?.addEventListener('click', () => {
@@ -102,6 +151,9 @@ function renderCreation() {
   });
 }
 
-if (document.body.dataset.page === 'home') loadPlaces();
+if (document.body.dataset.page === 'home') {
+  bindPlayButtons();
+  loadPlaces();
+}
 if (document.body.dataset.page === 'creation') renderCreation();
 updateHeader();
