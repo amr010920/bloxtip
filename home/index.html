@@ -38,21 +38,34 @@
   </main>
   <footer>© 2026 bloxtip</footer>
   <script>
-    const status=document.getElementById('launch-status');
-    document.querySelectorAll('.card').forEach(card=>{
-      const icon=card.querySelector('.game-icon');
-      const play=card.querySelector('.play-button');
-      icon.addEventListener('click',()=>{
-        const isOpen=card.classList.toggle('open');
-        icon.setAttribute('aria-expanded',String(isOpen));
-        if(isOpen) play.focus();
+    const status = document.getElementById('launch-status');
+
+    document.querySelectorAll('.card').forEach(card => {
+      const icon = card.querySelector('.game-icon');
+      const play = card.querySelector('.play-button');
+
+      if (!icon || !play) return;
+
+      icon.addEventListener('click', () => {
+        const isOpen = card.classList.toggle('open');
+        icon.setAttribute('aria-expanded', String(isOpen));
+        if (isOpen) play.focus();
       });
-      play.addEventListener('click',()=>{
-        const game=play.dataset.game;
-        const place=play.dataset.place;
-        history.pushState({},'',`./${game}`);
-        status.textContent=`Loading ${game}…`;
-        window.location.href=`bloxtip://play?place=${encodeURIComponent(place)}&game=${encodeURIComponent(game)}`;
+
+      play.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        const game = play.dataset.game;
+        const place = play.dataset.place;
+
+        if (!game || !place) {
+          status.textContent = 'This game is missing a launch target.';
+          return;
+        }
+
+        history.pushState({}, '', `./${game}`);
+        status.textContent = `Loading ${game}…`;
+        window.location.href = `bloxtip://play?place=${encodeURIComponent(place)}&game=${encodeURIComponent(game)}`;
       });
     });
   </script>
