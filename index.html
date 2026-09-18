@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#e6ad2e" />
+  <title>bloxtip — revival games</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <button class="icon-button menu-button" aria-label="Open menu">☰</button>
+    <a class="brand" href="/home" aria-label="bloxtip home"><span class="brand-mark">B</span><span>bloxtip</span></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="/home">Games</a><a href="#catalog">Catalog</a><a href="#create">Create</a><a href="#download">Download</a>
+    </nav>
+    <label class="search"><span>⌕</span><input id="search-input" type="search" placeholder="Search" /></label>
+    <div class="account-tools"><span id="username-label">Guest</span><a class="tool-icon" href="/creation" title="Account">☻</a><a class="tool-icon" href="#settings" title="Settings">⚙</a></div>
+  </header>
+  <div class="announcement">Welcome to bloxtip — build, play, and share your revival games.</div>
+  <main id="app" aria-live="polite"></main>
+  <footer><span>© 2026 bloxtip</span><span>Made for the revival community</span><a href="/creation">Create an account</a></footer>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
