@@ -23,12 +23,11 @@
     h2 { margin: 0; font-size: 22px; }
     .games { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-top: 14px; }
     .card { overflow: hidden; border: 1px solid #d0d0d0; border-radius: 8px; background: #fff; box-shadow: 0 2px 5px #0001; }
-    .art { display: grid; place-items: center; min-height: 110px; padding: 16px; background: linear-gradient(135deg, var(--gold), var(--orange)); color: #fff; font-size: 20px; font-weight: 700; text-align: center; }
+    .game-icon { display: grid; place-items: center; min-height: 130px; padding: 16px; background: linear-gradient(135deg, var(--gold), var(--orange)); color: #fff; font-size: 20px; font-weight: 700; text-align: center; text-decoration: none; cursor: pointer; }
+    .game-icon:hover, .game-icon:focus-visible { filter: brightness(.9); outline: 3px solid var(--gold-dark); outline-offset: -3px; }
     .card-body { padding: 14px; }
     .card h3 { margin: 0 0 6px; font-size: 17px; }
     .meta { color: var(--muted); font-size: 14px; }
-    .play { display: block; width: 100%; min-height: 42px; margin-top: 12px; padding: 10px 14px; border: 0; border-radius: 5px; background: var(--gold-dark); color: #fff; cursor: pointer; font: inherit; font-weight: 700; opacity: 1; visibility: visible; }
-    .play:hover, .play:focus { background: #9d7014; }
     .status { min-height: 1.5em; margin-top: 18px; color: var(--muted); }
     .status a { color: var(--gold-dark); font-weight: 700; }
     .feed { margin-top: 34px; padding: 20px; border-radius: 8px; background: #fff; }
@@ -46,31 +45,36 @@
   </header>
   <main>
     <h1>Discover bloxtip</h1>
-    <p class="intro">Guests can play games. Choose a place to launch it in the bloxtip client.</p>
+    <p class="intro">Click a game icon to launch it. Guests can play.</p>
     <section id="catalog" aria-labelledby="catalog-title">
       <div class="section-title"><h2 id="catalog-title">Games</h2></div>
       <div class="games">
-        <article class="card"><div class="art">Piggy</div><div class="card-body"><h3>Piggy [ALPHA] JULY 2020</h3><div class="meta">2020 · 0 playing</div><button class="play" type="button" data-place="Piggy_ALPHA_JULY_2020.rbxl">Play</button></div></article>
-        <article class="card"><div class="art">Ride a Box</div><div class="card-body"><h3>Ride a Box Down Stairs</h3><div class="meta">2020 · 0 playing</div><button class="play" type="button" data-place="Ride_a_Box_Down_Stairs.rbxl">Play</button></div></article>
-        <article class="card"><div class="art">Tower of Hell</div><div class="card-body"><h3>Tower of Hell 2020</h3><div class="meta">2020 · 0 playing</div><button class="play" type="button" data-place="Tower_of_Hell_2020.rbxl">Play</button></div></article>
-        <article class="card"><div class="art">Natural Disaster</div><div class="card-body"><h3>Natural Disaster Survival</h3><div class="meta">2020 · 0 playing</div><button class="play" type="button" data-place="Natural_Disaster_Survival.rbxl">Play</button></div></article>
+        <article class="card"><a class="game-icon" href="../piggy-alpha-july-2020/" data-game-id="piggy-alpha-july-2020" data-place="Piggy_ALPHA_JULY_2020.rbxl" aria-label="Play Piggy Alpha July 2020">Piggy</a><div class="card-body"><h3>Piggy [ALPHA] JULY 2020</h3><div class="meta">2020 · 0 playing</div></div></article>
+        <article class="card"><a class="game-icon" href="../ride-a-box-down-stairs/" data-game-id="ride-a-box-down-stairs" data-place="Ride_a_Box_Down_Stairs.rbxl" aria-label="Play Ride a Box Down Stairs">Ride a Box</a><div class="card-body"><h3>Ride a Box Down Stairs</h3><div class="meta">2020 · 0 playing</div></div></article>
+        <article class="card"><a class="game-icon" href="../tower-of-hell-2020/" data-game-id="tower-of-hell-2020" data-place="Tower_of_Hell_2020.rbxl" aria-label="Play Tower of Hell 2020">Tower of Hell</a><div class="card-body"><h3>Tower of Hell 2020</h3><div class="meta">2020 · 0 playing</div></div></article>
+        <article class="card"><a class="game-icon" href="../natural-disaster-survival/" data-game-id="natural-disaster-survival" data-place="Natural_Disaster_Survival.rbxl" aria-label="Play Natural Disaster Survival">Natural Disaster</a><div class="card-body"><h3>Natural Disaster Survival</h3><div class="meta">2020 · 0 playing</div></div></article>
       </div>
       <p id="launch-status" class="status" role="status" aria-live="polite"></p>
     </section>
-    <section id="about" class="feed"><h2>Welcome to bloxtip!</h2><p>Guests are allowed to launch games with the installed bloxtip client.</p></section>
+    <section id="about" class="feed"><h2>Welcome to bloxtip!</h2><p>Clicking an icon adds only the game path and asks the installed client to open the place.</p></section>
   </main>
   <footer>© 2026 bloxtip</footer>
   <script>
     const statusEl = document.querySelector('#launch-status');
     const launcherUrl = 'https://raw.githubusercontent.com/amr010920/bloxtip/main/launch_bloxtip.bat';
-    let fallbackTimer = null;
-    document.querySelectorAll('.play').forEach((button) => button.addEventListener('click', () => {
-      const place = button.dataset.place;
+    let fallbackTimer;
+
+    document.querySelectorAll('.game-icon').forEach((icon) => icon.addEventListener('click', (event) => {
+      event.preventDefault();
+      const gameId = icon.dataset.gameId;
+      const place = icon.dataset.place;
+      const gamePath = `/${gameId}`;
+      history.pushState({ gameId }, '', gamePath);
+      statusEl.textContent = `Loading client for ${gameId}…`;
+      window.location.href = `bloxtip://play?place=${encodeURIComponent(place)}&game=${encodeURIComponent(gameId)}`;
       clearTimeout(fallbackTimer);
-      statusEl.textContent = `Loading client for ${place}…`;
-      window.location.href = `bloxtip://play?place=${encodeURIComponent(place)}`;
       fallbackTimer = setTimeout(() => {
-        statusEl.innerHTML = `Client not detected. <a href="${launcherUrl}" download>Download the launcher</a>, run it, then try Play again.`;
+        statusEl.innerHTML = `Client not detected at ${gamePath}. <a href="${launcherUrl}" download>Download the launcher</a>, then click the icon again.`;
       }, 2200);
     }));
   </script>
