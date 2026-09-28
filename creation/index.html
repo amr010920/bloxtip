@@ -8,11 +8,18 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    @media (max-width: 768px) {
+      .site-header nav { display: none; width: 100%; flex-direction: column; background: #222; position: absolute; top: 50px; left: 0; padding: 10px; z-index: 1000; }
+      .site-header nav.open { display: flex; }
+    }
+    .hamburger { background: none; border: none; font-size: 20px; color: inherit; cursor: pointer; }
+  </style>
 </head>
 <body data-page="creation">
   <header class="site-header">
-    <button class="hamburger">☰</button></b></a>
-    <nav>
+    <button class="hamburger" id="hamburger-toggle">☰</button>
+    <nav id="header-nav">
       <a href="/home/">Games</a>
       <a href="#catalog">Catalog</a>
       <a class="active" href="/creation/">Create</a>
@@ -90,6 +97,15 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // Toggle Hamburger menu
+      const hamburgerToggle = document.getElementById("hamburger-toggle");
+      const headerNav = document.getElementById("header-nav");
+      if (hamburgerToggle && headerNav) {
+        hamburgerToggle.addEventListener("click", () => {
+          headerNav.classList.toggle("open");
+        });
+      }
+
       const createBtn = document.getElementById("create-game-btn");
       const fileInput = document.getElementById("hidden-rbxl-input");
       const container = document.getElementById("dynamic-games-container");
