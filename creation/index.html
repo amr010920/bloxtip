@@ -1,3 +1,4 @@
+<!-- i have alot of protype of the creation holy shit
 <!doctype html>
 <html lang="en">
 <head>
@@ -8,26 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
-  <style>
-    /* Simple modal styling for the Create Game popup */
-    #create-modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-    #create-modal-content {
-      background: #fff;
-      padding: 30px;
-      border-radius: 6px;
-      width: 450px;
-      max-width: 90%;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-  </style>
 </head>
 <body data-page="creation">
   <header class="site-header">
@@ -47,7 +28,9 @@
 
   <div class="announcement">We are reverting 2017 back to 0.300 as it has a lot of issues we can fix later.</div>
 
-  <!-- Main Developer Dashboard Container Layout -->
+  <!-- Hidden file input triggered by Create New Game button -->
+  <input type="file" id="hidden-rbxl-input" accept=".rbxl" style="display: none;">
+
   <div class="container">
     <div class="row">
       <div class="col-12">
@@ -59,52 +42,48 @@
 
     <div class="developerContainer-0-2-132">
       <div class="row">
-        <!-- Top Tab Selection Header -->
         <div class="buttonCol-0-2-137 col-12">
           <div class="vTab-0-2-134">
-            <p class="vTabLabel-0-2-135">My Creations</p>
+            <p class="vTabLabel-0-2-135">My Creations </p>
             <div class="btnBottomSeperator-0-2-138"></div>
           </div>
-          <div class="vTab-0-2-134"><p class="vTabUnselected-0-2-139 vTabLabel-0-2-135">Group Creations</p></div>
-          <div class="vTab-0-2-134"><p class="vTabUnselected-0-2-139 vTabLabel-0-2-135">Library</p></div>
-          <div class="vTab-0-2-134"><p class="vTabUnselected-0-2-139 vTabLabel-0-2-135">Developer Exchange</p></div>
+          <div class="vTab-0-2-134"><p class="vTabUnselected-0-2-139 vTabLabel-0-2-135">Group Creations </p></div>
+          <div class="vTab-0-2-134"><p class="vTabUnselected-0-2-139 vTabLabel-0-2-135">Library </p></div>
+          <div class="vTab-0-2-134"><p class="vTabUnselected-0-2-139 vTabLabel-0-2-135">Developer Exchange </p></div>
         </div>
 
         <div class="col-12">
           <div class="row">
-            <!-- Left Sub-Navigation Sidebar -->
             <div class="col-2">
               <div class="row mt-4 pe-0 row-0-2-141">
                 <div class="col-12 pe-0 me-0">
-                  <a class="wrapper-0-2-142 wrapperSelected-0-2-143" href="/creation/"><span class="text-0-2-145 textSelected-0-2-146">Games</span></a>
-                  <a class="wrapper-0-2-142 wrapperDisabled-0-2-144" href="#"><span class="text-0-2-145">Models</span></a>
-                  <a class="wrapper-0-2-142" href="#"><span class="text-0-2-145">Decals</span></a>
-                  <a class="wrapper-0-2-142" href="#"><span class="text-0-2-145">Badges</span></a>
-                  <a class="wrapper-0-2-142" href="#"><span class="text-0-2-145">Passes</span></a>
-                  <a class="wrapper-0-2-142" href="#"><span class="text-0-2-145">Audio</span></a>
-                  <a class="wrapper-0-2-142" href="#"><span class="text-0-2-145">Animations</span></a>
-                  <a class="wrapper-0-2-142" href="#"><span class="text-0-2-145">Meshes</span></a>
-                  <a class="wrapper-0-2-142" href="#"><span class="text-0-2-145">User Ads</span></a>
-                  <a class="wrapper-0-2-142" href="#"><span class="text-0-2-145">Shirts</span></a>
-                  <a class="wrapper-0-2-142" href="#"><span class="text-0-2-145">T-Shirts</span></a>
-                  <a class="wrapper-0-2-142" href="#"><span class="text-0-2-145">Pants</span></a>
+                  <a class="wrapper-0-2-142 wrapperSelected-0-2-143" href="/develop?View=0"><span class="text-0-2-145 textSelected-0-2-146">Games</span></a>
+                  <a class="wrapper-0-2-142 wrapperDisabled-0-2-144" href="/develop?View=10"><span class="text-0-2-145">Models</span></a>
+                  <a class="wrapper-0-2-142" href="/develop?View=13"><span class="text-0-2-145">Decals</span></a>
+                  <a class="wrapper-0-2-142" href="/develop?View=21"><span class="text-0-2-145">Badges</span></a>
+                  <a class="wrapper-0-2-142" href="/develop?View=34"><span class="text-0-2-145">Passes</span></a>
+                  <a class="wrapper-0-2-142" href="/develop?View=3"><span class="text-0-2-145">Audio</span></a>
+                  <a class="wrapper-0-2-142" href="/develop?View=24"><span class="text-0-2-145">Animations</span></a>
+                  <a class="wrapper-0-2-142" href="/develop?View=4"><span class="text-0-2-145">Meshes</span></a>
+                  <a class="wrapper-0-2-142" href="/develop?View=101"><span class="text-0-2-145">User Ads</span></a>
+                  <a class="wrapper-0-2-142" href="/develop?View=11"><span class="text-0-2-145">Shirts</span></a>
+                  <a class="wrapper-0-2-142" href="/develop?View=2"><span class="text-0-2-145">T-Shirts</span></a>
+                  <a class="wrapper-0-2-142" href="/develop?View=12"><span class="text-0-2-145">Pants</span></a>
                 </div>
               </div>
             </div>
 
-            <!-- Main Content Area -->
             <div class="col-8 mt-4">
               <div class="row">
                 <div class="col-12">
                   <div>
-                    <button id="open-create-modal" class="buyButton-0-2-147 w-auto ms-0" title="">Create New Game</button>
+                    <button id="create-game-btn" class="buyButton-0-2-147 w-auto ms-0" title="">Create New Game</button>
                   </div>
                   <h2 class="mt-2">Games</h2>
                   
-                  <!-- Dynamic Game List Row Container -->
                   <div class="row">
-                    <div class="col-12" id="developer-games-list">
-                      <!-- Rendered games will be injected dynamically here -->
+                    <div class="col-12" id="dynamic-games-container">
+                      <!-- Custom and default game rows inject here -->
                     </div>
                   </div>
 
@@ -114,34 +93,7 @@
 
           </div>
         </div>
-
       </div>
-    </div>
-  </div>
-
-  <!-- Create Game Modal Popup -->
-  <div id="create-modal">
-    <div id="create-modal-content">
-      <h3>Create a New Game</h3>
-      <p>Upload an .rbxl file to register your place.</p>
-      <form id="create-game-form">
-        <div style="margin-bottom: 12px;">
-          <label style="display:block; font-weight:500; margin-bottom:4px;">Game Name</label>
-          <input type="text" id="game-name" placeholder="Enter game title" required style="width:100%; padding:6px; box-sizing:border-box; border:1px solid #ccc; border-radius:4px;">
-        </div>
-        <div style="margin-bottom: 12px;">
-          <label style="display:block; font-weight:500; margin-bottom:4px;">Assigned Place ID (Auto-Incremental)</label>
-          <input type="text" id="place-id-display" readonly style="width:100%; padding:6px; box-sizing:border-box; border:1px solid #ddd; background:#f5f5f5; border-radius:4px; color:#555;">
-        </div>
-        <div style="margin-bottom: 20px;">
-          <label style="display:block; font-weight:500; margin-bottom:4px;">Select .rbxl File</label>
-          <input type="file" id="rbxl-file" accept=".rbxl" required style="width:100%;">
-        </div>
-        <div style="text-align: right;">
-          <button type="button" id="close-modal" style="background:#ccc; border:none; padding:8px 14px; border-radius:4px; cursor:pointer; margin-right:8px;">Cancel</button>
-          <button type="submit" style="background:#0066ff; color:white; border:none; padding:8px 14px; font-weight:bold; border-radius:4px; cursor:pointer;">Publish Game</button>
-        </div>
-      </form>
     </div>
   </div>
 
@@ -149,78 +101,31 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const modal = document.getElementById("create-modal");
-      const openBtn = document.getElementById("open-create-modal");
-      const closeBtn = document.getElementById("close-modal");
-      const form = document.getElementById("create-game-form");
-      const placeIdInput = document.getElementById("place-id-display");
-      const gamesListContainer = document.getElementById("developer-games-list");
+      const createBtn = document.getElementById("create-game-btn");
+      const fileInput = document.getElementById("hidden-rbxl-input");
+      const container = document.getElementById("dynamic-games-container");
 
-      // Calculate the next longest sequential placeId dynamically (e.g., 1, 2, 3...)
+      // Calculate next incremental ID dynamically
       function getNextPlaceId() {
         const existingGames = JSON.parse(localStorage.getItem("bloxtip_custom_games") || "[]");
-        if (existingGames.length === 0) return 1;
+        if (existingGames.length === 0) return 13189; // continuing sequence from your examples
         const maxId = Math.max(...existingGames.map(g => parseInt(g.placeId) || 0));
         return maxId + 1;
       }
 
-      // Open Modal and set next ID
-      openBtn.addEventListener("click", () => {
-        placeIdInput.value = getNextPlaceId();
-        modal.style.display = "flex";
+      createBtn.addEventListener("click", () => {
+        fileInput.click();
       });
 
-      // Close Modal
-      closeBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-      });
-
-      // Render existing custom games matching the target HTML structure
-      function renderGames() {
-        const existingGames = JSON.parse(localStorage.getItem("bloxtip_custom_games") || "[]");
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files.length === 0) return;
+        const file = e.target.files[0];
         
-        if (existingGames.length === 0) {
-          gamesListContainer.innerHTML = `<p style="color: #666; margin-top: 15px;">No custom games created yet. Click "Create New Game" to get started!</p>`;
-          return;
-        }
+        let defaultName = file.name.replace(/\.[^/.]+$/, "");
+        let gameName = prompt("Enter your game name:", defaultName);
+        if (!gameName) return;
 
-        let htmlContent = "";
-        existingGames.forEach(game => {
-          htmlContent += `
-            <div class="row row-0-2-160" style="margin-bottom: 15px; align-items: center;">
-              <div class="col-2">
-                <img class="image-0-2-159" src="https://www.bloxxia.de//images/thumbnails/8453a47170160dc9893f1c3b16e29f781601c7c22bf88fb3902391ec1cefb997.png" style="width:100%; border-radius:4px;">
-              </div>
-              <div class="col-9 ps-0">
-                <p class="mb-0"><a href="/universes/configure?id=${game.placeId}">${game.name}</a></p>
-                <div>
-                  <p class="mb-0"><span class="startPlaceLabel-0-2-162">Start Place: </span> <a href="/games/${game.placeId}/${game.name}">${game.name}</a> (ID: ${game.placeId})</p>
-                  <p class="visibilityButton-0-2-163 mb-0 mt-1"><a href="/games/${game.placeId}/${game.name}#/#basicSettings">Public</a></p>
-                </div>
-              </div>
-              <div class="col-1">
-                <div class="container-0-2-172">
-                  <div class="box-0-2-164">
-                    <div class="gearWrapper-0-2-167"><div class="gear-0-2-166"></div></div>
-                    <div class="caretWrapper-0-2-168"><div class="caret-0-2-169">▼</div></div>
-                  </div>
-                </div>
-              </div>
-            </div>`;
-        });
-        gamesListContainer.innerHTML = htmlContent;
-      }
-
-      // Handle form submission and storage
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const gameName = document.getElementById("game-name").value;
-        const fileInput = document.getElementById("rbxl-file");
-
-        if (fileInput.files.length === 0) return;
-
-        const file = fileInput.files[0];
-        const assignedId = parseInt(placeIdInput.value);
+        const assignedId = getNextPlaceId();
 
         const reader = new FileReader();
         reader.onload = function(event) {
@@ -228,22 +133,49 @@
             placeId: assignedId,
             name: gameName,
             fileName: file.name,
-            data: event.target.result,
-            createdAt: new Date().toISOString()
+            data: event.target.result
           };
 
           let existingGames = JSON.parse(localStorage.getItem("bloxtip_custom_games") || "[]");
           existingGames.push(newGame);
           localStorage.setItem("bloxtip_custom_games", JSON.stringify(existingGames));
 
-          modal.style.display = "none";
-          form.reset();
           renderGames();
+          fileInput.value = "";
         };
         reader.readAsDataURL(file);
       });
 
-      // Initial render call
+      function renderGames() {
+        const existingGames = JSON.parse(localStorage.getItem("bloxtip_custom_games") || "[]");
+        
+        // Default initial items matching your snippet + user custom ones
+        let htmlContent = `
+          <div class="row row-0-2-160">
+            <div class="col-2"><img class="image-0-2-159" src="https://www.bloxxia.de//images/thumbnails/8453a47170160dc9893f1c3b16e29f781601c7c22bf88fb3902391ec1cefb997.png"></div>
+            <div class="col-9 ps-0"><p class="mb-0"><a href="/universes/configure?id=5496">Murder Mystery 2</a></p><div><p class="mb-0"><span class="startPlaceLabel-0-2-162">Start Place: </span> <a href="/games/13480/Murder-Mystery-2">Murder Mystery 2</a></p><p class="visibilityButton-0-2-163 mb-0 mt-1"><a href="/games/13480/Murder-Mystery-2#/#basicSettings">Public</a></p></div></div>
+            <div class="col-1"><div class="container-0-2-172"><div class="box-0-2-164 "><div class="gearWrapper-0-2-167"><div class="gear-0-2-166"></div></div><div class="caretWrapper-0-2-168"><div class="caret-0-2-169">▼</div></div></div></div></div>
+          </div>
+          <div class="row row-0-2-160">
+            <div class="col-2"><img class="image-0-2-159" src="https://www.bloxxia.de//images/thumbnails/15696ffca20b49b814c0ecfffd5c4c0b2ed82bec010950877ffe931cc744d497.png"></div>
+            <div class="col-9 ps-0"><p class="mb-0"><a href="/universes/configure?id=5255">yepme2's Place</a></p><div><p class="mb-0"><span class="startPlaceLabel-0-2-162">Start Place: </span> <a href="/games/13146/yepme2s-Place">yepme2's Place</a></p><p class="visibilityButton-0-2-163 mb-0 mt-1"><a href="/games/13146/yepme2s-Place#/#basicSettings">Public</a></p></div></div>
+            <div class="col-1"><div class="container-0-2-172"><div class="box-0-2-164 "><div class="gearWrapper-0-2-167"><div class="gear-0-2-166"></div></div><div class="caretWrapper-0-2-168"><div class="caret-0-2-169">▼</div></div></div></div></div>
+          </div>
+        `;
+
+        existingGames.forEach(game => {
+          htmlContent += `
+            <div class="row row-0-2-160">
+              <div class="col-2"><img class="image-0-2-159" src="https://www.bloxxia.de//images/thumbnails/765fd79a4c6610ebce4c8a67a3b2b0f95e6649c399673690b0d610661741f9c0.png"></div>
+              <div class="col-9 ps-0"><p class="mb-0"><a href="/universes/configure?id=${game.placeId}">${game.name}</a></p><div><p class="mb-0"><span class="startPlaceLabel-0-2-162">Start Place: </span> <a href="/games/${game.placeId}/${game.name}">${game.name}</a></p><p class="visibilityButton-0-2-163 mb-0 mt-1"><a href="/games/${game.placeId}/${game.name}#/#basicSettings">Public</a></p></div></div>
+              <div class="col-1"><div class="container-0-2-172"><div class="box-0-2-164 "><div class="gearWrapper-0-2-167"><div class="gear-0-2-166"></div></div><div class="caretWrapper-0-2-168"><div class="caret-0-2-169">▼</div></div></div></div></div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = htmlContent;
+      }
+
       renderGames();
     });
   </script>
