@@ -9,19 +9,70 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <style>
-    @media (max-width: 768px) {
-      .site-header nav { display: none; width: 100%; flex-direction: column; background: #222; position: absolute; top: 50px; left: 0; padding: 10px; z-index: 1000; }
-      .site-header nav.open { display: flex; }
+    /* 2013 Roblox-style blue menu header and dropdown layout */
+    .site-header {
+      background: #0070dd;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      height: 50px;
+      position: relative;
     }
-    .hamburger { background: none; border: none; font-size: 20px; color: inherit; cursor: pointer; }
+    .hamburger-menu-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 0 10px;
+    }
+    .hamburger-menu-btn:hover {
+      background: rgba(0, 0, 0, 0.15);
+    }
+    .site-header nav {
+      display: none;
+      position: absolute;
+      top: 50px;
+      left: 0;
+      background: #005bb5;
+      width: 220px;
+      flex-direction: column;
+      box-shadow: 0px 4px 6px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    .site-header nav.open {
+      display: flex;
+    }
+    .site-header nav a {
+      color: white;
+      text-decoration: none;
+      padding: 12px 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-size: 14px;
+    }
+    .site-header nav a:hover {
+      background: #00458a;
+    }
+    .site-header nav a.coming-soon {
+      color: #b0d3f8;
+      cursor: default;
+    }
+    .site-header .search {
+      margin-left: auto;
+    }
   </style>
 </head>
 <body data-page="creation">
   <header class="site-header">
-    <button class="hamburger" id="hamburger-toggle">☰</button>
+    <button class="hamburger-menu-btn" id="hamburger-toggle">☰</button>
     <nav id="header-nav">
       <a href="/home/">Games</a>
-      <a href="#catalog">Catalog</a>
+      <a href="#catalog" class="coming-soon">Catalog (Coming Soon)</a>
       <a class="active" href="/creation/">Create</a>
       <a href="#download">Download</a>
     </nav>
@@ -101,8 +152,14 @@
       const hamburgerToggle = document.getElementById("hamburger-toggle");
       const headerNav = document.getElementById("header-nav");
       if (hamburgerToggle && headerNav) {
-        hamburgerToggle.addEventListener("click", () => {
+        hamburgerToggle.addEventListener("click", (e) => {
+          e.stopPropagation();
           headerNav.classList.toggle("open");
+        });
+        document.addEventListener("click", (e) => {
+          if (!headerNav.contains(e.target) && e.target !== hamburgerToggle) {
+            headerNav.classList.remove("open");
+          }
         });
       }
 
