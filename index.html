@@ -3,11 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="0; url=./home/">
-  <title>bloxtip</title>
-  <script>window.location.replace('./home/');</script>
+  <title>bloxtip | Home</title>
+  <link rel="stylesheet" href="../styles.css">
 </head>
-<body>
-  <p>Redirecting to <a href="./home/">bloxtip home</a>…</p>
+<body data-page="home">
+  <header class="site-header">
+    <a class="logo" href="../home/" aria-label="bloxtip home"><b>B</b></a>
+    <nav>
+      <a class="active" href="../home/">Games</a>
+      <a href="../creation/">Create</a>
+    </nav>
+    <div class="user-name">Guest</div>
+  </header>
+
+  <main id="home-content" class="home-content">
+    <section class="archive-panel">
+      <div>
+        <h2>Default RBXL places</h2>
+        <p>Games in this row are loaded from the bundled archive.</p>
+        <strong id="zip-status">Loading places…</strong>
+      </div>
+      <button id="check-zip" type="button">Refresh</button>
+    </section>
+
+    <section>
+      <div class="rowHeader">
+        <h3>Recently Played</h3>
+      </div>
+      <div class="game-row" id="game-row" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer>© 2026 bloxtip · <a href="../creation/">Create an account</a></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="../app.js" defer></script>
 </body>
 </html>
