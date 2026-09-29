@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <style>
-    /* 2013 Roblox-style blue menu header and dropdown layout */
+    /* 2013 Roblox-style blue header layout */
     .site-header {
       background: #0070dd;
       color: white;
@@ -19,44 +19,36 @@
       height: 50px;
       position: relative;
     }
-    .hamburger-menu-btn {
+    .refresh-icon-btn {
       background: none;
       border: none;
-      color: white;
-      font-size: 24px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100%;
-      padding: 0 10px;
+      padding: 0;
+      margin-right: 15px;
+      height: 28px;
+      width: 28px;
     }
-    .hamburger-menu-btn:hover {
-      background: rgba(0, 0, 0, 0.15);
+    .refresh-icon-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
     .site-header nav {
-      display: none;
-      position: absolute;
-      top: 50px;
-      left: 0;
-      background: #005bb5;
-      width: 220px;
-      flex-direction: column;
-      box-shadow: 0px 4px 6px rgba(0,0,0,0.2);
-      z-index: 1000;
-    }
-    .site-header nav.open {
       display: flex;
+      gap: 15px;
+      align-items: center;
     }
     .site-header nav a {
       color: white;
       text-decoration: none;
-      padding: 12px 15px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
       font-size: 14px;
+      font-weight: 500;
     }
     .site-header nav a:hover {
-      background: #00458a;
+      text-decoration: underline;
     }
     .site-header nav a.coming-soon {
       color: #b0d3f8;
@@ -69,8 +61,10 @@
 </head>
 <body data-page="creation">
   <header class="site-header">
-    <button class="hamburger-menu-btn" id="hamburger-toggle">☰</button>
-    <nav id="header-nav">
+    <button class="refresh-icon-btn" id="refresh-btn" title="Refresh Page">
+      <img src="https://lh3.googleusercontent.com/rd-d/ALs6j_HWcD0MaYJiYz1xUEZOFnmOFLWgDsfpjBOt6aoqKQWS77fHEiyXQGeCKpdVs09d1DI1DMEw7cDcqIZas5Sei8z4x4Z5hRwfGDG8nWJ5ryaBOWtyJ34CeFKgiNdennBBEbNkE9loqVJrhhm9CD-f5ZGryqlRdJT-X4MzjawZDbcUyynaAjfUyzZKgf0_qt9FABh4t4JsmZx4kefu4Pk10eBZvGHKzOlKO_-3k2ShCtvTZfYnHX0sw7guyx73K6cjNe850g-s5DmpeS1ytM1DYDMrnKNPQ3DkG46_lz-rjG_i56HfhOsPvwj2YwN8tYa88fV45wJP_z25MMHPe05NXHd4G-3bd3znzF5Sc_eCpxfjMmj1H6pp2XKsk7wH1LlGSMNp9ljoTpK0QtnUqD9nXv0jl9LCsBF53M8tSoL5CqPgxxmhP8Ky4EidsYlzGvdmTXztencJKLsEKC3we_n2HQbB-8vp_QgWEgYy39sfx1sSngrG-Ef45ku13BJy0DA96JqaJ3YI1-ZRl_sOyF2b8hrEvs9luUEdND0SUbaimAip8ruA8JTT-CtRSBRgFLnHc1f-vgBJtfrMph8Ty_TN_8ixUof6TZvKU9n8xYvxehHkm1rQ5MByJ15mtN5NrLoNxvYSxR5tbG9LTfy1rKl-ZAOTA4n14YQI0fTuLituv1iLHpM29dRCf1bjg3ETIQAznlQmDowCTdbn6-UsGN4cZN04LRywnRbB36U2KflYB7_CK-lT8qB9cMaRlKvlPL8XC9ylbnHvp4i2QJ8tsHeUZ7PBq2BSp_aM_sf2iW0lIWn_H_NE6Qwjx255Z0yB0KQ6viWXlusoe-pI8jHi1Z2p3lG6b1rMgfNM7NMswphh1j1YJd1mO79csvUMosyfyZJZhOnPvyreCDXnkZvEcLyUUjSCeJx3MJOEXAhqn-8Oxt11v0kIZpS3AuADDU53qKvjPlMHDNKqwyD8MMfSbrlOkXC17B1jHPMwLhxB6VtA_fNdOlvkQWCTF_1zSub9az6riNAhCYX6tC3s34h-_8icPSS6UZCFC6nuwe8CYnIO-2hnVK0si8hqXvi8vIOs1h1M8YPcaVPhsJMk0jnZt2tpWNxomSBZVQ5IyOskwW0wq1cfR_sQ4vQzXmp-mpKP19chFW0Pvr9dgGI5QBTcbyUehUgnrFhrcEur-OdT5qglIgBRjA=w1920-h877?auditContext=prefetch" alt="Refresh">
+    </button>
+    <nav>
       <a href="/home/">Games</a>
       <a href="#catalog" class="coming-soon">Catalog (Coming Soon)</a>
       <a class="active" href="/creation/">Create</a>
@@ -148,18 +142,11 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // Toggle Hamburger menu
-      const hamburgerToggle = document.getElementById("hamburger-toggle");
-      const headerNav = document.getElementById("header-nav");
-      if (hamburgerToggle && headerNav) {
-        hamburgerToggle.addEventListener("click", (e) => {
-          e.stopPropagation();
-          headerNav.classList.toggle("open");
-        });
-        document.addEventListener("click", (e) => {
-          if (!headerNav.contains(e.target) && e.target !== hamburgerToggle) {
-            headerNav.classList.remove("open");
-          }
+      // Refresh page button functionality
+      const refreshBtn = document.getElementById("refresh-btn");
+      if (refreshBtn) {
+        refreshBtn.addEventListener("click", () => {
+          location.reload();
         });
       }
 
