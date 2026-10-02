@@ -1,0 +1,268 @@
+<!doctype html>
+<html class="light" dir="ltr" lang="en" style="height: 100%;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login - Bloxtip</title>
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/favicon.ico">
+  <style>
+    :root {
+      --theme-navbar-bg: #0074BD;
+      --theme-primary: #02b757;
+      --theme-primary-hover: #00cc61;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      background: #e3e3e3;
+      color: #191919;
+      font-family: 'Source Sans Pro', Arial, sans-serif;
+      font-size: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      z-index: 1050;
+      min-height: 40px;
+      background-color: var(--theme-navbar-bg);
+      box-shadow: 0 1px 4px rgba(25, 25, 25, 0.3);
+      width: 100%;
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 0 20px;
+      min-height: 64px;
+    }
+
+    .logo-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      width: 40px;
+    }
+
+    .logo-img {
+      height: 35px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .nav-spacer {
+      flex: 1;
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      padding: 4px 8px;
+      margin-left: 10px;
+    }
+
+    .nav-link:hover {
+      background: rgba(25, 25, 25, 0.1);
+      border-radius: 4px;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .auth-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-container h1 {
+      font-size: 28px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #191919;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #b8b8b8;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--theme-primary);
+      box-shadow: 0 0 0 2px rgba(2, 183, 87, 0.1);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--theme-primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .submit-btn:hover {
+      background: var(--theme-primary-hover);
+    }
+
+    .form-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .form-footer a {
+      color: var(--theme-primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .form-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .error {
+      background: #fee;
+      color: #c00;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    .footer {
+      background: white;
+      border-top: 1px solid #e3e3e3;
+      padding: 15px 0 25px;
+      text-align: center;
+    }
+
+    .footer-text {
+      color: #B8B8B8;
+      font-size: 12px;
+      font-weight: 400;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <button class="logo-btn" title="Home" onclick="window.location.href='/'">
+        <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Bloxtip" class="logo-img">
+      </button>
+      <div class="nav-spacer"></div>
+      <a class="nav-link" href="/">Back to Home</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="auth-container">
+      <h1>Login</h1>
+      <div class="error" id="error"></div>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" class="submit-btn">Login</button>
+      </form>
+      <div class="form-footer">
+        Don't have an account? <a href="/signup">Sign Up</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p class="footer-text">Bloxtip is an independent platform and is not affiliated with Roblox Corporation or any other company.</p>
+  </footer>
+
+  <script>
+    function handleLogin(event) {
+      event.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const error = document.getElementById('error');
+
+      if (!username || !password) {
+        error.textContent = 'Please fill in all fields';
+        error.classList.add('show');
+        return;
+      }
+
+      if (username.length < 3) {
+        error.textContent = 'Username must be at least 3 characters';
+        error.classList.add('show');
+        return;
+      }
+
+      if (password.length < 6) {
+        error.textContent = 'Password must be at least 6 characters';
+        error.classList.add('show');
+        return;
+      }
+
+      // Store user info
+      localStorage.setItem('bloxtip_username', username);
+      localStorage.setItem('bloxtip_password_hash', password); // Note: This is just a demo, never store plain passwords!
+      
+      // Redirect to home
+      window.location.href = '/';
+    }
+  </script>
+</body>
+</html>
