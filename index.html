@@ -42,13 +42,14 @@
       background-color: var(--theme-navbar-bg);
       background-repeat: no-repeat;
       box-shadow: 0 1px 4px rgba(25, 25, 25, 0.3);
-      width: 100%;
+      width: 100vw;
+      margin-left: calc(-50vw + 50%);
     }
 
     .nav-container {
       z-index: 2;
       position: relative;
-      width: 100%;
+      max-width: 100%;
       padding: 0 20px;
       display: flex;
       align-items: center;
@@ -176,6 +177,7 @@
       align-items: center;
       flex-shrink: 0;
       white-space: nowrap;
+      position: relative;
     }
 
     .nav-text {
@@ -183,6 +185,63 @@
       font-size: 16px;
       margin-top: 2px;
       font-weight: 400;
+    }
+
+    .user-menu {
+      color: white;
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: background 0.2s;
+      border-radius: 4px;
+    }
+
+    .user-menu:hover {
+      background: rgba(25, 25, 25, 0.1);
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      min-width: 180px;
+      z-index: 1001;
+      margin-top: 5px;
+    }
+
+    .dropdown-menu.active {
+      display: block;
+    }
+
+    .dropdown-menu a,
+    .dropdown-menu button {
+      display: block;
+      width: 100%;
+      padding: 10px 15px;
+      border: none;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+      color: #191919;
+      text-decoration: none;
+      transition: background 0.2s;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .dropdown-menu a:hover,
+    .dropdown-menu button:hover {
+      background: #f0f0f0;
+    }
+
+    .dropdown-menu a.disabled,
+    .dropdown-menu button.disabled {
+      color: #ccc;
+      cursor: not-allowed;
     }
 
     .nav-link {
@@ -223,7 +282,8 @@
       font-size: 18px;
       font-weight: bold;
       z-index: 1030;
-      width: 100%;
+      width: 100vw;
+      margin-left: calc(-50vw + 50%);
     }
 
     .alert-link {
@@ -293,60 +353,6 @@
       font-size: 24px;
       font-weight: 300;
       margin: 0;
-    }
-
-    .user-menu {
-      color: white;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: background 0.2s;
-    }
-
-    .user-menu:hover {
-      background: rgba(25, 25, 25, 0.1);
-    }
-
-    .dropdown-menu {
-      display: none;
-      position: absolute;
-      top: 100%;
-      right: 0;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      min-width: 180px;
-      z-index: 1000;
-    }
-
-    .dropdown-menu.active {
-      display: block;
-    }
-
-    .dropdown-menu a,
-    .dropdown-menu button {
-      display: block;
-      width: 100%;
-      padding: 10px 15px;
-      border: none;
-      background: none;
-      text-align: left;
-      cursor: pointer;
-      color: #191919;
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-
-    .dropdown-menu a:hover,
-    .dropdown-menu button:hover {
-      background: #f0f0f0;
-    }
-
-    .dropdown-menu a.disabled,
-    .dropdown-menu button.disabled {
-      color: #ccc;
-      cursor: not-allowed;
     }
 
     .games-section {
@@ -513,7 +519,7 @@
           </div>
           <nav>
             <a href="/">Games</a>
-            <a href="/">Catalog</a>
+            <a href="/catalog">Catalog</a>
             <a href="/">Create</a>
             <a href="/">Download</a>
           </nav>
@@ -530,10 +536,10 @@
               <span id="user-display">Guest</span> ▼
             </span>
             <div class="dropdown-menu" id="user-dropdown">
-              <a href="/login" id="login-link">Login</a>
-              <a href="/signup" id="signup-link">Sign Up</a>
-              <button onclick="goToProfile()" id="profile-btn" style="display:none;">My Profile</button>
-              <button onclick="goToAvatarEditor()" id="avatar-btn" style="display:none;">Change Avatar</button>
+              <a href="/auth/login" id="login-link">Login</a>
+              <a href="/auth/signup" id="signup-link">Sign Up</a>
+              <a href="/auth/profile" id="profile-btn" style="display:none;">My Profile</a>
+              <a href="/catalog" id="avatar-btn" style="display:none;">Avatar & Items</a>
               <button onclick="goToThemeSettings()" id="theme-btn" style="display:none;" class="disabled">Change Theme (Coming Soon)</button>
               <button onclick="logout()" id="logout-btn" style="display:none;">Logout</button>
             </div>
@@ -553,7 +559,7 @@
     <div class="container">
       <section class="page-header">
         <div class="profile-pic" id="profile-avatar">
-          <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Player Avatar">
+          <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Player Avatar" onerror="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png'">
         </div>
         <div class="page-header-text">
           <h1 id="greeting">Welcome to Bloxtip!</h1>
@@ -611,7 +617,8 @@
     });
 
     function updateUserUI() {
-      const username = localStorage.getItem('bloxtip_username');
+      const username = localStorage.getItem('bloxtip_username') || 'Guest';
+      const avatar = localStorage.getItem('bloxtip_avatar') || 'https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png';
       const userDisplay = document.getElementById('user-display');
       const loginLink = document.getElementById('login-link');
       const signupLink = document.getElementById('signup-link');
@@ -620,8 +627,9 @@
       const themeBtn = document.getElementById('theme-btn');
       const logoutBtn = document.getElementById('logout-btn');
       const greeting = document.getElementById('greeting');
+      const profileAvatar = document.getElementById('profile-avatar');
 
-      if (username) {
+      if (username !== 'Guest') {
         userDisplay.textContent = username;
         loginLink.style.display = 'none';
         signupLink.style.display = 'none';
@@ -640,21 +648,18 @@
         logoutBtn.style.display = 'none';
         greeting.textContent = 'Welcome to Bloxtip!';
       }
+
+      profileAvatar.innerHTML = `<img src="${avatar}" alt="Player Avatar" onerror="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png'">`;
     }
 
     function logout() {
-      localStorage.removeItem('bloxtip_username');
-      localStorage.removeItem('bloxtip_avatar');
-      updateUserUI();
-      closeUserMenu();
-    }
-
-    function goToProfile() {
-      window.location.href = '/profile';
-    }
-
-    function goToAvatarEditor() {
-      window.location.href = '/avatar-editor';
+      if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('bloxtip_username');
+        localStorage.removeItem('bloxtip_email');
+        localStorage.removeItem('bloxtip_avatar');
+        updateUserUI();
+        closeUserMenu();
+      }
     }
 
     function goToThemeSettings() {
