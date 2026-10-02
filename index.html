@@ -42,19 +42,16 @@
       background-color: var(--theme-navbar-bg);
       background-repeat: no-repeat;
       box-shadow: 0 1px 4px rgba(25, 25, 25, 0.3);
+      width: 100%;
     }
 
     .nav-container {
       z-index: 2;
       position: relative;
-      max-width: 100%;
-      padding-top: 0;
-      padding-bottom: 0;
+      width: 100%;
+      padding: 0 20px;
       display: flex;
       align-items: center;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 20px;
     }
 
     .top-row {
@@ -79,13 +76,22 @@
       flex-shrink: 0;
     }
 
-    .logo {
-      width: 116px;
-      height: 37px;
-      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 116 37"><text x="10" y="28" font-size="28" font-weight="bold" fill="white">Bloxtip</text></svg>');
-      background-size: contain;
-      background-repeat: no-repeat;
+    .logo-btn {
+      background: none;
+      border: none;
       cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      width: 40px;
+    }
+
+    .logo-img {
+      height: 35px;
+      width: auto;
+      object-fit: contain;
     }
 
     nav {
@@ -217,6 +223,7 @@
       font-size: 18px;
       font-weight: bold;
       z-index: 1030;
+      width: 100%;
     }
 
     .alert-link {
@@ -286,6 +293,60 @@
       font-size: 24px;
       font-weight: 300;
       margin: 0;
+    }
+
+    .user-menu {
+      color: white;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .user-menu:hover {
+      background: rgba(25, 25, 25, 0.1);
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      min-width: 180px;
+      z-index: 1000;
+    }
+
+    .dropdown-menu.active {
+      display: block;
+    }
+
+    .dropdown-menu a,
+    .dropdown-menu button {
+      display: block;
+      width: 100%;
+      padding: 10px 15px;
+      border: none;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+      color: #191919;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .dropdown-menu a:hover,
+    .dropdown-menu button:hover {
+      background: #f0f0f0;
+    }
+
+    .dropdown-menu a.disabled,
+    .dropdown-menu button.disabled {
+      color: #ccc;
+      cursor: not-allowed;
     }
 
     .games-section {
@@ -425,8 +486,7 @@
         display: none;
       }
 
-      .logo {
-        width: 30px;
+      .logo-img {
         height: 30px;
       }
 
@@ -447,13 +507,15 @@
       <div class="top-row">
         <div class="left-section">
           <div class="logo-container">
-            <div class="logo"></div>
+            <button class="logo-btn" title="Refresh Page" onclick="location.reload()">
+              <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Bloxtip" class="logo-img">
+            </button>
           </div>
           <nav>
-            <a href="/games">Games</a>
-            <a href="/catalog">Catalog</a>
-            <a href="/develop">Create</a>
-            <a href="/download">Download</a>
+            <a href="/">Games</a>
+            <a href="/">Catalog</a>
+            <a href="/">Create</a>
+            <a href="/">Download</a>
           </nav>
         </div>
         <div class="search-container">
@@ -463,8 +525,19 @@
           </div>
         </div>
         <div class="right-section">
-          <p class="nav-text"><a class="nav-link" href="/login">Login</a></p>
-          <a class="sign-up-btn" href="https://example.com" target="_self">Sign Up</a>
+          <div style="position: relative;">
+            <span class="user-menu" id="user-menu-btn" onclick="toggleUserMenu()">
+              <span id="user-display">Guest</span> ▼
+            </span>
+            <div class="dropdown-menu" id="user-dropdown">
+              <a href="/login" id="login-link">Login</a>
+              <a href="/signup" id="signup-link">Sign Up</a>
+              <button onclick="goToProfile()" id="profile-btn" style="display:none;">My Profile</button>
+              <button onclick="goToAvatarEditor()" id="avatar-btn" style="display:none;">Change Avatar</button>
+              <button onclick="goToThemeSettings()" id="theme-btn" style="display:none;" class="disabled">Change Theme (Coming Soon)</button>
+              <button onclick="logout()" id="logout-btn" style="display:none;">Logout</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -472,7 +545,7 @@
 
   <!-- Alert Banner -->
   <div class="alert-wrapper">
-    <p><a class="alert-link" href="/donate" target="_blank" rel="noopener noreferrer">Looking to support Bloxtip? Head over to the donation page!</a></p>
+    <p><a class="alert-link" href="/" target="_blank" rel="noopener noreferrer">Looking to support Bloxtip? Head over to the donation page!</a></p>
   </div>
 
   <!-- Main Content -->
@@ -480,7 +553,7 @@
     <div class="container">
       <section class="page-header">
         <div class="profile-pic" id="profile-avatar">
-          <img src="https://lh3.googleusercontent.com/rd-d/ALs6j_GFuJIDt0HLCCElyFbLzQkkei4Fz4zUpp1DdkkihYyYphTntmDc2lo3XZVF6GpxktoiZJrl6vQaD8C0E5LZTErKsbG4YP84TkSn0EHnAY7OfwB5MqYn6LGmAkmotl05H-NYUv1j3zochozU0NjKvdx1NZ3OZj6IfbkLnOD0A-ppUYNxlhsh5-KGMEthL6_i-bX8GqirHWarcXi3ax5jMzeJcSzXHpZsSfW4r_-ZZ0iUYE34d5DqkENGdiFuHFVkbb5oJtS2LU666w-4cbGDVzRchIwwfpGvLL0J29vIuXD0ImCHQ-h-XDJjk4fTqA7nNLAdr7AgcTz1nDtAn9E_lSrI_aQfBRJ6TSTggNBfpEg1n2I1Gs7t1XLe3lH-_pgxyUOsuwwiHhKehlE0DLraMatKf1V5fNhcP8NhKY21ImLFYTn9mgRqjV3zR1qFYkjWYaC8UCKo8TwpkwOmj9xEOb8G17sJ3HVOULgjhKEVhRzfVbfZBbfdM_jwhcfSqYjLpF3cjGV9ZpVWxvwzq5MKsnLq-B7NPnNKhUMjGmhCDNLdrYKyupFDQNM6_BkrfgPrgClE4f4Tmt6aeGc_WKBcXrAn7p1eATKD-RvdBsjMa74UZ6VAErUi63PV0LIuqaHAh9gRTKnUZHZyrZtMHv8IvEiUuXdZHRc2QHnAkIdEJQQvTSRuEbY0RM7vgIpZcI6YB6VwXo9NfbFiHYrmreiy8SZV1q7M5G4T8ZcLSA7fvgwO3dOPeAmMa9cW89Tz72cSM6oli0eeocEiOf3PVGNvAFZkRi-YKK9Sx6lTSP0pZuPieHkVvfUA5lDzoXJ2igpQvfqmDr4L8Xm4nj-4uVUZGZxsKMU5O4uUMduA8rB8d2MGA-S7yVmzl0i14xQtTnRLY9X5031ZYehWcx2Ngxdx-z194saqWDwn-WdEHFEzF5wY7kt1BqEBfX6WlOiS1JYQXbZ7VfzSVlEen35ttxi2lQaXz0Wnrx44ZKSNvWgHqpxHV5GIEp5YRV43EzMkTvQNY0x6XkC08rVfUyJO1TLSIpD4Zuv8GkUD2xJDQwy6SJnCe-5qjTdzQjt-MQlMDuWTSCz10K7EAKt9GZ0POG1TcrX_2Zkgb0JLMFC2XZDQN-KdZZ_xL9BGmokzRi2Cagg2vD0TSJrsPB2vCzgE8HXd0PweJ61T4kw7VitKNs5mpMgiDw=w1920-h877?auditContext=prefetch" alt="Player Avatar" onerror="this.style.display='none'">
+          <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Player Avatar">
         </div>
         <div class="page-header-text">
           <h1 id="greeting">Welcome to Bloxtip!</h1>
@@ -501,50 +574,17 @@
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-links">
-        <a href="/about-us" class="footer-link">About Us</a>
-        <a href="/jobs" class="footer-link">Jobs</a>
-        <a href="/blog" class="footer-link">Blog</a>
-        <a href="/privacy" class="footer-link">Privacy</a>
-        <a href="/help" class="footer-link">Help</a>
+        <a href="/" class="footer-link">About Us</a>
+        <a href="/" class="footer-link">Jobs</a>
+        <a href="/" class="footer-link">Blog</a>
+        <a href="/" class="footer-link">Privacy</a>
+        <a href="/" class="footer-link">Help</a>
       </div>
       <p class="footer-text">Bloxtip is an independent platform and is not affiliated with Roblox Corporation or any other company. Any references to similar game styles or mechanics are for descriptive purposes only.</p>
     </div>
   </footer>
 
   <script>
-    // Get user avatar and greeting
-    function loadUserProfile() {
-      // Check if user is logged in (get username from localStorage or session)
-      const username = localStorage.getItem('bloxtip_username') || sessionStorage.getItem('bloxtip_username') || 'Guest';
-      
-      // Update greeting
-      const greeting = document.getElementById('greeting');
-      if (username !== 'Guest') {
-        greeting.textContent = `Welcome back, ${username}!`;
-      }
-
-      // Try to load player's 3D avatar head
-      const profileAvatar = document.getElementById('profile-avatar');
-      
-      // Check if username is available for avatar loading
-      if (username && username !== 'Guest') {
-        // Attempt to load 3D player head from Roblox API or similar
-        // This uses the player's username to fetch their avatar
-        const avatarImg = new Image();
-        avatarImg.onload = function() {
-          profileAvatar.innerHTML = '';
-          profileAvatar.appendChild(avatarImg);
-          avatarImg.style.width = '100%';
-          avatarImg.style.height = '100%';
-          avatarImg.style.objectFit = 'cover';
-          avatarImg.style.borderRadius = '100%';
-        };
-        
-        // Try Roblox asset URL format for player avatar
-        avatarImg.src = `https://www.roblox.com/avatar-thumbnail/image?userId=${username}&width=150&height=150&format=Png`;
-      }
-    }
-
     const games = [
       { name: 'Piggy', title: 'Piggy [ALPHA] JULY 2020', year: 2020, placeid: 1 },
       { name: 'Ride a Box', title: 'Ride a Box Down Stairs', year: 2020, placeid: 2 },
@@ -552,9 +592,77 @@
       { name: 'Natural Disaster', title: 'Natural Disaster Survival', year: 2020, placeid: 4 }
     ];
 
-    const gamesContainer = document.getElementById('games-container');
+    function toggleUserMenu() {
+      const dropdown = document.getElementById('user-dropdown');
+      dropdown.classList.toggle('active');
+    }
+
+    function closeUserMenu() {
+      const dropdown = document.getElementById('user-dropdown');
+      dropdown.classList.remove('active');
+    }
+
+    document.addEventListener('click', function(event) {
+      const userMenu = document.getElementById('user-menu-btn');
+      const dropdown = document.getElementById('user-dropdown');
+      if (!userMenu.contains(event.target) && !dropdown.contains(event.target)) {
+        closeUserMenu();
+      }
+    });
+
+    function updateUserUI() {
+      const username = localStorage.getItem('bloxtip_username');
+      const userDisplay = document.getElementById('user-display');
+      const loginLink = document.getElementById('login-link');
+      const signupLink = document.getElementById('signup-link');
+      const profileBtn = document.getElementById('profile-btn');
+      const avatarBtn = document.getElementById('avatar-btn');
+      const themeBtn = document.getElementById('theme-btn');
+      const logoutBtn = document.getElementById('logout-btn');
+      const greeting = document.getElementById('greeting');
+
+      if (username) {
+        userDisplay.textContent = username;
+        loginLink.style.display = 'none';
+        signupLink.style.display = 'none';
+        profileBtn.style.display = 'block';
+        avatarBtn.style.display = 'block';
+        themeBtn.style.display = 'block';
+        logoutBtn.style.display = 'block';
+        greeting.textContent = `Welcome back, ${username}!`;
+      } else {
+        userDisplay.textContent = 'Guest';
+        loginLink.style.display = 'block';
+        signupLink.style.display = 'block';
+        profileBtn.style.display = 'none';
+        avatarBtn.style.display = 'none';
+        themeBtn.style.display = 'none';
+        logoutBtn.style.display = 'none';
+        greeting.textContent = 'Welcome to Bloxtip!';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('bloxtip_username');
+      localStorage.removeItem('bloxtip_avatar');
+      updateUserUI();
+      closeUserMenu();
+    }
+
+    function goToProfile() {
+      window.location.href = '/profile';
+    }
+
+    function goToAvatarEditor() {
+      window.location.href = '/avatar-editor';
+    }
+
+    function goToThemeSettings() {
+      alert('Theme settings coming soon!');
+    }
 
     function renderGames() {
+      const gamesContainer = document.getElementById('games-container');
       gamesContainer.innerHTML = games.map(game => `
         <div class="game-card">
           <div class="game-card-image">${game.name}</div>
@@ -576,7 +684,7 @@
     }
 
     // Initialize
-    loadUserProfile();
+    updateUserUI();
     renderGames();
   </script>
 </body>
