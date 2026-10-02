@@ -1,0 +1,358 @@
+<!doctype html>
+<html class="light" dir="ltr" lang="en" style="height: 100%;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Avatar Editor - Bloxtip</title>
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/favicon.ico">
+  <style>
+    :root {
+      --theme-navbar-bg: #0074BD;
+      --theme-primary: #02b757;
+      --theme-primary-hover: #00cc61;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      background: #e3e3e3;
+      color: #191919;
+      font-family: 'Source Sans Pro', Arial, sans-serif;
+      font-size: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      z-index: 1050;
+      min-height: 40px;
+      background-color: var(--theme-navbar-bg);
+      box-shadow: 0 1px 4px rgba(25, 25, 25, 0.3);
+      width: 100%;
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 0 20px;
+      min-height: 64px;
+    }
+
+    .logo-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      width: 40px;
+    }
+
+    .logo-img {
+      height: 35px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .nav-spacer {
+      flex: 1;
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      padding: 4px 8px;
+      margin-left: 10px;
+    }
+
+    .nav-link:hover {
+      background: rgba(25, 25, 25, 0.1);
+      border-radius: 4px;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .editor-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .editor-container h1 {
+      font-size: 28px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .avatar-preview {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .profile-pic {
+      width: 150px;
+      height: 150px;
+      border-radius: 100%;
+      background: white;
+      box-shadow: 0 -5px 20px rgba(25, 25, 25, 0.15);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-size: cover;
+      background-position: center;
+      border: 3px solid var(--theme-primary);
+    }
+
+    .profile-pic img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 100%;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #191919;
+    }
+
+    .form-group input[type="file"] {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border: 2px dashed #b8b8b8;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #f9f9f9;
+    }
+
+    .form-group input[type="file"]:hover {
+      border-color: var(--theme-primary);
+      background: #f0f8f5;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--theme-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--theme-primary-hover);
+    }
+
+    .btn-secondary {
+      background: #e3e3e3;
+      color: #191919;
+    }
+
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .preset-avatars {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #e3e3e3;
+    }
+
+    .preset-avatars h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .preset-btn {
+      width: 100%;
+      aspect-ratio: 1;
+      border: 2px solid #e3e3e3;
+      border-radius: 8px;
+      background-size: cover;
+      background-position: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--theme-primary);
+      transform: scale(1.05);
+    }
+
+    .success-msg {
+      background: #efe;
+      color: #060;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .success-msg.show {
+      display: block;
+    }
+
+    .footer {
+      background: white;
+      border-top: 1px solid #e3e3e3;
+      padding: 15px 0 25px;
+      text-align: center;
+    }
+
+    .footer-text {
+      color: #B8B8B8;
+      font-size: 12px;
+      font-weight: 400;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <button class="logo-btn" title="Home" onclick="window.location.href='/'">
+        <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Bloxtip" class="logo-img">
+      </button>
+      <div class="nav-spacer"></div>
+      <a class="nav-link" href="/profile">Back to Profile</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="editor-container">
+      <h1>Avatar Editor</h1>
+      <div class="success-msg" id="success-msg">Avatar updated successfully!</div>
+
+      <div class="avatar-preview">
+        <div class="profile-pic" id="preview-avatar">
+          <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Avatar Preview" onerror="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png'">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="avatar-upload">Upload Custom Avatar</label>
+        <input type="file" id="avatar-upload" accept="image/*">
+      </div>
+
+      <div class="preset-avatars">
+        <h3>Preset Avatars</h3>
+        <div class="preset-grid">
+          <button class="preset-btn" style="background-image: url('https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png')" onclick="setPresetAvatar('https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png')" title="Default Icon"></button>
+          <button class="preset-btn" style="background-image: url('https://via.placeholder.com/150/0074BD/ffffff?text=Blue')" onclick="setPresetAvatar('https://via.placeholder.com/150/0074BD/ffffff?text=Blue')" title="Blue Avatar"></button>
+          <button class="preset-btn" style="background-image: url('https://via.placeholder.com/150/02b757/ffffff?text=Green')" onclick="setPresetAvatar('https://via.placeholder.com/150/02b757/ffffff?text=Green')" title="Green Avatar"></button>
+          <button class="preset-btn" style="background-image: url('https://via.placeholder.com/150/FF9008/ffffff?text=Orange')" onclick="setPresetAvatar('https://via.placeholder.com/150/FF9008/ffffff?text=Orange')" title="Orange Avatar"></button>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" onclick="saveAvatar()">Save Avatar</button>
+        <button class="btn btn-secondary" onclick="resetAvatar()">Reset</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p class="footer-text">Bloxtip is an independent platform and is not affiliated with Roblox Corporation or any other company.</p>
+  </footer>
+
+  <script>
+    let currentAvatarURL = localStorage.getItem('bloxtip_avatar') || 'https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png';
+
+    function loadPreview() {
+      const preview = document.getElementById('preview-avatar');
+      preview.innerHTML = `<img src="${currentAvatarURL}" alt="Avatar Preview" onerror="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png'">`;
+    }
+
+    function setPresetAvatar(url) {
+      currentAvatarURL = url;
+      loadPreview();
+    }
+
+    document.getElementById('avatar-upload').addEventListener('change', function(e) {
+      if (e.target.files && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          currentAvatarURL = event.target.result;
+          loadPreview();
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      }
+    });
+
+    function saveAvatar() {
+      localStorage.setItem('bloxtip_avatar', currentAvatarURL);
+      const msg = document.getElementById('success-msg');
+      msg.classList.add('show');
+      setTimeout(() => {
+        msg.classList.remove('show');
+      }, 3000);
+    }
+
+    function resetAvatar() {
+      currentAvatarURL = localStorage.getItem('bloxtip_avatar') || 'https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png';
+      document.getElementById('avatar-upload').value = '';
+      loadPreview();
+    }
+
+    loadPreview();
+  </script>
+</body>
+</html>
