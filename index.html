@@ -108,7 +108,7 @@
       object-fit: contain;
     }
 
-    /* Header Nav Links (Games, Catalog, Create, Download) */
+    /* Header Nav Links */
     .header-nav {
       display: flex;
       gap: 20px;
@@ -176,11 +176,41 @@
       fill: #555555;
     }
 
-    /* Right Section Display */
+    /* Right Section Display & Auth Buttons */
     .right-section {
       display: flex;
       align-items: center;
-      position: relative;
+      gap: 10px;
+    }
+
+    .auth-btn {
+      background: #02b757;
+      border: 1px solid #018a41;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .auth-btn:hover {
+      background: #00cc61;
+    }
+
+    .auth-btn-sec {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid white;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .auth-btn-sec:hover {
+      background: rgba(255, 255, 255, 0.3);
     }
 
     .user-menu {
@@ -406,6 +436,55 @@
       background: linear-gradient(to bottom, #00cc61 0%, #02b757 100%);
     }
 
+    /* Auth Modal Styling */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      padding: 25px;
+      border: 1px solid #cccccc;
+      border-radius: 3px;
+      width: 320px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .modal-box h3 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #0074BD;
+    }
+
+    .modal-box input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #cccccc;
+      font-size: 14px;
+    }
+
+    .modal-box button {
+      width: 100%;
+      padding: 8px;
+      background: #02b757;
+      border: 1px solid #018a41;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
     /* Footer */
     .footer {
       width: 100%;
@@ -479,9 +558,12 @@
         </div>
       </div>
 
-      <div class="right-section">
-        <span class="user-menu">
+      <div class="right-section" id="auth-actions">
+        <button class="auth-btn" onclick="openSignupModal()">Sign Up</button>
+        <button class="auth-btn-sec" onclick="openLoginModal()">Log In</button>
+        <span class="user-menu" id="user-menu-area" style="display:none;">
           <span id="user-display">Guest</span>
+          <button style="background:none; border:none; color:white; cursor:pointer; font-size:12px; margin-left:8px;" onclick="logout()">[Log Out]</button>
         </span>
       </div>
     </div>
@@ -499,12 +581,12 @@
       Catalog
     </a>
     <a href="../creation/" class="sidebar-item" id="sidebar-create-link">
-      <svg class="sidebar-icon" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4 z"/></svg>
+      <svg class="sidebar-icon" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
       Develop / Create
     </a>
   </div>
 
-  <!-- Orange Alert Banner -->
+  <!-- Alert Banner -->
   <div class="alert-wrapper">
     Looking to support Bloxtip? Head over to the <a class="alert-link" href="#">donation page</a>!
   </div>
@@ -517,8 +599,8 @@
           <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Avatar">
         </div>
         <div class="page-header-text">
-          <h1>Welcome to Bloxtip!</h1>
-          <p>You are browsing as a Guest. Chat and place creation are restricted.</p>
+          <h1 id="welcome-title">Welcome to Bloxtip!</h1>
+          <p id="account-status-text">Playing as a Guest. Join games freely below or sign up for an account!</p>
         </div>
       </section>
 
@@ -530,6 +612,16 @@
       </section>
     </div>
   </main>
+
+  <!-- Sign Up / Login Modal -->
+  <div class="modal-backdrop" id="auth-modal">
+    <div class="modal-box">
+      <h3 id="modal-title">Create an Account</h3>
+      <input type="text" id="username-input" placeholder="Enter Username">
+      <button id="modal-submit-btn" onclick="handleAuthSubmit()">Register Account</button>
+      <button style="margin-top:10px; background:#888; border:none;" onclick="closeAuthModal()">Cancel</button>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="footer">
@@ -546,6 +638,7 @@
 
   <script>
     const GAMES_API_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/website-lowk/games.json";
+    let isSignupMode = true;
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
@@ -554,15 +647,94 @@
 
     document.getElementById('sidebar-toggle-btn').addEventListener('click', toggleSidebar);
 
-    // Restrict guest privileges on create links
-    const restrictCreateAction = (e) => {
-      e.preventDefault();
-      alert('Guest accounts cannot access the Create panel. Only registered accounts have full access.');
+    // Guest vs Account State Manager
+    function initUserSession() {
+      const savedUser = localStorage.getItem('bloxtip_username');
+      const userDisplay = document.getElementById('user-display');
+      const userMenuArea = document.getElementById('user-menu-area');
+      const authActions = document.getElementById('auth-actions');
+      const welcomeTitle = document.getElementById('welcome-title');
+      const statusText = document.getElementById('account-status-text');
+
+      if (savedUser) {
+        // Logged-in Account
+        userDisplay.textContent = savedUser;
+        userMenuArea.style.display = 'inline-flex';
+        authActions.querySelectorAll('button').forEach(b => b.style.display = 'none');
+        welcomeTitle.textContent = `Welcome back, ${savedUser}!`;
+        statusText.textContent = `Account Active (Full Creation & Privilege Rights Enabled)`;
+      } else {
+        // Guest Mode
+        let guestName = localStorage.getItem('bloxtip_guest_name');
+        if (!guestName) {
+          const randomGuestId = Math.floor(1000 + Math.random() * 9000);
+          guestName = `Guest ${randomGuestId}`;
+          localStorage.setItem('bloxtip_guest_name', guestName);
+        }
+        welcomeTitle.textContent = `Welcome, ${guestName}!`;
+        statusText.textContent = `You are playing as a Guest. You can play games freely! Sign up to create places.`;
+      }
+    }
+
+    // Modal Control
+    function openSignupModal() {
+      isSignupMode = true;
+      document.getElementById('modal-title').textContent = "Create an Account";
+      document.getElementById('modal-submit-btn').textContent = "Register Account";
+      document.getElementById('auth-modal').classList.add('active');
+    }
+
+    function openLoginModal() {
+      isSignupMode = false;
+      document.getElementById('modal-title').textContent = "Log In";
+      document.getElementById('modal-submit-btn').textContent = "Log In";
+      document.getElementById('auth-modal').classList.add('active');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('auth-modal').classList.remove('active');
+    }
+
+    function handleAuthSubmit() {
+      const usernameInput = document.getElementById('username-input').value.trim();
+      if (!usernameInput) {
+        alert("Please enter a valid username!");
+        return;
+      }
+
+      if (isSignupMode) {
+        const newAccId = Math.floor(100 + Math.random() * 900);
+        localStorage.setItem('bloxtip_username', usernameInput);
+        localStorage.setItem('bloxtip_account_id', newAccId);
+        alert(`Account created successfully as '${usernameInput}'! You now have full access.`);
+      } else {
+        localStorage.setItem('bloxtip_username', usernameInput);
+        alert(`Logged in as '${usernameInput}'!`);
+      }
+
+      closeAuthModal();
+      initUserSession();
+    }
+
+    function logout() {
+      localStorage.removeItem('bloxtip_username');
+      localStorage.removeItem('bloxtip_account_id');
+      location.reload();
+    }
+
+    // Restrict creation features for guests
+    const checkCreatePermission = (e) => {
+      const savedUser = localStorage.getItem('bloxtip_username');
+      if (!savedUser) {
+        e.preventDefault();
+        alert('Guest accounts cannot access the Create panel. Click "Sign Up" at the top right to make an account!');
+      }
     };
 
-    document.getElementById('sidebar-create-link').addEventListener('click', restrictCreateAction);
-    document.getElementById('nav-create-link').addEventListener('click', restrictCreateAction);
+    document.getElementById('sidebar-create-link').addEventListener('click', checkCreatePermission);
+    document.getElementById('nav-create-link').addEventListener('click', checkCreatePermission);
 
+    // Fetch and Render Games
     async function fetchAndRenderGames() {
       const gamesContainer = document.getElementById('games-container');
       let games = [];
@@ -579,8 +751,8 @@
       if (!games || games.length === 0) {
         gamesContainer.innerHTML = `
           <div class="empty-games-msg">
-            <h3>No Games Created Yet</h3>
-            <p style="margin-top: 5px;">Be the first registered account to publish a place! Visit the Create page to upload a game.</p>
+            <h3>No Games Published Yet</h3>
+            <p style="margin-top: 5px;">Be the first registered account to publish a place! Click <a href="../creation/" style="color: #0074BD; font-weight: bold;">Create</a> to upload a game.</p>
           </div>
         `;
         return;
@@ -601,13 +773,14 @@
         btn.addEventListener('click', () => {
           const placeId = btn.dataset.place;
           const gameName = decodeURIComponent(btn.dataset.name);
-          const username = 'Guest';
+          const activeUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest 1000';
 
-          window.location.href = `bloxtip-player://+launch?placeId=${placeId}&name=${encodeURIComponent(gameName)}&username=${encodeURIComponent(username)}`;
+          window.location.href = `bloxtip-player://+launch?placeId=${placeId}&name=${encodeURIComponent(gameName)}&username=${encodeURIComponent(activeUser)}`;
         });
       });
     }
 
+    initUserSession();
     fetchAndRenderGames();
   </script>
 </body>
