@@ -180,13 +180,6 @@
       position: relative;
     }
 
-    .nav-text {
-      color: white;
-      font-size: 16px;
-      margin-top: 2px;
-      font-weight: 400;
-    }
-
     .user-menu {
       color: white;
       cursor: pointer;
@@ -242,35 +235,6 @@
     .dropdown-menu button.disabled {
       color: #ccc;
       cursor: not-allowed;
-    }
-
-    .nav-link {
-      color: white;
-      text-decoration: none;
-      padding: 4px 8px;
-    }
-
-    .nav-link:hover {
-      background: rgba(25, 25, 25, 0.1);
-      border-radius: 4px;
-    }
-
-    .sign-up-btn {
-      color: #fff;
-      border: 1px solid #02b757;
-      cursor: pointer;
-      display: inline-block;
-      padding: 4px 8px;
-      font-size: 16px;
-      border-radius: 4px;
-      text-decoration: none;
-      background-color: #02b757;
-      font-weight: 500;
-    }
-
-    .sign-up-btn:hover {
-      background-color: #00cc61;
-      border-color: #00cc61;
     }
 
     /* Alert Banner */
@@ -518,10 +482,10 @@
             </button>
           </div>
           <nav>
-            <a href="/">Games</a>
+            <a href="/home/">Games</a>
             <a href="/catalog">Catalog</a>
-            <a href="/">Create</a>
-            <a href="/">Download</a>
+            <a href="/creation/">Create</a>
+            <a href="#download">Download</a>
           </nav>
         </div>
         <div class="search-container">
@@ -540,157 +504,3 @@
               <a href="/auth/signup" id="signup-link">Sign Up</a>
               <a href="/auth/profile" id="profile-btn" style="display:none;">My Profile</a>
               <a href="/catalog" id="avatar-btn" style="display:none;">Avatar & Items</a>
-              <button onclick="goToThemeSettings()" id="theme-btn" style="display:none;" class="disabled">Change Theme (Coming Soon)</button>
-              <button onclick="logout()" id="logout-btn" style="display:none;">Logout</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Alert Banner -->
-  <div class="alert-wrapper">
-    <p><a class="alert-link" href="/" target="_blank" rel="noopener noreferrer">Looking to support Bloxtip? Head over to the donation page!</a></p>
-  </div>
-
-  <!-- Main Content -->
-  <main class="main">
-    <div class="container">
-      <section class="page-header">
-        <div class="profile-pic" id="profile-avatar">
-          <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Player Avatar" onerror="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png'">
-        </div>
-        <div class="page-header-text">
-          <h1 id="greeting">Welcome to Bloxtip!</h1>
-          <p>Build, Play, Create</p>
-        </div>
-      </section>
-
-      <section class="games-section">
-        <h2>Featured Games</h2>
-        <div class="games-grid" id="games-container">
-          <!-- Games will load here -->
-        </div>
-      </section>
-    </div>
-  </main>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-container">
-      <div class="footer-links">
-        <a href="/" class="footer-link">About Us</a>
-        <a href="/" class="footer-link">Jobs</a>
-        <a href="/" class="footer-link">Blog</a>
-        <a href="/" class="footer-link">Privacy</a>
-        <a href="/" class="footer-link">Help</a>
-      </div>
-      <p class="footer-text">Bloxtip is an independent platform and is not affiliated with Roblox Corporation or any other company. Any references to similar game styles or mechanics are for descriptive purposes only.</p>
-    </div>
-  </footer>
-
-  <script>
-    const games = [
-      { name: 'Piggy', title: 'Piggy [ALPHA] JULY 2020', year: 2020, placeid: 1 },
-      { name: 'Ride a Box', title: 'Ride a Box Down Stairs', year: 2020, placeid: 2 },
-      { name: 'Tower of Hell', title: 'Tower of Hell 2020', year: 2020, placeid: 3 },
-      { name: 'Natural Disaster', title: 'Natural Disaster Survival', year: 2020, placeid: 4 }
-    ];
-
-    function toggleUserMenu() {
-      const dropdown = document.getElementById('user-dropdown');
-      dropdown.classList.toggle('active');
-    }
-
-    function closeUserMenu() {
-      const dropdown = document.getElementById('user-dropdown');
-      dropdown.classList.remove('active');
-    }
-
-    document.addEventListener('click', function(event) {
-      const userMenu = document.getElementById('user-menu-btn');
-      const dropdown = document.getElementById('user-dropdown');
-      if (!userMenu.contains(event.target) && !dropdown.contains(event.target)) {
-        closeUserMenu();
-      }
-    });
-
-    function updateUserUI() {
-      const username = localStorage.getItem('bloxtip_username') || 'Guest';
-      const avatar = localStorage.getItem('bloxtip_avatar') || 'https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png';
-      const userDisplay = document.getElementById('user-display');
-      const loginLink = document.getElementById('login-link');
-      const signupLink = document.getElementById('signup-link');
-      const profileBtn = document.getElementById('profile-btn');
-      const avatarBtn = document.getElementById('avatar-btn');
-      const themeBtn = document.getElementById('theme-btn');
-      const logoutBtn = document.getElementById('logout-btn');
-      const greeting = document.getElementById('greeting');
-      const profileAvatar = document.getElementById('profile-avatar');
-
-      if (username !== 'Guest') {
-        userDisplay.textContent = username;
-        loginLink.style.display = 'none';
-        signupLink.style.display = 'none';
-        profileBtn.style.display = 'block';
-        avatarBtn.style.display = 'block';
-        themeBtn.style.display = 'block';
-        logoutBtn.style.display = 'block';
-        greeting.textContent = `Welcome back, ${username}!`;
-      } else {
-        userDisplay.textContent = 'Guest';
-        loginLink.style.display = 'block';
-        signupLink.style.display = 'block';
-        profileBtn.style.display = 'none';
-        avatarBtn.style.display = 'none';
-        themeBtn.style.display = 'none';
-        logoutBtn.style.display = 'none';
-        greeting.textContent = 'Welcome to Bloxtip!';
-      }
-
-      profileAvatar.innerHTML = `<img src="${avatar}" alt="Player Avatar" onerror="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png'">`;
-    }
-
-    function logout() {
-      if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('bloxtip_username');
-        localStorage.removeItem('bloxtip_email');
-        localStorage.removeItem('bloxtip_avatar');
-        updateUserUI();
-        closeUserMenu();
-      }
-    }
-
-    function goToThemeSettings() {
-      alert('Theme settings coming soon!');
-    }
-
-    function renderGames() {
-      const gamesContainer = document.getElementById('games-container');
-      gamesContainer.innerHTML = games.map(game => `
-        <div class="game-card">
-          <div class="game-card-image">${game.name}</div>
-          <div class="game-card-body">
-            <h3 class="game-card-title">${game.title}</h3>
-            <div class="game-card-meta">${game.year} · 0 playing</div>
-            <button class="play-btn" data-game="${game.name}" data-place="${game.placeid}">Play</button>
-          </div>
-        </div>
-      `).join('');
-
-      document.querySelectorAll('.play-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const game = btn.dataset.game;
-          const place = btn.dataset.place;
-          alert(`Playing ${game}! (Place ID: ${place})`);
-        });
-      });
-    }
-
-    // Initialize
-    updateUserUI();
-    renderGames();
-  </script>
-</body>
-</html>
