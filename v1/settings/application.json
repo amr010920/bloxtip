@@ -1,0 +1,11 @@
+{
+  "applicationName": "PCDesktopClient",
+  "version": "version-3101889c258d4cf7",
+  "clientVersionUpload": "version-3101889c258d4cf7",
+  "bootstrapperVersion": "2.1.0",
+  "managedGameServerClientVersion": "version-3101889c258d4cf7",
+  "channel": "LIVE",
+  "baseUri": "https://www.roblox.com",
+  "updateUrl": "https://setup.roblox.com",
+  "environment": "production"
+}
