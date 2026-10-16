@@ -254,11 +254,9 @@
     </div>
   </header>
 
-  <input type="file" id="hidden-rbxl-input" accept=".rbxl" style="display: none;">
-
   <!-- Main Layout -->
   <div class="main-container">
-    <div class="page-title-banner">My Creations</div>
+    <div class="page-title-banner">My Creations (Google Drive Link Publisher)</div>
 
     <div class="dev-layout">
       <!-- Sidebar Tabs -->
@@ -277,10 +275,10 @@
 
       <!-- Content Area -->
       <div class="dev-content">
-        <button id="create-game-btn" class="btn-create">Create New Game</button>
+        <button id="create-game-btn" class="btn-create">+ Create New Game via Google Drive Link</button>
         <div class="games-list-title">My Places</div>
         <div id="dynamic-games-container">
-          <p style="color: #666;">Loading your created places...</p>
+          <p style="color: #666; font-size: 13px;">Loading local preview places...</p>
         </div>
       </div>
     </div>
@@ -293,7 +291,6 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const createBtn = document.getElementById("create-game-btn");
-      const fileInput = document.getElementById("hidden-rbxl-input");
       const container = document.getElementById("dynamic-games-container");
 
       function getNextPlaceId() {
@@ -304,44 +301,44 @@
       }
 
       createBtn.addEventListener("click", () => {
-        fileInput.click();
-      });
-
-      fileInput.addEventListener("change", (e) => {
-        if (e.target.files.length === 0) return;
-        const file = e.target.files[0];
-        
-        let defaultName = file.name.replace(/\.[^/.]+$/, "");
-        let gameName = prompt("Enter your game name:", defaultName);
+        let gameName = prompt("Enter your game name:");
         if (!gameName) return;
+
+        let gdriveUrl = prompt("Paste your public Google Drive .rbxl link:\n(Make sure sharing is set to 'Anyone with the link can view')");
+        if (!gdriveUrl) return;
 
         const assignedId = getNextPlaceId();
 
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const newGame = {
-            placeId: assignedId,
-            name: gameName,
-            title: gameName,
-            year: 2013,
-            data: event.target.result
-          };
-
-          let existingGames = JSON.parse(localStorage.getItem("bloxtip_custom_games") || "[]");
-          existingGames.push(newGame);
-          localStorage.setItem("bloxtip_custom_games", JSON.stringify(existingGames));
-
-          renderGames();
-          fileInput.value = "";
+        const newGame = {
+          placeId: assignedId,
+          name: gameName,
+          title: gameName,
+          year: 2013,
+          public: true,
+          rbxlUrl: gdriveUrl
         };
-        reader.readAsDataURL(file);
+
+        // Save locally to display in the developer dashboard preview
+        let existingGames = JSON.parse(localStorage.getItem("bloxtip_custom_games") || "[]");
+        existingGames.push(newGame);
+        localStorage.setItem("bloxtip_custom_games", JSON.stringify(existingGames));
+
+        renderGames();
+
+        // Copy the JSON object to clipboard for easy pasting into games.json
+        const jsonSnippet = JSON.stringify(newGame, null, 2);
+        navigator.clipboard.writeText(jsonSnippet).then(() => {
+          alert("Success! Game created.\n\nThe JSON code for this game has been copied to your clipboard. Paste it into your repository's 'games.json' file so everyone can see it!");
+        }).catch(() => {
+          prompt("Copy this JSON snippet and add it to your games.json file:", jsonSnippet);
+        });
       });
 
       function renderGames() {
         const existingGames = JSON.parse(localStorage.getItem("bloxtip_custom_games") || "[]");
         
         if (existingGames.length === 0) {
-          container.innerHTML = `<p style="color: #666; font-size: 13px;">No places found. Click "Create New Game" above to upload an `.rbxl` file!</p>`;
+          container.innerHTML = `<p style="color: #666; font-size: 13px;">No places found. Click "Create New Game" above to add a Google Drive .rbxl link!</p>`;
           return;
         }
 
@@ -352,7 +349,7 @@
               <div class="game-thumb">${game.name}</div>
               <div class="game-info">
                 <h4>${game.name}</h4>
-                <p>Place ID: ${game.placeId} &bull; Start Place &bull; <span style="color: #02b757; font-weight: bold;">Public</span></p>
+                <p>Place ID: ${game.placeId} &bull; <a href="${game.rbxlUrl}" target="_blank" style="color: #0074BD;">Google Drive Link</a> &bull; <span style="color: #02b757; font-weight: bold;">Public</span></p>
               </div>
             </div>
           `;
