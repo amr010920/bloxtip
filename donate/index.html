@@ -17,7 +17,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: #f5f5f5;
+      background-color: #ffffff;
       color: #313131;
       font-size: 16px;
       line-height: 1.5;
@@ -28,11 +28,11 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 20px 0;
+      padding: 40px 0;
     }
 
     #cf-error-details {
-      max-width: 960px;
+      max-width: 1100px;
       margin: 0 auto;
       padding: 0 20px;
       width: 100%;
@@ -43,14 +43,15 @@
     }
 
     h1 {
-      font-size: 2.5rem;
+      font-size: 3.75rem;
       font-weight: 300;
       color: #1d1d1d;
-      line-height: 1.2;
+      line-height: 1.1;
+      display: inline-block;
     }
 
     .code-label {
-      font-size: 1rem;
+      font-size: 1.1rem;
       color: #666666;
       display: block;
       margin-top: 0.5rem;
@@ -68,7 +69,7 @@
     .timestamp {
       margin-top: 0.75rem;
       color: #666666;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
     }
 
     .bg-gradient-gray {
@@ -83,65 +84,89 @@
       display: flex;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 20px;
     }
 
     .status-box {
       flex: 1;
-      min-width: 250px;
-      background: #ffffff;
-      padding: 25px 20px;
-      border-radius: 6px;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-      border: 1px solid #e0e0e0;
-      text-align: center;
+      padding: 20px 30px;
+      text-align: left;
+      border-right: 1px solid #d0d0d0;
+      position: relative;
+    }
+
+    .status-box:last-child {
+      border-right: none;
+    }
+
+    @media (max-width: 768px) {
+      .status-box {
+        border-right: none;
+        border-bottom: 1px solid #d0d0d0;
+        text-align: center;
+        padding: 20px 0;
+      }
+    }
+
+    .icon-container {
+      position: relative;
+      margin-bottom: 25px;
+      height: 48px;
+    }
+
+    /* Green Checkmark Icon Styling */
+    .cf-icon-ok {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      background-color: #2e7d32;
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .cf-icon-ok::after {
+      content: '';
+      position: absolute;
+      left: 13px;
+      top: 8px;
+      width: 8px;
+      height: 16px;
+      border: solid white;
+      border-width: 0 3px 3px 0;
+      transform: rotate(45deg);
     }
 
     .status-title {
-      font-size: 1.25rem;
-      color: #555555;
+      font-size: 1.5rem;
+      color: #313131;
       font-weight: 300;
+      margin-bottom: 10px;
+    }
+
+    .action-link {
+      display: inline-block;
+      color: #0051c3;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.25rem;
       margin-bottom: 8px;
     }
 
+    .action-link:hover {
+      text-decoration: underline;
+    }
+
     .status-badge {
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       color: #2e7d32;
-      font-weight: 600;
+      font-weight: 400;
       display: block;
-      margin-top: 8px;
-    }
-
-    .btn-link {
-      display: inline-block;
-      background-color: #0070f3;
-      color: #ffffff !important;
-      padding: 10px 22px;
-      border-radius: 4px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.95rem;
-      margin-top: 12px;
-      transition: background-color 0.2s ease;
-    }
-
-    .btn-link:hover {
-      background-color: #0051a2;
-    }
-
-    .btn-paypal {
-      background-color: #003087;
-    }
-
-    .btn-paypal:hover {
-      background-color: #00205b;
     }
 
     .info-columns {
       display: flex;
       flex-wrap: wrap;
-      gap: 30px;
-      margin-bottom: 2rem;
+      gap: 40px;
+      margin-top: 2rem;
     }
 
     .info-column {
@@ -150,14 +175,16 @@
     }
 
     .info-column h2 {
-      font-size: 1.5rem;
-      font-weight: 400;
+      font-size: 1.8rem;
+      font-weight: 300;
       margin-bottom: 1rem;
+      color: #1d1d1d;
     }
 
     .info-column p {
       color: #444444;
       line-height: 1.6;
+      font-size: 1.05rem;
     }
   </style>
 </head>
@@ -170,38 +197,53 @@
                 <span>donation</span>
                 <span class="code-label">error code: none it's just for style</span>
             </h1>
-            <div style="margin-top: 10px;">
+            <div style="margin-top: 5px;">
                 Visit <a href="https://www.cloudflare.com" target="_blank" rel="noopener noreferrer">cloudflare.com</a> for more information.
             </div>
             <div class="timestamp">2026-10-18 14:50:48 UTC</div>
         </header>
 
         <div class="bg-gradient-gray">
-            <div class="status-container">
+            <div class="status-container" style="max-width: 1000px; margin: 0 auto; padding: 0 20px;">
+                
+                <!-- Box 1: Ko-fi -->
                 <div class="status-box">
+                    <div class="icon-container">
+                        <span class="cf-icon-ok"></span>
+                    </div>
                     <div class="status-title">Ko-fi Support</div>
-                    <a href="https://ko-fi.com/bloxtip" target="_blank" rel="noopener noreferrer" class="btn-link">
-                      ko-fi
-                    </a>
+                    <div>
+                        <a href="https://ko-fi.com/bloxtip" target="_blank" rel="noopener noreferrer" class="action-link">ko-fi</a>
+                    </div>
                     <span class="status-badge">Working</span>
                 </div>
 
+                <!-- Box 2: PayPal -->
                 <div class="status-box">
+                    <div class="icon-container">
+                        <span class="cf-icon-ok"></span>
+                    </div>
                     <div class="status-title">paypal itself</div>
-                    <a href="https://paypal.me/Heckme646" target="_blank" rel="noopener noreferrer" class="btn-link btn-paypal">
-                      paypal
-                    </a>
+                    <div>
+                        <a href="https://paypal.me/Heckme646" target="_blank" rel="noopener noreferrer" class="action-link">paypal</a>
+                    </div>
                     <span class="status-badge">Working</span>
                 </div>
 
+                <!-- Box 3: Host Status -->
                 <div class="status-box">
+                    <div class="icon-container">
+                        <span class="cf-icon-ok"></span>
+                    </div>
                     <div class="status-title">Host Server</div>
+                    <div style="font-size: 1.25rem; font-weight: 600; color: #313131; margin-bottom: 8px;">Online</div>
                     <span class="status-badge">Working</span>
                 </div>
+
             </div>
         </div>
 
-        <div class="info-columns">
+        <div class="info-columns" style="max-width: 1000px; margin: 0 auto;">
             <div class="info-column">
                 <p>the ko-fi or PAYPAL doesn't work help!!!</p>
             </div>
