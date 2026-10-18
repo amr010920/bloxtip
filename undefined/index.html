@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloxtip - Error</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #e3e3e3;
+      font-family: 'Source Sans Pro', Arial, sans-serif;
+      color: #343434;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .roblox-header {
+      background-color: #0074BD;
+      border-bottom: 2px solid #005a96;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .roblox-logo {
+      height: 26px;
+      width: auto;
+      display: block;
+    }
+
+    .main-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 15px;
+    }
+
+    .error-card {
+      background-color: #ffffff;
+      border: 1px solid #cccccc;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      max-width: 650px;
+      width: 100%;
+      padding: 35px 30px;
+      text-align: center;
+    }
+
+    .builderman-img {
+      max-width: 160px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    .error-title {
+      color: #0074BD;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .error-message {
+      font-size: 16px;
+      color: #555555;
+      line-height: 1.5;
+      margin-bottom: 25px;
+    }
+
+    .error-code {
+      font-size: 13px;
+      color: #888888;
+      margin-bottom: 25px;
+      font-style: italic;
+    }
+
+    .redirect-btn {
+      display: inline-block;
+      background: linear-gradient(to bottom, #02b757 0%, #009647 100%);
+      border: 1px solid #00803c;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      padding: 10px 30px;
+      border-radius: 4px;
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: background 0.15s ease-in-out;
+    }
+
+    .redirect-btn:hover {
+      background: linear-gradient(to bottom, #00cc61 0%, #00ab51 100%);
+    }
+
+    .redirect-btn:active {
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .roblox-footer {
+      background-color: #f2f2f2;
+      border-top: 1px solid #dcdcdc;
+      padding: 15px 0;
+      text-align: center;
+      font-size: 13px;
+      color: #777777;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 8px;
+    }
+
+    .footer-links a {
+      color: #0074BD;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="roblox-header">
+    <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Bloxtip" class="roblox-logo">
+  </header>
+
+  <!-- Main Error Card -->
+  <main class="main-container">
+    <div class="error-card">
+      <!-- Classic Roblox Builderman Icon -->
+      <img src="https://images.rbxcdn.com/f9c3c52e61a6c11b15dfaa0421e3d08f.png" alt="Builderman" class="builderman-img">
+      
+      <h1 class="error-title">An error occurred!</h1>
+      <p class="error-message">seems like your on the wrong page X_X</p>
+      
+      <div class="error-code">Error code: noexist</div>
+      
+      <a href="../" class="redirect-btn">Go Back</a>
+    </div>
+  </main>
+
+  <footer class="roblox-footer">
+    <div class="footer-links">
+      <a href="../">Home</a>
+      <a href="../games">Games</a>
+      <a href="../catalog">Catalog</a>
+      <a href="../help">Help</a>
+    </div>
+    <p>Bloxtip is an independent platform and is not affiliated with Roblox Corporation. and ummmm idk wut to say</p>
+  </footer>
+
+</body>
+</html>
