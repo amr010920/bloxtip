@@ -57,7 +57,6 @@
       gap: 12px;
     }
 
-    /* Hamburger Menu Button */
     .menu-toggle-btn {
       background: none;
       border: none;
@@ -90,7 +89,6 @@
       border-radius: 1px;
     }
 
-    /* Logo Button */
     .logo-btn {
       background: none;
       border: none;
@@ -106,7 +104,6 @@
       object-fit: contain;
     }
 
-    /* Header Nav Links */
     .header-nav {
       display: flex;
       gap: 20px;
@@ -126,7 +123,6 @@
       background: rgba(255, 255, 255, 0.15);
     }
 
-    /* Search Bar */
     .search-container {
       flex: 0 1 300px;
       display: flex;
@@ -174,7 +170,6 @@
       fill: #555555;
     }
 
-    /* Right Section Display & Auth Buttons */
     .right-section {
       display: flex;
       align-items: center;
@@ -190,7 +185,6 @@
       gap: 6px;
     }
 
-    /* Sidebar Overlay */
     .sidebar-overlay {
       display: none;
       position: fixed;
@@ -245,7 +239,6 @@
       fill: #555555;
     }
 
-    /* Main Container & Layout */
     .main-container {
       max-width: 1100px;
       width: 100%;
@@ -270,7 +263,6 @@
       gap: 20px;
     }
 
-    /* Left Sidebar Navigation */
     .dev-sidebar {
       width: 180px;
       background: white;
@@ -306,7 +298,6 @@
       background: none;
     }
 
-    /* Right Content Area */
     .dev-content {
       flex: 1;
       background: white;
@@ -335,21 +326,6 @@
 
     .btn-create:hover {
       background: linear-gradient(to bottom, #00cc61 0%, #02b757 100%);
-    }
-
-    .btn-create-sec {
-      background: #f5f5f5;
-      border: 1px solid #cccccc;
-      color: #333;
-      font-weight: bold;
-      padding: 7px 14px;
-      border-radius: 2px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    .btn-create-sec:hover {
-      background: #e9e9e9;
     }
 
     .games-list-title {
@@ -421,7 +397,7 @@
       padding: 25px;
       border: 1px solid #cccccc;
       border-radius: 3px;
-      width: 400px;
+      width: 420px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
@@ -438,7 +414,7 @@
       font-size: 12px;
     }
 
-    .modal-box input[type="text"], .modal-box input[type="file"], .modal-box input[type="password"] {
+    .modal-box input[type="text"], .modal-box input[type="file"] {
       width: 100%;
       padding: 7px;
       margin-bottom: 12px;
@@ -457,7 +433,6 @@
       border-radius: 2px;
     }
 
-    /* Footer */
     footer {
       text-align: center;
       padding: 20px;
@@ -536,7 +511,7 @@
 
   <!-- Main Layout -->
   <div class="main-container">
-    <div class="page-title-banner">My Creations (Live GitHub Publisher)</div>
+    <div class="page-title-banner">My Creations (Game Publisher)</div>
 
     <div class="dev-layout">
       <!-- Sidebar Tabs -->
@@ -556,21 +531,21 @@
       <!-- Content Area -->
       <div class="dev-content">
         <div class="create-actions">
-          <button class="btn-create" onclick="openUploadModal('computer')">📁 Publish Game & Thumbnail to GitHub</button>
+          <button class="btn-create" onclick="openUploadModal()">📁 Publish Game & Thumbnail</button>
         </div>
 
-        <div class="games-list-title">Global Published Places</div>
+        <div class="games-list-title">Published Places (games.json)</div>
         <div id="dynamic-games-container">
-          <p style="color: #666; font-size: 13px;">Loading games from games.json...</p>
+          <p style="color: #666; font-size: 13px;">Loading games...</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Upload / GitHub Commit Modal -->
+  <!-- Upload Modal -->
   <div class="modal-backdrop" id="upload-modal">
     <div class="modal-box">
-      <h3>Publish Game to games.json</h3>
+      <h3>Create & Publish Game</h3>
       
       <label for="game-name-input">Game Name / Title:</label>
       <input type="text" id="game-name-input" placeholder="e.g. Western Train Station">
@@ -578,14 +553,10 @@
       <label for="game-url-input">Place File URL (.rbxl or Google Drive Link):</label>
       <input type="text" id="game-url-input" placeholder="https://... or Google Drive Share Link">
 
-      <label for="game-thumb-url">Thumbnail Image URL (or upload below):</label>
+      <label for="game-thumb-url">Thumbnail Image URL:</label>
       <input type="text" id="game-thumb-url" placeholder="https://raw.githubusercontent.com/.../thumbnail.png">
 
-      <label for="github-token-input">GitHub Personal Access Token (repo scope):</label>
-      <input type="password" id="github-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-      <p style="font-size: 11px; color: #777; margin-top: -8px; margin-bottom: 10px;">Token is stored only in your browser memory for this commit.</p>
-
-      <button class="submit-btn" onclick="publishToGitHub()">Commit to GitHub Now</button>
+      <button class="submit-btn" onclick="generatePublishSnippet()">Generate JSON & Submit to Repository</button>
       <button style="margin-top:10px; background:#888; border:none; width:100%; padding:8px; color:white; cursor:pointer;" onclick="closeUploadModal()">Cancel</button>
     </div>
   </div>
@@ -610,11 +581,6 @@
 
     function openUploadModal() {
       document.getElementById('upload-modal').classList.add('active');
-      // Preload saved token if available
-      const savedToken = localStorage.getItem('bloxtip_gh_token');
-      if (savedToken) {
-        document.getElementById('github-token-input').value = savedToken;
-      }
     }
 
     function closeUploadModal() {
@@ -652,14 +618,13 @@
       }
     }
 
-    async function publishToGitHub() {
+    async function generatePublishSnippet() {
       const name = document.getElementById('game-name-input').value.trim();
       const rbxlUrl = document.getElementById('game-url-input').value.trim();
       let thumbnail = document.getElementById('game-thumb-url').value.trim();
-      const token = document.getElementById('github-token-input').value.trim();
 
-      if (!name || !rbxlUrl || !token) {
-        alert("Please fill in the game name, place file URL, and your GitHub Token!");
+      if (!name || !rbxlUrl) {
+        alert("Please fill in the game name and place file URL!");
         return;
       }
 
@@ -667,72 +632,40 @@
         thumbnail = DEFAULT_GAME_THUMB;
       }
 
-      // Save token for convenience
-      localStorage.setItem('bloxtip_gh_token', token);
-
-      const apiEndpoint = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/games.json?ref=${REPO_BRANCH}`;
-
+      // Fetch latest games to compute next placeId automatically
+      let nextId = 101;
       try {
-        // 1. Fetch current games.json and its SHA file hash
-        const getRes = await fetch(apiEndpoint, {
-          headers: { "Authorization": `token ${token}` }
-        });
-
-        if (!getRes.ok) {
-          throw new Error("Could not authenticate or fetch games.json from GitHub. Check your token and repository permissions.");
+        const res = await fetch(GAMES_API_URL);
+        if (res.ok) {
+          const list = await res.json();
+          if (list.length > 0) {
+            nextId = Math.max(...list.map(g => parseInt(g.placeId) || 100)) + 1;
+          }
         }
+      } catch(e) {}
 
-        const fileData = await getRes.json();
-        const currentContent = JSON.parse(atob(fileData.content));
+      const newGameObject = {
+        placeId: nextId,
+        name: name,
+        title: name,
+        year: 2013,
+        public: true,
+        rbxlUrl: rbxlUrl,
+        thumbnail: thumbnail
+      };
 
-        // Generate new place ID
-        const maxId = currentContent.length > 0 ? Math.max(...currentContent.map(g => parseInt(g.placeId) || 100)) : 100;
-        const newPlaceId = maxId + 1;
-
-        const newGameObject = {
-          placeId: newPlaceId,
-          name: name,
-          title: name,
-          year: 2013,
-          public: true,
-          rbxlUrl: rbxlUrl,
-          thumbnail: thumbnail
-        };
-
-        currentContent.push(newGameObject);
-
-        // 2. Commit updated games.json back to GitHub
-        const updatedContentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(currentContent, null, 2))));
-
-        const putRes = await fetch(apiEndpoint, {
-          method: "PUT",
-          headers: {
-            "Authorization": `token ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: `Publish new game '${name}' to games.json`,
-            content: updatedContentEncoded,
-            sha: fileData.sha,
-            branch: REPO_BRANCH
-          })
-        });
-
-        if (!putRes.ok) {
-          const errJson = await putRes.json();
-          throw new Error(errJson.message || "Failed to commit to GitHub.");
-        }
-
-        alert("Successfully published your game live to GitHub games.json! Everyone can now see it.");
+      const jsonString = JSON.stringify(newGameObject, null, 2);
+      
+      navigator.clipboard.writeText(jsonString).then(() => {
+        alert("Game JSON generated & copied to your clipboard!\n\nTo make it public on GitHub instantly without a token, you will now be redirected to edit 'games.json' on GitHub. Just paste your JSON snippet into the file and click 'Commit changes'!");
+        
+        window.open(`https://github.com/${REPO_OWNER}/${REPO_NAME}/blob/${REPO_BRANCH}/games.json`, '_blank');
         closeUploadModal();
-        fetchAndRenderRemoteGames();
-
-      } catch (err) {
-        alert("Error publishing: " + err.message);
-      }
+      }).catch(() => {
+        prompt("Copy this JSON snippet and add it to games.json:", jsonString);
+      });
     }
 
-    // Load user session
     const savedUser = localStorage.getItem('bloxtip_username');
     if (savedUser) {
       document.getElementById('user-display').textContent = savedUser;
