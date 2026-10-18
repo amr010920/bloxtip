@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>bloxtip | Donation</title>
+  <title>bloxxia.de | Donation</title>
 
   <style>
     *, ::after, ::before {
@@ -74,8 +74,6 @@
 
     .bg-gradient-gray {
       background: linear-gradient(to bottom, #f7f7f7, #eaeaea);
-      border-top: 1px solid #d0d0d0;
-      border-bottom: 1px solid #d0d0d0;
       padding: 2.5rem 0;
       margin: 2rem 0;
     }
@@ -84,54 +82,68 @@
       display: flex;
       justify-content: space-between;
       flex-wrap: wrap;
+      gap: 30px;
     }
 
     .status-box {
       flex: 1;
-      padding: 20px 30px;
-      text-align: left;
-      border-right: 1px solid #d0d0d0;
+      padding: 20px;
+      text-align: center;
       position: relative;
-    }
-
-    .status-box:last-child {
-      border-right: none;
-    }
-
-    @media (max-width: 768px) {
-      .status-box {
-        border-right: none;
-        border-bottom: 1px solid #d0d0d0;
-        text-align: center;
-        padding: 20px 0;
-      }
     }
 
     .icon-container {
       position: relative;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* Green Checkmark Icon Styling */
-    .cf-icon-ok {
+    /* Cloudflare SVG Icons Recreated */
+    .cf-icon-browser, .cf-icon-cloud, .cf-icon-server {
+      width: 48px;
+      height: 48px;
       display: inline-block;
-      width: 36px;
-      height: 36px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .cf-icon-browser {
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 5h2v2H7zm4 0h2v2h-2z"/></svg>');
+    }
+
+    .cf-icon-cloud {
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>');
+    }
+
+    .cf-icon-server {
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M20 18H4v-2h16v2zM20 10H4V8h16v2zm-2-7H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H6V5h12v12z"/></svg>');
+    }
+
+    /* Green Checkmark Badge Overlay */
+    .cf-icon-ok {
+      position: absolute;
+      bottom: -4px;
+      right: calc(50% - 28px);
+      width: 20px;
+      height: 20px;
       background-color: #2e7d32;
       border-radius: 50%;
-      position: relative;
+      border: 2px solid #fff;
     }
 
     .cf-icon-ok::after {
       content: '';
       position: absolute;
-      left: 13px;
-      top: 8px;
-      width: 8px;
-      height: 16px;
+      left: 5px;
+      top: 2px;
+      width: 4px;
+      height: 8px;
       border: solid white;
-      border-width: 0 3px 3px 0;
+      border-width: 0 2px 2px 0;
       transform: rotate(45deg);
     }
 
@@ -209,6 +221,7 @@
                 <!-- Box 1: Ko-fi -->
                 <div class="status-box">
                     <div class="icon-container">
+                        <span class="cf-icon-browser"></span>
                         <span class="cf-icon-ok"></span>
                     </div>
                     <div class="status-title">Ko-fi Support</div>
@@ -221,6 +234,7 @@
                 <!-- Box 2: PayPal -->
                 <div class="status-box">
                     <div class="icon-container">
+                        <span class="cf-icon-cloud"></span>
                         <span class="cf-icon-ok"></span>
                     </div>
                     <div class="status-title">paypal itself</div>
@@ -233,6 +247,7 @@
                 <!-- Box 3: Host Status -->
                 <div class="status-box">
                     <div class="icon-container">
+                        <span class="cf-icon-server"></span>
                         <span class="cf-icon-ok"></span>
                     </div>
                     <div class="status-title">Host Server</div>
