@@ -1,142 +1,213 @@
 <!DOCTYPE html>
 <html class="no-js" lang="en-US">
 <head>
+  <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>bloxxia.de | Donation</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <meta name="robots" content="noindex, nofollow">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>bloxtip | Donation</title>
+
   <style>
-    *, ::after, ::before { box-sizing: border-box; }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: #f5f5f5;
-      color: #313131;
+    *, ::after, ::before {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    #cf-wrapper { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
-    #cf-error-details { max-width: 900px; margin: 0 auto; padding: 2rem; width: 100%; }
-    .mx-auto { margin-left: auto; margin-right: auto; }
-    .pt-10 { padding-top: 2.5rem; }
-    .mb-8 { margin-bottom: 2rem; }
-    .my-8 { margin-top: 2rem; margin-bottom: 2rem; }
-    .text-60 { font-size: 3.75rem; }
-    .font-light { font-weight: 300; }
-    .leading-tight { line-height: 1.25; }
-    .inline-block { display: inline-block; }
-    .block { display: block; }
-    .text-black-dark { color: #1d1d1d; }
-    .code-label { font-size: 1rem; color: #666; display: block; margin-top: 0.5rem; }
-    .bg-gradient-gray { background: linear-gradient(to bottom, #f7f7f7, #eaeaea); border-top: 1px solid #d0d0d0; border-bottom: 1px solid #d0d0d0; padding: 2rem 0; }
-    .w-full { width: 100%; }
-    .clearfix::after { content: ""; clear: both; display: table; }
-    .text-center { text-align: center; }
-    .text-2xl { font-size: 1.5rem; }
-    .text-green-success { color: #2e7d32; font-weight: 600; }
-    .text-gray-600 { color: #555; }
-    .font-normal { font-weight: 400; }
-    .mb-4 { margin-bottom: 1rem; }
-    .mb-6 { margin-bottom: 1.5rem; }
-    .mt-3 { margin-top: 0.75rem; }
-    .relative { position: relative; }
-    .absolute { position: absolute; }
-    
-    .grid-container {
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #313131;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    #cf-wrapper {
+      min-height: 100vh;
       display: flex;
-      justify-content: space-around;
+      flex-direction: column;
+      justify-content: center;
+      padding: 20px 0;
+    }
+
+    #cf-error-details {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 20px;
+      width: 100%;
+    }
+
+    header {
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 300;
+      color: #1d1d1d;
+      line-height: 1.2;
+    }
+
+    .code-label {
+      font-size: 1rem;
+      color: #666666;
+      display: block;
+      margin-top: 0.5rem;
+    }
+
+    header a {
+      color: #0051c3;
+      text-decoration: none;
+    }
+
+    header a:hover {
+      text-decoration: underline;
+    }
+
+    .timestamp {
+      margin-top: 0.75rem;
+      color: #666666;
+      font-size: 0.9rem;
+    }
+
+    .bg-gradient-gray {
+      background: linear-gradient(to bottom, #f7f7f7, #eaeaea);
+      border-top: 1px solid #d0d0d0;
+      border-bottom: 1px solid #d0d0d0;
+      padding: 2.5rem 0;
+      margin: 2rem 0;
+    }
+
+    .status-container {
+      display: flex;
+      justify-content: space-between;
       flex-wrap: wrap;
       gap: 20px;
     }
-    .grid-box {
+
+    .status-box {
       flex: 1;
-      min-width: 220px;
-      background: #fff;
-      padding: 20px;
+      min-width: 250px;
+      background: #ffffff;
+      padding: 25px 20px;
       border-radius: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e0e0e0;
       text-align: center;
     }
-    
-    .action-link {
+
+    .status-title {
+      font-size: 1.25rem;
+      color: #555555;
+      font-weight: 300;
+      margin-bottom: 8px;
+    }
+
+    .status-badge {
+      font-size: 1.25rem;
+      color: #2e7d32;
+      font-weight: 600;
+      display: block;
+      margin-top: 8px;
+    }
+
+    .btn-link {
       display: inline-block;
       background-color: #0070f3;
-      color: white;
-      padding: 10px 20px;
+      color: #ffffff !important;
+      padding: 10px 22px;
       border-radius: 4px;
       text-decoration: none;
       font-weight: 600;
-      margin-top: 10px;
-      transition: background 0.2s;
+      font-size: 0.95rem;
+      margin-top: 12px;
+      transition: background-color 0.2s ease;
     }
-    .action-link:hover {
+
+    .btn-link:hover {
       background-color: #0051a2;
     }
-    
-    .paypal-link {
+
+    .btn-paypal {
       background-color: #003087;
     }
-    .paypal-link:hover {
+
+    .btn-paypal:hover {
       background-color: #00205b;
     }
 
-    .columns {
+    .info-columns {
       display: flex;
-      gap: 30px;
       flex-wrap: wrap;
+      gap: 30px;
+      margin-bottom: 2rem;
     }
-    .column {
+
+    .info-column {
       flex: 1;
       min-width: 280px;
+    }
+
+    .info-column h2 {
+      font-size: 1.5rem;
+      font-weight: 400;
+      margin-bottom: 1rem;
+    }
+
+    .info-column p {
+      color: #444444;
+      line-height: 1.6;
     }
   </style>
 </head>
 <body>
+
 <div id="cf-wrapper">
     <div id="cf-error-details">
-        <header class="mx-auto pt-10 mb-8">
-            <h1 class="font-light text-60 text-black-dark leading-tight">
-                <span class="inline-block">donation</span>
+        <header>
+            <h1>
+                <span>donation</span>
                 <span class="code-label">error code: none it's just for style</span>
             </h1>
-            <div>
-                Visit <a href="https://www.cloudflare.com/" target="_blank" rel="noopener noreferrer">cloudflare.com</a> for more information.
+            <div style="margin-top: 10px;">
+                Visit <a href="https://www.cloudflare.com" target="_blank" rel="noopener noreferrer">cloudflare.com</a> for more information.
             </div>
-            <div class="mt-3">2026-10-18 14:50:48 UTC</div>
+            <div class="timestamp">2026-10-18 14:50:48 UTC</div>
         </header>
 
-        <div class="my-8 bg-gradient-gray">
-            <div class="w-full mx-auto">
-                <div class="grid-container">
-                    <div class="grid-box">
-                        <div class="text-2xl font-light mb-2">Ko-fi Support</div>
-                        <span class="leading-1.3 text-2xl text-green-success block mb-2">Working</span>
-                        <a href="https://ko-fi.com/bloxtip" target="_blank" rel="noopener noreferrer" class="action-link">
-                          Support on Ko-fi
-                        </a>
-                    </div>
-                    
-                    <div class="grid-box">
-                        <div class="text-2xl font-light mb-2">PayPal Direct</div>
-                        <h3 class="text-2xl text-gray-600 font-light leading-1.3 mb-2">paypal itself</h3>
-                        <span class="leading-1.3 text-2xl text-green-success block mb-2">Working</span>
-                        <a href="https://paypal.me/Heckme646" target="_blank" rel="noopener noreferrer" class="action-link paypal-link">
-                          Donate via PayPal
-                        </a>
-                    </div>
+        <div class="bg-gradient-gray">
+            <div class="status-container">
+                <div class="status-box">
+                    <div class="status-title">Ko-fi Support</div>
+                    <a href="https://ko-fi.com/bloxtip" target="_blank" rel="noopener noreferrer" class="btn-link">
+                      ko-fi
+                    </a>
+                    <span class="status-badge">Working</span>
+                </div>
+
+                <div class="status-box">
+                    <div class="status-title">paypal itself</div>
+                    <a href="https://paypal.me/Heckme646" target="_blank" rel="noopener noreferrer" class="btn-link btn-paypal">
+                      paypal
+                    </a>
+                    <span class="status-badge">Working</span>
+                </div>
+
+                <div class="status-box">
+                    <div class="status-title">Host Server</div>
+                    <span class="status-badge">Working</span>
                 </div>
             </div>
         </div>
 
-        <div class="w-full mx-auto mb-8">
-            <div class="columns">
-                <div class="column">
-                    <p>the ko-fi or PAYPAL doesn't work help!!!</p>
-                </div>
-                <div class="column">
-                    <h2 class="text-2xl font-normal leading-1.3 mb-4">What can I do?</h2>
-                    <p class="mb-6">try again in a few minutes or more</p>
-                </div>
+        <div class="info-columns">
+            <div class="info-column">
+                <p>the ko-fi or PAYPAL doesn't work help!!!</p>
+            </div>
+            <div class="info-column">
+                <h2>What can I do?</h2>
+                <p>try again in a few minutes or more</p>
             </div>
         </div>
     </div>
