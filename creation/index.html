@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Develop - Bloxtip</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Untitled-removebg-preview.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
@@ -397,7 +398,7 @@
       padding: 25px;
       border: 1px solid #cccccc;
       border-radius: 3px;
-      width: 420px;
+      width: 440px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
@@ -414,7 +415,7 @@
       font-size: 12px;
     }
 
-    .modal-box input[type="text"], .modal-box input[type="file"] {
+    .modal-box input[type="text"], .modal-box input[type="password"] {
       width: 100%;
       padding: 7px;
       margin-bottom: 12px;
@@ -422,11 +423,29 @@
       font-size: 13px;
     }
 
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
     .modal-box button.submit-btn {
       width: 100%;
       padding: 8px;
       background: #02b757;
       border: 1px solid #018a41;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    .modal-box button.sec-btn {
+      width: 100%;
+      padding: 8px;
+      background: #0074BD;
+      border: 1px solid #005a93;
       color: white;
       font-weight: bold;
       cursor: pointer;
@@ -545,7 +564,7 @@
   <!-- Upload Modal -->
   <div class="modal-backdrop" id="upload-modal">
     <div class="modal-box">
-      <h3>Create & Publish Game</h3>
+      <h3>Create & Submit Game</h3>
       
       <label for="game-name-input">Game Name / Title:</label>
       <input type="text" id="game-name-input" placeholder="e.g. Western Train Station">
@@ -556,8 +575,14 @@
       <label for="game-thumb-url">Thumbnail Image URL:</label>
       <input type="text" id="game-thumb-url" placeholder="https://raw.githubusercontent.com/.../thumbnail.png">
 
-      <button class="submit-btn" onclick="generatePublishSnippet()">Generate JSON & Submit to Repository</button>
-      <button style="margin-top:10px; background:#888; border:none; width:100%; padding:8px; color:white; cursor:pointer;" onclick="closeUploadModal()">Cancel</button>
+      <label for="admin-token-input">Owner / Admin Token (Optional - for Direct Commit):</label>
+      <input type="password" id="admin-token-input" placeholder="Optional GitHub Token for Repo Admin">
+
+      <div class="btn-group">
+        <button class="submit-btn" onclick="submitAsGuest()">Submit Game Proposal (Community)</button>
+        <button class="sec-btn" onclick="directCommitAdmin()">Direct Admin Commit to Repo</button>
+        <button style="background:#888; border:none; padding:8px; color:white; cursor:pointer;" onclick="closeUploadModal()">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -581,6 +606,10 @@
 
     function openUploadModal() {
       document.getElementById('upload-modal').classList.add('active');
+      const savedToken = localStorage.getItem('bloxtip_gh_token');
+      if (savedToken) {
+        document.getElementById('admin-token-input').value = savedToken;
+      }
     }
 
     function closeUploadModal() {
@@ -618,32 +647,31 @@
       }
     }
 
-    async function generatePublishSnippet() {
+    async function getNextPlaceId() {
+      try {
+        const res = await fetch(GAMES_API_URL);
+        if (res.ok) {
+          const list = await res.json();
+          if (list.length > 0) {
+            return Math.max(...list.map(g => parseInt(g.placeId) || 100)) + 1;
+          }
+        }
+      } catch(e) {}
+      return 101;
+    }
+
+    // Submission method for normal users without write access to games.json
+    async function submitAsGuest() {
       const name = document.getElementById('game-name-input').value.trim();
       const rbxlUrl = document.getElementById('game-url-input').value.trim();
-      let thumbnail = document.getElementById('game-thumb-url').value.trim();
+      let thumbnail = document.getElementById('game-thumb-url').value.trim() || DEFAULT_GAME_THUMB;
 
       if (!name || !rbxlUrl) {
         alert("Please fill in the game name and place file URL!");
         return;
       }
 
-      if (!thumbnail) {
-        thumbnail = DEFAULT_GAME_THUMB;
-      }
-
-      // Fetch latest games to compute next placeId automatically
-      let nextId = 101;
-      try {
-        const res = await fetch(GAMES_API_URL);
-        if (res.ok) {
-          const list = await res.json();
-          if (list.length > 0) {
-            nextId = Math.max(...list.map(g => parseInt(g.placeId) || 100)) + 1;
-          }
-        }
-      } catch(e) {}
-
+      const nextId = await getNextPlaceId();
       const newGameObject = {
         placeId: nextId,
         name: name,
@@ -654,16 +682,89 @@
         thumbnail: thumbnail
       };
 
-      const jsonString = JSON.stringify(newGameObject, null, 2);
-      
-      navigator.clipboard.writeText(jsonString).then(() => {
-        alert("Game JSON generated & copied to your clipboard!\n\nTo make it public on GitHub instantly without a token, you will now be redirected to edit 'games.json' on GitHub. Just paste your JSON snippet into the file and click 'Commit changes'!");
+      const jsonSnippet = JSON.stringify(newGameObject, null, 2);
+
+      navigator.clipboard.writeText(jsonSnippet).then(() => {
+        alert("Game entry JSON copied to your clipboard!\n\nRedirecting you to the project submission form/issue tracker so the repository owner can approve and add your game.");
         
-        window.open(`https://github.com/${REPO_OWNER}/${REPO_NAME}/blob/${REPO_BRANCH}/games.json`, '_blank');
+        // Open GitHub Issue creation link prefilled with the game request
+        const issueUrl = `https://github.com/${REPO_OWNER}/${REPO_NAME}/issues/new?title=New+Game+Submission:+${encodeURIComponent(name)}&body=${encodeURIComponent("Please add this game entry to games.json:\n\n```json\n" + jsonSnippet + "\n```")}`;
+        window.open(issueUrl, '_blank');
         closeUploadModal();
       }).catch(() => {
-        prompt("Copy this JSON snippet and add it to games.json:", jsonString);
+        prompt("Copy this JSON snippet and submit it to the owner:", jsonSnippet);
       });
+    }
+
+    // Submission method for the owner/admin holding an access token
+    async function directCommitAdmin() {
+      const name = document.getElementById('game-name-input').value.trim();
+      const rbxlUrl = document.getElementById('game-url-input').value.trim();
+      let thumbnail = document.getElementById('game-thumb-url').value.trim() || DEFAULT_GAME_THUMB;
+      const token = document.getElementById('admin-token-input').value.trim();
+
+      if (!name || !rbxlUrl || !token) {
+        alert("Admin direct commit requires Game Name, Place Link, AND a valid Admin Access Token!");
+        return;
+      }
+
+      localStorage.setItem('bloxtip_gh_token', token);
+
+      const apiEndpoint = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/games.json?ref=${REPO_BRANCH}`;
+
+      try {
+        const getRes = await fetch(apiEndpoint, {
+          headers: { "Authorization": `token ${token}` }
+        });
+
+        if (!getRes.ok) {
+          throw new Error("Could not fetch games.json using provided token. Check admin token scope.");
+        }
+
+        const fileData = await getRes.json();
+        const currentContent = JSON.parse(atob(fileData.content));
+
+        const maxId = currentContent.length > 0 ? Math.max(...currentContent.map(g => parseInt(g.placeId) || 100)) : 100;
+        const newGameObject = {
+          placeId: maxId + 1,
+          name: name,
+          title: name,
+          year: 2013,
+          public: true,
+          rbxlUrl: rbxlUrl,
+          thumbnail: thumbnail
+        };
+
+        currentContent.push(newGameObject);
+
+        const updatedContentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(currentContent, null, 2))));
+
+        const putRes = await fetch(apiEndpoint, {
+          method: "PUT",
+          headers: {
+            "Authorization": `token ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: `Publish new game '${name}' to games.json`,
+            content: updatedContentEncoded,
+            sha: fileData.sha,
+            branch: REPO_BRANCH
+          })
+        });
+
+        if (!putRes.ok) {
+          const errJson = await putRes.json();
+          throw new Error(errJson.message || "Failed to commit to GitHub.");
+        }
+
+        alert("Successfully committed new game directly to games.json on GitHub!");
+        closeUploadModal();
+        fetchAndRenderRemoteGames();
+
+      } catch (err) {
+        alert("Error publishing: " + err.message);
+      }
     }
 
     const savedUser = localStorage.getItem('bloxtip_username');
