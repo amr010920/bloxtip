@@ -388,18 +388,20 @@
       flex-direction: column;
     }
 
-    .game-card-image {
+    .game-card-image-container {
       width: 100%;
       height: 110px;
       background: #0074BD;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 14px;
-      text-align: center;
-      padding: 10px;
+    }
+
+    .game-card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .game-card-body {
@@ -627,7 +629,7 @@
     <div class="container">
       <section class="page-header">
         <div class="profile-pic" id="profile-avatar">
-          <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Avatar">
+          <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" alt="Avatar">
         </div>
         <div class="page-header-text">
           <h1 id="welcome-title">Welcome to Bloxtip!</h1>
@@ -669,6 +671,7 @@
 
   <script>
     const GAMES_API_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/website-lowk/games.json";
+    const DEFAULT_GAME_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
     let isSignupMode = true;
 
     function toggleSidebar() {
@@ -787,19 +790,24 @@
         return;
       }
 
-      gamesContainer.innerHTML = games.map(game => `
-        <div class="game-card">
-          <div class="game-card-image">${game.name}</div>
-          <div class="game-card-body">
-            <h3 class="game-card-title">${game.title || game.name}</h3>
-            <div class="game-card-meta">${game.year || 2013} &bull; Public</div>
-            <div class="card-buttons">
-              <a href="${game.rbxlUrl}" target="_blank" class="play-btn">Play / View</a>
-              <a href="${game.rbxlUrl}" target="_blank" download class="download-btn">Download .rbxl</a>
+      gamesContainer.innerHTML = games.map(game => {
+        const thumbUrl = game.thumbnail || game.image || DEFAULT_GAME_THUMBNAIL;
+        return `
+          <div class="game-card">
+            <div class="game-card-image-container">
+              <img src="${thumbUrl}" alt="${game.title || game.name}" class="game-card-img" onerror="this.src='${DEFAULT_GAME_THUMBNAIL}'">
+            </div>
+            <div class="game-card-body">
+              <h3 class="game-card-title">${game.title || game.name}</h3>
+              <div class="game-card-meta">${game.year || 2013} &bull; Public</div>
+              <div class="card-buttons">
+                <a href="${game.rbxlUrl}" target="_blank" class="play-btn">Play / View</a>
+                <a href="${game.rbxlUrl}" target="_blank" download class="download-btn">Download .rbxl</a>
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     initUserSession();
