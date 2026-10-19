@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Develop - Bloxtip</title>
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Untitled-removebg-preview.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://githubusercontent.com">
+  <link rel="preconnect" href="https://googleapis.com">
+  <link rel="preconnect" href="https://gstatic.com" crossorigin>
+  <link href="https://googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --theme-navbar-bg: #0074BD;
@@ -32,7 +32,7 @@
       position: relative;
     }
 
-    /* Top Blue Navbar (40px) */
+    /* Top Blue Navbar */
     .navbar {
       z-index: 1050;
       height: 40px;
@@ -177,69 +177,6 @@
       gap: 10px;
     }
 
-    .user-menu {
-      color: white;
-      padding: 4px 8px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      top: 40px;
-      left: 0;
-      width: 100vw;
-      height: calc(100vh - 40px);
-      background: rgba(0, 0, 0, 0.3);
-      z-index: 1040;
-    }
-
-    .sidebar-overlay.active {
-      display: block;
-    }
-
-    .sidebar {
-      position: fixed;
-      top: 40px;
-      left: -220px;
-      width: 220px;
-      height: calc(100vh - 40px);
-      background: #ffffff;
-      border-right: 1px solid #cccccc;
-      z-index: 1045;
-      transition: left 0.2s ease;
-      padding: 10px 0;
-    }
-
-    .sidebar.active {
-      left: 0;
-    }
-
-    .sidebar-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 20px;
-      color: #333333;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .sidebar-item:hover {
-      background: #eef5fc;
-      color: #0074BD;
-    }
-
-    .sidebar-icon {
-      width: 16px;
-      height: 16px;
-      fill: #555555;
-    }
-
     .main-container {
       max-width: 1100px;
       width: 100%;
@@ -291,42 +228,12 @@
       color: white;
     }
 
-    .dev-sidebar a.disabled {
-      color: #999999;
-      cursor: default;
-    }
-    .dev-sidebar a.disabled:hover {
-      background: none;
-    }
-
     .dev-content {
       flex: 1;
       background: white;
       border: 1px solid #cccccc;
       border-radius: 2px;
       padding: 20px;
-    }
-
-    .create-actions {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    .btn-create {
-      background: linear-gradient(to bottom, #02b757 0%, #018a41 100%);
-      border: 1px solid #018a41;
-      color: white;
-      font-weight: bold;
-      padding: 7px 14px;
-      border-radius: 2px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    .btn-create:hover {
-      background: linear-gradient(to bottom, #00cc61 0%, #02b757 100%);
     }
 
     .games-list-title {
@@ -338,441 +245,146 @@
       color: #333;
     }
 
-    .game-row {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .game-thumb {
-      width: 90px;
-      height: 60px;
-      background: #0074BD;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 12px;
-      text-align: center;
-      overflow: hidden;
-    }
-
-    .game-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .game-info h4 {
-      font-size: 14px;
-      color: #0074BD;
-      margin-bottom: 4px;
-    }
-
-    .game-info p {
-      font-size: 12px;
-      color: #666;
-    }
-
-    /* Modal Styling */
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-backdrop.active {
-      display: flex;
-    }
-
-    .modal-box {
-      background: white;
-      padding: 25px;
-      border: 1px solid #cccccc;
-      border-radius: 3px;
-      width: 440px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-
-    .modal-box h3 {
-      font-size: 18px;
+    /* Form Design */
+    .form-group {
       margin-bottom: 15px;
-      color: #0074BD;
     }
 
-    .modal-box label {
+    .form-group label {
       display: block;
       font-weight: bold;
-      margin-bottom: 4px;
-      font-size: 12px;
+      margin-bottom: 5px;
+      color: #333;
     }
 
-    .modal-box input[type="text"], .modal-box input[type="password"] {
+    .form-control {
       width: 100%;
-      padding: 7px;
-      margin-bottom: 12px;
-      border: 1px solid #cccccc;
+      padding: 8px;
+      border: 1px solid #b8b8b8;
+      border-radius: 2px;
       font-size: 13px;
     }
 
-    .btn-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 10px;
+    .form-control:focus {
+      outline: 1px solid var(--theme-navbar-bg);
     }
 
-    .modal-box button.submit-btn {
-      width: 100%;
-      padding: 8px;
-      background: #02b757;
+    .btn-submit {
+      background: linear-gradient(to bottom, #02b757 0%, #018a41 100%);
       border: 1px solid #018a41;
       color: white;
       font-weight: bold;
-      cursor: pointer;
+      padding: 8px 16px;
       border-radius: 2px;
+      cursor: pointer;
+      font-size: 13px;
     }
 
-    .modal-box button.sec-btn {
-      width: 100%;
-      padding: 8px;
-      background: #0074BD;
-      border: 1px solid #005a93;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 2px;
+    .btn-submit:hover {
+      background: linear-gradient(to bottom, #00cc61 0%, #02b757 100%);
     }
 
-    footer {
+    .footer {
       text-align: center;
       padding: 20px;
-      color: #777;
+      color: #666;
       font-size: 12px;
-      border-top: 1px solid #ccc;
-      background: white;
       margin-top: auto;
-    }
-
-    footer a {
-      color: #0074BD;
-      text-decoration: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Blue Navbar (40px) -->
-  <nav class="navbar">
+  <!-- Top Navigation Header Links Layout -->
+  <div class="navbar">
     <div class="nav-container">
       <div class="left-section">
-        <button class="menu-toggle-btn" id="sidebar-toggle-btn" title="Menu">
+        <button class="menu-toggle-btn">
           <div class="hamburger-icon">
-            <div class="hamburger-line"></div>
-            <div class="hamburger-line"></div>
-            <div class="hamburger-line"></div>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
           </div>
         </button>
-        <button class="logo-btn" onclick="location.href='../'" title="Bloxtip">
-          <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Bloxtip" class="logo-img">
-        </button>
+        <a href="../index.html" class="logo-btn">
+          <img class="logo-img" src="https://githubusercontent.com" alt="Bloxtip">
+        </a>
         <div class="header-nav">
-          <a href="../">Games</a>
-          <a href="../catalog/">Catalog</a>
-          <a href="./" class="active">Create</a>
-          <a href="../download/">Download</a>
+          <a href="../index.html">Games</a>
+          <a href="#">Catalog</a>
+          <a href="develop.html" class="active">Develop</a>
         </div>
       </div>
 
       <div class="search-container">
         <div class="search-wrapper">
           <input type="text" class="search-input" placeholder="Search">
-          <button class="search-button" type="button">
-            <svg class="search-icon-svg" viewBox="0 0 16 16">
-              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-            </svg>
+          <button class="search-button">
+            <svg class="search-icon-svg" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
           </button>
         </div>
       </div>
-
-      <div class="right-section" id="auth-actions">
-        <span class="user-menu" id="user-menu-area">
-          <span id="user-display">Developer</span>
-        </span>
-      </div>
     </div>
-  </nav>
-
-  <!-- Sidebar Overlay & Sliding Panel -->
-  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-  <div class="sidebar" id="sidebar">
-    <a href="../" class="sidebar-item">
-      <svg class="sidebar-icon" viewBox="0 0 16 16"><path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5z"/></svg>
-      Games
-    </a>
-    <a href="../catalog/" class="sidebar-item">
-      <svg class="sidebar-icon" viewBox="0 0 16 16"><path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
-      Catalog
-    </a>
-    <a href="./" class="sidebar-item">
-      <svg class="sidebar-icon" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
-      Develop / Create
-    </a>
   </div>
 
-  <!-- Main Layout -->
+  <!-- Main Creator Dashboard Workspace Frame -->
   <div class="main-container">
     <div class="page-title-banner">My Creations (Game Publisher)</div>
-
+    
     <div class="dev-layout">
-      <!-- Sidebar Tabs -->
+      <!-- Left Tab Navigation Selection List Menu -->
       <div class="dev-sidebar">
         <a href="#" class="selected">Games</a>
-        <a href="#" class="disabled">Models</a>
-        <a href="#" class="disabled">Decals</a>
-        <a href="#" class="disabled">Badges</a>
-        <a href="#" class="disabled">Passes</a>
-        <a href="#" class="disabled">Audio</a>
-        <a href="#" class="disabled">Animations</a>
-        <a href="#" class="disabled">Meshes</a>
-        <a href="#" class="disabled">Shirts</a>
-        <a href="#" class="disabled">Pants</a>
+        <a href="#">Models</a>
+        <a href="#">Decals</a>
+        <a href="#">Badges</a>
+        <a href="#">Passes</a>
       </div>
 
-      <!-- Content Area -->
+      <!-- Right Main Publisher Execution Workspace Panel Content -->
       <div class="dev-content">
-        <div class="create-actions">
-          <button class="btn-create" onclick="openUploadModal()">📁 Publish Game & Thumbnail</button>
-        </div>
+        <h3 class="games-list-title">Create & Submit Game</h3>
+        
+        <form id="publishForm" onsubmit="handleGamePublish(event)">
+          <div class="form-group">
+            <label for="gameName">Game Name / Title:</label>
+            <input type="text" id="gameName" class="form-control" placeholder="e.g. Classic Crossroads" required>
+          </div>
 
-        <div class="games-list-title">Published Places (games.json)</div>
-        <div id="dynamic-games-container">
-          <p style="color: #666; font-size: 13px;">Loading games...</p>
-        </div>
+          <div class="form-group">
+            <label for="creatorName">Creator Name:</label>
+            <input type="text" id="creatorName" class="form-control" placeholder="e.g. Builderman" required>
+          </div>
+
+          <div class="form-group">
+            <label for="rbxlFile">Place File (.rbxl):</label>
+            <input type="file" id="rbxlFile" class="form-control" accept=".rbxl" required>
+          </div>
+
+          <div class="form-group">
+            <label for="githubToken">GitHub Access Token:</label>
+            <input type="password" id="githubToken" class="form-control" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxx" required>
+            <small style="color: #666; display: block; margin-top: 4px;">Requires repository code writing access scopes to append elements into games.json</small>
+          </div>
+
+          <button type="submit" class="btn-submit">Submit Game Proposal (Community)</button>
+        </form>
       </div>
     </div>
   </div>
 
-  <!-- Upload Modal -->
-  <div class="modal-backdrop" id="upload-modal">
-    <div class="modal-box">
-      <h3>Create & Submit Game</h3>
-      
-      <label for="game-name-input">Game Name / Title:</label>
-      <input type="text" id="game-name-input" placeholder="e.g. Western Train Station">
-
-      <label for="game-url-input">Place File URL (.rbxl or Google Drive Link):</label>
-      <input type="text" id="game-url-input" placeholder="https://... or Google Drive Share Link">
-
-      <label for="game-thumb-url">Thumbnail Image URL:</label>
-      <input type="text" id="game-thumb-url" placeholder="https://raw.githubusercontent.com/.../thumbnail.png">
-
-      <label for="admin-token-input">Owner / Admin Token (Optional - for Direct Commit):</label>
-      <input type="password" id="admin-token-input" placeholder="Optional GitHub Token for Repo Admin">
-
-      <div class="btn-group">
-        <button class="submit-btn" onclick="submitAsGuest()">Submit Game Proposal (Community)</button>
-        <button class="sec-btn" onclick="directCommitAdmin()">Direct Admin Commit to Repo</button>
-        <button style="background:#888; border:none; padding:8px; color:white; cursor:pointer;" onclick="closeUploadModal()">Cancel</button>
-      </div>
-    </div>
+  <div class="footer">
+    © 2026 Bloxtip Corporation · Return to Home
   </div>
-
-  <footer>
-    © 2026 Bloxtip Corporation · <a href="../">Return to Home</a>
-  </footer>
 
   <script>
-    const REPO_OWNER = "amr010920";
-    const REPO_NAME = "bloxtip";
-    const REPO_BRANCH = "website-lowk";
-    const GAMES_API_URL = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/games.json`;
-    const DEFAULT_GAME_THUMB = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
+    async function handleGamePublish(event) {
+      event.preventDefault();
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('active');
-      document.getElementById('sidebar-overlay').classList.toggle('active');
-    }
+      // Gather input data from standard field selectors
+      const gameName = document.getElementById('gameName').value.trim();
+      const creatorName = document.getElementById('creatorName').value.trim();
+      const githubToken = document.getElementById('githubToken').value.trim();
 
-    document.getElementById('sidebar-toggle-btn').addEventListener('click', toggleSidebar);
-
-    function openUploadModal() {
-      document.getElementById('upload-modal').classList.add('active');
-      const savedToken = localStorage.getItem('bloxtip_gh_token');
-      if (savedToken) {
-        document.getElementById('admin-token-input').value = savedToken;
-      }
-    }
-
-    function closeUploadModal() {
-      document.getElementById('upload-modal').classList.remove('active');
-      document.getElementById('game-name-input').value = "";
-      document.getElementById('game-url-input').value = "";
-      document.getElementById('game-thumb-url').value = "";
-    }
-
-    async function fetchAndRenderRemoteGames() {
-      const container = document.getElementById("dynamic-games-container");
-      try {
-        const response = await fetch(GAMES_API_URL + "?nocache=" + Date.now());
-        if (!response.ok) throw new Error("Failed to load games.json");
-        const games = await response.json();
-
-        if (!games || games.length === 0) {
-          container.innerHTML = `<p style="color: #666; font-size: 13px;">No games found in games.json.</p>`;
-          return;
-        }
-
-        container.innerHTML = games.map(game => `
-          <div class="game-row">
-            <div class="game-thumb">
-              <img src="${game.thumbnail || DEFAULT_GAME_THUMB}" alt="${game.name}" onerror="this.src='${DEFAULT_GAME_THUMB}'">
-            </div>
-            <div class="game-info">
-              <h4>${game.title || game.name}</h4>
-              <p>Place ID: ${game.placeId || 'N/A'} &bull; <a href="${game.rbxlUrl}" target="_blank" style="color: #0074BD;">Game File / Link</a> &bull; <span style="color: #02b757; font-weight: bold;">Public Live</span></p>
-            </div>
-          </div>
-        `).join('');
-      } catch (err) {
-        container.innerHTML = `<p style="color: #c00; font-size: 13px;">Error fetching games.json from GitHub branch '${REPO_BRANCH}'.</p>`;
-      }
-    }
-
-    async function getNextPlaceId() {
-      try {
-        const res = await fetch(GAMES_API_URL);
-        if (res.ok) {
-          const list = await res.json();
-          if (list.length > 0) {
-            return Math.max(...list.map(g => parseInt(g.placeId) || 100)) + 1;
-          }
-        }
-      } catch(e) {}
-      return 101;
-    }
-
-    // Submission method for normal users without write access to games.json
-    async function submitAsGuest() {
-      const name = document.getElementById('game-name-input').value.trim();
-      const rbxlUrl = document.getElementById('game-url-input').value.trim();
-      let thumbnail = document.getElementById('game-thumb-url').value.trim() || DEFAULT_GAME_THUMB;
-
-      if (!name || !rbxlUrl) {
-        alert("Please fill in the game name and place file URL!");
-        return;
-      }
-
-      const nextId = await getNextPlaceId();
-      const newGameObject = {
-        placeId: nextId,
-        name: name,
-        title: name,
-        year: 2013,
-        public: true,
-        rbxlUrl: rbxlUrl,
-        thumbnail: thumbnail
-      };
-
-      const jsonSnippet = JSON.stringify(newGameObject, null, 2);
-
-      navigator.clipboard.writeText(jsonSnippet).then(() => {
-        alert("Game entry JSON copied to your clipboard!\n\nRedirecting you to the project submission form/issue tracker so the repository owner can approve and add your game.");
-        
-        // Open GitHub Issue creation link prefilled with the game request
-        const issueUrl = `https://github.com/${REPO_OWNER}/${REPO_NAME}/issues/new?title=New+Game+Submission:+${encodeURIComponent(name)}&body=${encodeURIComponent("Please add this game entry to games.json:\n\n```json\n" + jsonSnippet + "\n```")}`;
-        window.open(issueUrl, '_blank');
-        closeUploadModal();
-      }).catch(() => {
-        prompt("Copy this JSON snippet and submit it to the owner:", jsonSnippet);
-      });
-    }
-
-    // Submission method for the owner/admin holding an access token
-    async function directCommitAdmin() {
-      const name = document.getElementById('game-name-input').value.trim();
-      const rbxlUrl = document.getElementById('game-url-input').value.trim();
-      let thumbnail = document.getElementById('game-thumb-url').value.trim() || DEFAULT_GAME_THUMB;
-      const token = document.getElementById('admin-token-input').value.trim();
-
-      if (!name || !rbxlUrl || !token) {
-        alert("Admin direct commit requires Game Name, Place Link, AND a valid Admin Access Token!");
-        return;
-      }
-
-      localStorage.setItem('bloxtip_gh_token', token);
-
-      const apiEndpoint = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/games.json?ref=${REPO_BRANCH}`;
-
-      try {
-        const getRes = await fetch(apiEndpoint, {
-          headers: { "Authorization": `token ${token}` }
-        });
-
-        if (!getRes.ok) {
-          throw new Error("Could not fetch games.json using provided token. Check admin token scope.");
-        }
-
-        const fileData = await getRes.json();
-        const currentContent = JSON.parse(atob(fileData.content));
-
-        const maxId = currentContent.length > 0 ? Math.max(...currentContent.map(g => parseInt(g.placeId) || 100)) : 100;
-        const newGameObject = {
-          placeId: maxId + 1,
-          name: name,
-          title: name,
-          year: 2013,
-          public: true,
-          rbxlUrl: rbxlUrl,
-          thumbnail: thumbnail
-        };
-
-        currentContent.push(newGameObject);
-
-        const updatedContentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(currentContent, null, 2))));
-
-        const putRes = await fetch(apiEndpoint, {
-          method: "PUT",
-          headers: {
-            "Authorization": `token ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: `Publish new game '${name}' to games.json`,
-            content: updatedContentEncoded,
-            sha: fileData.sha,
-            branch: REPO_BRANCH
-          })
-        });
-
-        if (!putRes.ok) {
-          const errJson = await putRes.json();
-          throw new Error(errJson.message || "Failed to commit to GitHub.");
-        }
-
-        alert("Successfully committed new game directly to games.json on GitHub!");
-        closeUploadModal();
-        fetchAndRenderRemoteGames();
-
-      } catch (err) {
-        alert("Error publishing: " + err.message);
-      }
-    }
-
-    const savedUser = localStorage.getItem('bloxtip_username');
-    if (savedUser) {
-      document.getElementById('user-display').textContent = savedUser;
-    }
-
-    fetchAndRenderRemoteGames();
-  </script>
-</body>
-</html>
+      // Configure mock metadata structures
+      const randomId = String(Math.floor(Math.random() * 900000) + 100000);
