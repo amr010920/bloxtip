@@ -1,0 +1,53 @@
+name: Auto Publish Game
+on:
+  repository_dispatch:
+    types: [game_uploaded]
+
+permissions:
+  contents: write
+
+jobs:
+  write-to-json:
+    runs-on: ubuntu-latest
+    steps:
+      # We tell GitHub to explicitly check out your custom branch instead of main
+      - name: Checkout repository files
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.target_branch }}
+
+      - name: Inject new game into games.json
+        run: |
+          if [ ! -f games.json ]; then
+            echo "[]" > games.json
+          fi
+          
+          NAME="${{ github.event.client_payload.name }}"
+          CREATOR="${{ github.event.client_payload.creator }}"
+          ID="${{ github.event.client_payload.id }}"
+          DATE="${{ github.event.client_payload.date }}"
+          
+          node -e "
+            const fs = require('fs');
+            const file = 'games.json';
+            const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+            data.push({
+              id: '$ID',
+              name: '$NAME',
+              creator: '$CREATOR',
+              image: 'https://rbxcdn.com',
+              description: 'Uploaded via creation panel.',
+              visits: '0',
+              created: '$DATE'
+            });
+            fs.writeFileSync(file, JSON.stringify(data, null, 2));
+          "
+
+      - name: Save and Commit changes to Custom Branch
+        run: |
+          git config --global user.name "Bloxtip Auto-Publisher"
+          git config --global user.email "actions@github.com"
+          git add games.json
+          git commit -m "Successfully published game: ${{ github.event.client_payload.name }}"
+          # Push directly back into your specific custom branch
+          git push origin ${{ github.event.client_payload.target_branch }}
