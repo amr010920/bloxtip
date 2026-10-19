@@ -10,7 +10,7 @@ jobs:
   write-to-json:
     runs-on: ubuntu-latest
     steps:
-      # We tell GitHub to explicitly check out your custom branch instead of main
+      # random comment here
       - name: Checkout repository files
         uses: actions/checkout@v4
         with:
