@@ -452,21 +452,90 @@
       background: linear-gradient(to bottom, #00cc61 0%, #02b757 100%);
     }
 
-    .download-btn {
-      width: 100%;
-      padding: 4px 0;
-      border: 1px solid #cccccc;
-      border-radius: 2px;
-      background: #f5f5f5;
-      color: #333;
-      cursor: pointer;
-      font-size: 11px;
-      text-align: center;
-      text-decoration: none;
+    /* --- GLOBAL FORUM STYLING --- */
+    .forum-section {
+      margin-top: 35px;
     }
 
-    .download-btn:hover {
-      background: #e9e9e9;
+    .forum-section h2 {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0 0 12px;
+      color: #333333;
+    }
+
+    .forum-box {
+      background: white;
+      border: 1px solid #cccccc;
+      border-radius: 2px;
+      padding: 15px;
+    }
+
+    .forum-new-post {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .forum-input-title, .forum-input-body {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 8px;
+      border: 1px solid #cccccc;
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .forum-input-body {
+      height: 60px;
+      resize: vertical;
+    }
+
+    .forum-post-btn {
+      background: #0074BD;
+      border: 1px solid #00568c;
+      color: white;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .forum-post-btn:hover {
+      background: #00568c;
+    }
+
+    .forum-post-item {
+      padding: 12px 0;
+      border-bottom: 1px dashed #dddddd;
+    }
+
+    .forum-post-item:last-child {
+      border-bottom: none;
+    }
+
+    .forum-post-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .forum-post-title {
+      font-weight: bold;
+      font-size: 14px;
+      color: #0074BD;
+    }
+
+    .forum-post-author {
+      font-size: 11px;
+      color: #777;
+    }
+
+    .forum-post-content {
+      font-size: 13px;
+      color: #333;
+      line-height: 1.4;
     }
 
     /* Auth Modal Styling */
@@ -643,6 +712,21 @@
           <p style="grid-column: 1 / -1; text-align: center; color: #666;">Loading global game catalog...</p>
         </div>
       </section>
+
+      <!-- Global Community Forum Section -->
+      <section class="forum-section">
+        <h2>Community Forum</h2>
+        <div class="forum-box">
+          <div class="forum-new-post">
+            <input type="text" id="forum-post-title-input" class="forum-input-title" placeholder="Post Title">
+            <textarea id="forum-post-body-input" class="forum-input-body" placeholder="Write a forum post..."></textarea>
+            <button class="forum-post-btn" id="post-thread-btn" onclick="submitForumPost()">Post Thread</button>
+          </div>
+          <div id="forum-posts-list">
+            <p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">Loading global community posts...</p>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 
@@ -672,6 +756,12 @@
   <script>
     const GAMES_API_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/website-lowk/games.json";
     const DEFAULT_GAME_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
+    
+    // JSONBin Global Shared Backend Settings
+    const JSONBIN_BIN_ID = "YOUR_BIN_ID"; // Replace with your jsonbin.io Bin ID
+    const JSONBIN_API_KEY = "YOUR_API_KEY"; // Replace with your jsonbin.io Master/Access Key
+    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+
     let isSignupMode = true;
 
     function toggleSidebar() {
@@ -809,8 +899,103 @@
       }).join('');
     }
 
+    // --- GLOBAL PERSISTENT FORUM CODE ---
+    async function loadForumPosts() {
+      const list = document.getElementById('forum-posts-list');
+      try {
+        const res = await fetch(JSONBIN_URL + "/latest", {
+          headers: { "X-Master-Key": JSONBIN_API_KEY }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const posts = data.record.posts || [];
+          if (posts.length === 0) {
+            list.innerHTML = `<p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">No posts yet. Be the first to start a thread!</p>`;
+            return;
+          }
+          list.innerHTML = posts.map(p => `
+            <div class="forum-post-item">
+              <div class="forum-post-header">
+                <span class="forum-post-title">${escapeHtml(p.title)}</span>
+                <span class="forum-post-author">By ${escapeHtml(p.author)} &bull; ${p.date}</span>
+              </div>
+              <div class="forum-post-content">${escapeHtml(p.body)}</div>
+            </div>
+          `).join('');
+        } else {
+          list.innerHTML = `<p style="color:#c00; font-size:13px; text-align:center;">Configure JSONBin credentials to see live forum posts.</p>`;
+        }
+      } catch (err) {
+        list.innerHTML = `<p style="color:#777; font-size:13px; text-align:center;">Failed to connect to forum database.</p>`;
+      }
+    }
+
+    async function submitForumPost() {
+      const title = document.getElementById('forum-post-title-input').value.trim();
+      const body = document.getElementById('forum-post-body-input').value.trim();
+      const btn = document.getElementById('post-thread-btn');
+
+      if (!title || !body) {
+        alert('Please fill out both the post title and message!');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Posting...';
+
+      try {
+        // Fetch current posts
+        const getRes = await fetch(JSONBIN_URL + "/latest", {
+          headers: { "X-Master-Key": JSONBIN_API_KEY }
+        });
+        
+        let posts = [];
+        if (getRes.ok) {
+          const data = await getRes.json();
+          posts = data.record.posts || [];
+        }
+
+        const author = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
+
+        posts.unshift({
+          title: title,
+          body: body,
+          author: author,
+          date: new Date().toLocaleDateString()
+        });
+
+        // Save updated posts back to backend
+        const putRes = await fetch(JSONBIN_URL, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': 6ad77eccffd5d160537c47d4
+          },
+          body: JSON.stringify({ posts: posts })
+        });
+
+        if (putRes.ok) {
+          document.getElementById('forum-post-title-input').value = '';
+          document.getElementById('forum-post-body-input').value = '';
+          loadForumPosts();
+        } else {
+          alert('Error posting to global forum. Check JSONBin API keys.');
+        }
+      } catch (err) {
+        alert('Failed to connect to forum backend.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Post Thread';
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
     initUserSession();
     fetchAndRenderGames();
+    loadForumPosts();
   </script>
 </body>
 </html>
