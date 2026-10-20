@@ -313,8 +313,14 @@
           return;
         }
 
+        let newUserId = 1;
+        if (accounts.length > 0) {
+          const maxId = Math.max(...accounts.map(a => Number(a.id) || 0));
+          newUserId = maxId + 1;
+        }
+
         const newAccount = {
-          id: Math.floor(1000 + Math.random() * 9000),
+          id: newUserId,
           username: username,
           password: password,
           discord: discord,
@@ -335,8 +341,9 @@
 
         if (putRes.ok) {
           localStorage.setItem('bloxtip_username', username);
+          localStorage.setItem('bloxtip_account_id', newUserId);
           localStorage.setItem('bloxtip_account', JSON.stringify(newAccount));
-          alert(`Account successfully registered as '${username}'! Redirecting to home...`);
+          alert(`Account successfully created as '${username}' with User ID #${newUserId}! Redirecting to home...`);
           window.location.href = '/';
         } else {
           error.textContent = 'Failed to register account to global database.';
