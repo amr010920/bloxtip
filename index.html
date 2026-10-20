@@ -754,12 +754,13 @@
   </footer>
 
   <script>
+    // GitHub games.json Endpoint on website-lowk branch
     const GAMES_API_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/website-lowk/games.json";
     const DEFAULT_GAME_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
     
     // JSONBin Global Shared Backend Settings
-    const JSONBIN_BIN_ID = "YOUR_BIN_ID"; // Replace with your jsonbin.io Bin ID
-    const JSONBIN_API_KEY = "YOUR_API_KEY"; // Replace with your jsonbin.io Master/Access Key
+    const JSONBIN_BIN_ID = "6ad77eccffd5d160537c47d4";
+    const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi";
     const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
     let isSignupMode = true;
@@ -771,7 +772,6 @@
 
     document.getElementById('sidebar-toggle-btn').addEventListener('click', toggleSidebar);
 
-    // Guest vs Account State Manager
     function initUserSession() {
       const savedUser = localStorage.getItem('bloxtip_username');
       const userDisplay = document.getElementById('user-display');
@@ -798,7 +798,6 @@
       }
     }
 
-    // Modal Control
     function openSignupModal() {
       isSignupMode = true;
       document.getElementById('modal-title').textContent = "Create an Account";
@@ -828,7 +827,7 @@
         const newAccId = Math.floor(100 + Math.random() * 900);
         localStorage.setItem('bloxtip_username', usernameInput);
         localStorage.setItem('bloxtip_account_id', newAccId);
-        alert(`Account created successfully as '${usernameInput}'! You now have full access.`);
+        alert(`Account created successfully as '${usernameInput}'hello there {bloxtip_username}`);
       } else {
         localStorage.setItem('bloxtip_username', usernameInput);
         alert(`Logged in as '${usernameInput}'!`);
@@ -844,7 +843,6 @@
       location.reload();
     }
 
-    // Restrict creation features for guests
     const checkCreatePermission = (e) => {
       const savedUser = localStorage.getItem('bloxtip_username');
       if (!savedUser) {
@@ -856,12 +854,13 @@
     document.getElementById('sidebar-create-link').addEventListener('click', checkCreatePermission);
     document.getElementById('nav-create-link').addEventListener('click', checkCreatePermission);
 
-    // Fetch and Render Games from GitHub games.json
+    // FETCH & RENDER GAMES FROM GITHUB GAMES.JSON (WITH INSTANT NO-CACHE QUERY)
     async function fetchAndRenderGames() {
       const gamesContainer = document.getElementById('games-container');
       let games = [];
 
       try {
+        // Appending timestamp to bypass browser and GitHub Pages CDN raw file caching
         const response = await fetch(GAMES_API_URL + "?nocache=" + Date.now());
         if (response.ok) {
           games = await response.json();
@@ -899,7 +898,6 @@
       }).join('');
     }
 
-    // --- GLOBAL PERSISTENT FORUM CODE ---
     async function loadForumPosts() {
       const list = document.getElementById('forum-posts-list');
       try {
@@ -944,7 +942,6 @@
       btn.textContent = 'Posting...';
 
       try {
-        // Fetch current posts
         const getRes = await fetch(JSONBIN_URL + "/latest", {
           headers: { "X-Master-Key": JSONBIN_API_KEY }
         });
@@ -964,12 +961,11 @@
           date: new Date().toLocaleDateString()
         });
 
-        // Save updated posts back to backend
         const putRes = await fetch(JSONBIN_URL, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'X-Master-Key': 6ad77eccffd5d160537c47d4
+            'X-Master-Key': JSONBIN_API_KEY
           },
           body: JSON.stringify({ posts: posts })
         });
