@@ -33,7 +33,6 @@
       position: relative;
     }
 
-    /* Top Blue Navbar (40px) */
     .navbar {
       z-index: 1050;
       height: 40px;
@@ -59,7 +58,6 @@
       gap: 12px;
     }
 
-    /* 2013 Hamburger Menu Button */
     .menu-toggle-btn {
       background: none;
       border: none;
@@ -92,7 +90,6 @@
       border-radius: 1px;
     }
 
-    /* Logo Image Next To Hamburger */
     .logo-btn {
       background: none;
       border: none;
@@ -108,7 +105,6 @@
       object-fit: contain;
     }
 
-    /* Header Nav Links */
     .header-nav {
       display: flex;
       gap: 20px;
@@ -128,9 +124,9 @@
       background: rgba(255, 255, 255, 0.15);
     }
 
-    /* Search Bar */
+    /* SEARCH BAR & FILTER DROPDOWN STYLING */
     .search-container {
-      flex: 0 1 300px;
+      flex: 0 1 360px;
       display: flex;
       align-items: center;
       margin: 0 15px;
@@ -141,16 +137,27 @@
       display: flex;
       background: white;
       border-radius: 2px;
+      border: 1px solid #b8b8b8;
+    }
+
+    .search-select {
+      background: #f0f0f0;
+      border: none;
+      border-right: 1px solid #cccccc;
+      padding: 0 6px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      outline: none;
     }
 
     .search-input {
       flex: 1;
-      border: 1px solid #b8b8b8;
+      border: none;
       height: 26px;
       padding: 0 10px;
       font-size: 13px;
-      border-right: none;
-      border-radius: 2px 0 0 2px;
     }
 
     .search-input:focus {
@@ -158,16 +165,19 @@
     }
 
     .search-button {
-      border: 1px solid #b8b8b8;
+      border: none;
+      border-left: 1px solid #cccccc;
       cursor: pointer;
       height: 26px;
-      width: 30px;
+      width: 32px;
       background: #f5f5f5;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-left: none;
-      border-radius: 0 2px 2px 0;
+    }
+
+    .search-button:hover {
+      background: #e5e5e5;
     }
 
     .search-icon-svg {
@@ -176,7 +186,6 @@
       fill: #555555;
     }
 
-    /* Right Section Display & Auth Buttons */
     .right-section {
       display: flex;
       align-items: center;
@@ -222,7 +231,6 @@
       gap: 6px;
     }
 
-    /* 2013 Slide-out Sidebar */
     .sidebar-overlay {
       display: none;
       position: fixed;
@@ -271,13 +279,6 @@
       color: #0074BD;
     }
 
-    .sidebar-icon {
-      width: 16px;
-      height: 16px;
-      fill: #555555;
-    }
-
-    /* Alert Banner (#F68802) */
     .alert-wrapper {
       background: #F68802;
       padding: 8px 15px;
@@ -295,7 +296,6 @@
       text-decoration: underline;
     }
 
-    /* Main Content Body */
     .main {
       flex: 1;
       width: 100%;
@@ -356,62 +356,58 @@
       margin: 0;
     }
 
-    .games-section h2 {
+    .games-section h2, .users-section h2 {
       font-size: 20px;
       font-weight: bold;
       margin: 0 0 12px;
       color: #333333;
     }
 
-    .games-grid {
+    .games-grid, .users-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 15px;
     }
 
-    .empty-games-msg {
+    .empty-msg {
       grid-column: 1 / -1;
       text-align: center;
-      padding: 40px 20px;
+      padding: 30px 20px;
       background: #ffffff;
       border: 1px solid #cccccc;
       border-radius: 2px;
       color: #666666;
     }
 
-    .game-card {
+    .game-card, .user-card {
       background: white;
       border: 1px solid #cccccc;
       border-radius: 2px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      padding: 10px;
+      text-align: center;
     }
 
-    .game-card-image-container {
+    .game-card-image-container, .user-card-image-container {
       width: 100%;
-      height: 110px;
-      background: #0074BD;
+      height: 100px;
+      background: #f5f5f5;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
+      margin-bottom: 8px;
     }
 
-    .game-card-img {
+    .game-card-img, .user-card-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .game-card-body {
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-    }
-
-    .game-card-title {
+    .game-card-title, .user-card-title {
       font-size: 13px;
       font-weight: bold;
       margin: 0 0 4px;
@@ -421,17 +417,9 @@
       text-overflow: ellipsis;
     }
 
-    .game-card-meta {
+    .game-card-meta, .user-card-meta {
       font-size: 11px;
       color: #777777;
-      margin-bottom: 8px;
-    }
-
-    .card-buttons {
-      margin-top: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
     }
 
     .play-btn {
@@ -446,13 +434,14 @@
       font-size: 12px;
       text-align: center;
       text-decoration: none;
+      margin-top: 8px;
+      display: block;
     }
 
     .play-btn:hover {
       background: linear-gradient(to bottom, #00cc61 0%, #02b757 100%);
     }
 
-    /* --- GLOBAL FORUM STYLING --- */
     .forum-section {
       margin-top: 35px;
     }
@@ -538,56 +527,6 @@
       line-height: 1.4;
     }
 
-    /* Auth Modal Styling */
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-backdrop.active {
-      display: flex;
-    }
-
-    .modal-box {
-      background: white;
-      padding: 25px;
-      border: 1px solid #cccccc;
-      border-radius: 3px;
-      width: 320px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-
-    .modal-box h3 {
-      font-size: 18px;
-      margin-bottom: 15px;
-      color: #0074BD;
-    }
-
-    .modal-box input {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 15px;
-      border: 1px solid #cccccc;
-      font-size: 14px;
-    }
-
-    .modal-box button {
-      width: 100%;
-      padding: 8px;
-      background: #02b757;
-      border: 1px solid #018a41;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 2px;
-    }
-
-    /* Footer */
     .footer {
       width: 100%;
       background: #ffffff;
@@ -614,10 +553,6 @@
       font-size: 12px;
     }
 
-    .footer-link:hover {
-      text-decoration: underline;
-    }
-
     .footer-text {
       color: #888888;
       font-size: 11px;
@@ -627,7 +562,6 @@
 </head>
 <body>
 
-  <!-- Top Blue Navbar (40px) -->
   <nav class="navbar">
     <div class="nav-container">
       <div class="left-section">
@@ -649,10 +583,15 @@
         </div>
       </div>
 
+      <!-- UNIVERSAL SEARCH BAR FOR USERS AND GAMES -->
       <div class="search-container">
         <div class="search-wrapper">
-          <input type="text" class="search-input" placeholder="Search">
-          <button class="search-button" type="button">
+          <select id="search-type" class="search-select">
+            <option value="games">Games</option>
+            <option value="users">Users</option>
+          </select>
+          <input type="text" id="search-query" class="search-input" placeholder="Search games or users..." onkeyup="if(event.key==='Enter') executeSearch()">
+          <button class="search-button" type="button" onclick="executeSearch()">
             <svg class="search-icon-svg" viewBox="0 0 16 16">
               <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
             </svg>
@@ -661,8 +600,8 @@
       </div>
 
       <div class="right-section" id="auth-actions">
-        <button class="auth-btn" onclick="openSignupModal()">Sign Up</button>
-        <button class="auth-btn-sec" onclick="openLoginModal()">Log In</button>
+        <a href="./signup" class="auth-btn" style="text-decoration:none;">Sign Up</a>
+        <a href="./login" class="auth-btn-sec" style="text-decoration:none;">Log In</a>
         <span class="user-menu" id="user-menu-area" style="display:none;">
           <span id="user-display">Guest</span>
           <button style="background:none; border:none; color:white; cursor:pointer; font-size:12px; margin-left:8px;" onclick="logout()">[Log Out]</button>
@@ -671,29 +610,17 @@
     </div>
   </nav>
 
-  <!-- Sidebar Overlay & Sliding Panel -->
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
   <div class="sidebar" id="sidebar">
-    <a href="./" class="sidebar-item">
-      <svg class="sidebar-icon" viewBox="0 0 16 16"><path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5z"/></svg>
-      Games
-    </a>
-    <a href="../catalog/" class="sidebar-item">
-      <svg class="sidebar-icon" viewBox="0 0 16 16"><path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
-      Catalog
-    </a>
-    <a href="../creation/" class="sidebar-item" id="sidebar-create-link">
-      <svg class="sidebar-icon" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
-      Develop / Create
-    </a>
+    <a href="./" class="sidebar-item">Games</a>
+    <a href="./catalog/" class="sidebar-item">Catalog</a>
+    <a href="./creation/" class="sidebar-item" id="sidebar-create-link">Develop / Create</a>
   </div>
 
-  <!-- Alert Banner -->
   <div class="alert-wrapper">
     donate here it works now <a class="alert-link" href="./donate">donation page</a>!
   </div>
 
-  <!-- Main Content Body -->
   <main class="main">
     <div class="container">
       <section class="page-header">
@@ -706,14 +633,14 @@
         </div>
       </section>
 
-      <section class="games-section">
-        <h2>Games</h2>
-        <div class="games-grid" id="games-container">
-          <p style="grid-column: 1 / -1; text-align: center; color: #666;">Loading global game catalog...</p>
+      <!-- RESULTS DISPLAY SECTION -->
+      <section class="games-section" id="content-display-section">
+        <h2 id="section-heading">Games</h2>
+        <div class="games-grid" id="main-grid-container">
+          <p style="grid-column: 1 / -1; text-align: center; color: #666;">Loading global catalog...</p>
         </div>
       </section>
 
-      <!-- Global Community Forum Section -->
       <section class="forum-section">
         <h2>Community Forum</h2>
         <div class="forum-box">
@@ -730,22 +657,10 @@
     </div>
   </main>
 
-  <!-- Sign Up / Login Modal -->
-  <div class="modal-backdrop" id="auth-modal">
-    <div class="modal-box">
-      <h3 id="modal-title">Create an Account</h3>
-      <input type="text" id="username-input" placeholder="Enter Username">
-      <button id="modal-submit-btn" onclick="handleAuthSubmit()">Register Account</button>
-      <button style="margin-top:10px; background:#888; border:none;" onclick="closeAuthModal()">Cancel</button>
-    </div>
-  </div>
-
-  <!-- Footer -->
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-links">
         <a href="./about" class="footer-link">About Us</a>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSd9B2R_yBpPzH2ZDs6su3sCSD8S_m2ZJ523nR2JXG-bI5PHAA/viewform?usp=publish-editor" class="footer-link">Jobs</a>
         <a href="./Privacy" class="footer-link">Privacy</a>
         <a href="./help" class="footer-link">Help</a>
       </div>
@@ -754,16 +669,19 @@
   </footer>
 
   <script>
-    // GitHub games.json Endpoint on website-lowk branch
-    const GAMES_API_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/website-lowk/games.json";
-    const DEFAULT_GAME_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
-    
-    // JSONBin Global Shared Backend Settings
-    const JSONBIN_BIN_ID = "6ad77eccffd5d160537c47d4";
-    const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi";
-    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+    // JSONBin Settings
+    const GAMES_BIN_ID = "6ad78c3aac6210605a42bdca"; 
+    const ACCOUNTS_BIN_ID = "6ad782eeac6210605a429ed7";
+    const FORUM_BIN_ID = "6ad77eccffd5d160537c47d4"; 
+    const JSONBIN_API_KEY = "YOUR_API_KEY"; 
 
-    let isSignupMode = true;
+    const GAMES_URL = `https://api.jsonbin.io/v3/b/${GAMES_BIN_ID}`;
+    const ACCOUNTS_URL = `https://api.jsonbin.io/v3/b/${ACCOUNTS_BIN_ID}`;
+    const FORUM_URL = `https://api.jsonbin.io/v3/b/${FORUM_BIN_ID}`;
+    const DEFAULT_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
+
+    let cachedGames = [];
+    let cachedUsers = [];
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
@@ -781,11 +699,11 @@
       const statusText = document.getElementById('account-status-text');
 
       if (savedUser) {
-        userDisplay.textContent = savedUser;
-        userMenuArea.style.display = 'inline-flex';
-        authActions.querySelectorAll('button').forEach(b => b.style.display = 'none');
-        welcomeTitle.textContent = `Welcome back, ${savedUser}!`;
-        statusText.textContent = `Account Active (Full Creation & Privilege Rights Enabled)`;
+        if(userDisplay) userDisplay.textContent = savedUser;
+        if(userMenuArea) userMenuArea.style.display = 'inline-flex';
+        if(authActions) authActions.style.display = 'none';
+        if(welcomeTitle) welcomeTitle.textContent = `Welcome back, ${savedUser}!`;
+        if(statusText) statusText.textContent = `Account Active (Full Creation & Privilege Rights Enabled)`;
       } else {
         let guestName = localStorage.getItem('bloxtip_guest_name');
         if (!guestName) {
@@ -793,117 +711,93 @@
           guestName = `Guest ${randomGuestId}`;
           localStorage.setItem('bloxtip_guest_name', guestName);
         }
-        welcomeTitle.textContent = `Welcome, ${guestName}!`;
-        statusText.textContent = `You are playing as a Guest. You can play games freely! Sign up to create places.`;
+        if(welcomeTitle) welcomeTitle.textContent = `Welcome, ${guestName}!`;
+        if(statusText) statusText.textContent = `You are playing as a Guest. You can play games freely! Sign up to create places.`;
       }
-    }
-
-    function openSignupModal() {
-      isSignupMode = true;
-      document.getElementById('modal-title').textContent = "Create an Account";
-      document.getElementById('modal-submit-btn').textContent = "Register Account";
-      document.getElementById('auth-modal').classList.add('active');
-    }
-
-    function openLoginModal() {
-      isSignupMode = false;
-      document.getElementById('modal-title').textContent = "Log In";
-      document.getElementById('modal-submit-btn').textContent = "Log In";
-      document.getElementById('auth-modal').classList.add('active');
-    }
-
-    function closeAuthModal() {
-      document.getElementById('auth-modal').classList.remove('active');
-    }
-
-    function handleAuthSubmit() {
-      const usernameInput = document.getElementById('username-input').value.trim();
-      if (!usernameInput) {
-        alert("Please enter a valid username!");
-        return;
-      }
-
-      if (isSignupMode) {
-        const newAccId = Math.floor(100 + Math.random() * 900);
-        localStorage.setItem('bloxtip_username', usernameInput);
-        localStorage.setItem('bloxtip_account_id', newAccId);
-        alert(`Account created successfully as '${usernameInput}'hello there {bloxtip_username}`);
-      } else {
-        localStorage.setItem('bloxtip_username', usernameInput);
-        alert(`Logged in as '${usernameInput}'!`);
-      }
-
-      closeAuthModal();
-      initUserSession();
     }
 
     function logout() {
       localStorage.removeItem('bloxtip_username');
       localStorage.removeItem('bloxtip_account_id');
+      localStorage.removeItem('bloxtip_account');
       location.reload();
     }
 
-    const checkCreatePermission = (e) => {
-      const savedUser = localStorage.getItem('bloxtip_username');
-      if (!savedUser) {
-        e.preventDefault();
-        alert('Guest accounts cannot access the Create panel. Click "Sign Up" at the top right to make an account!');
-      }
-    };
+    async function executeSearch() {
+      const type = document.getElementById('search-type').value;
+      const query = document.getElementById('search-query').value.trim().toLowerCase();
+      const heading = document.getElementById('section-heading');
+      const container = document.getElementById('main-grid-container');
 
-    document.getElementById('sidebar-create-link').addEventListener('click', checkCreatePermission);
-    document.getElementById('nav-create-link').addEventListener('click', checkCreatePermission);
+      container.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #666;">Searching...</p>`;
 
-    // FETCH & RENDER GAMES FROM GITHUB GAMES.JSON (WITH INSTANT NO-CACHE QUERY)
-    async function fetchAndRenderGames() {
-      const gamesContainer = document.getElementById('games-container');
-      let games = [];
-
-      try {
-        // Appending timestamp to bypass browser and GitHub Pages CDN raw file caching
-        const response = await fetch(GAMES_API_URL + "?nocache=" + Date.now());
-        if (response.ok) {
-          games = await response.json();
+      if (type === 'games') {
+        heading.textContent = query ? `Game Search Results for "${query}"` : "Games";
+        
+        if (cachedGames.length === 0) {
+          try {
+            const res = await fetch(GAMES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+            if (res.ok) {
+              const data = await res.json();
+              cachedGames = data.record.games || [];
+            }
+          } catch(e){}
         }
-      } catch (err) {
-        console.warn("Could not fetch global games.json:", err);
-      }
 
-      if (!games || games.length === 0) {
-        gamesContainer.innerHTML = `
-          <div class="empty-games-msg">
-            <h3>No Games Published Yet</h3>
-            <p style="margin-top: 5px;">Be the first registered account to publish a place! Click <a href="../creation/" style="color: #0074BD; font-weight: bold;">Create</a> to add a game.</p>
-          </div>
-        `;
-        return;
-      }
+        const filtered = cachedGames.filter(g => g.title.toLowerCase().includes(query) || (g.author && g.author.toLowerCase().includes(query)));
 
-      gamesContainer.innerHTML = games.map(game => {
-        const thumbUrl = game.thumbnail || game.image || DEFAULT_GAME_THUMBNAIL;
-        return `
+        if (filtered.length === 0) {
+          container.innerHTML = `<div class="empty-msg">No games found matching "${query}".</div>`;
+          return;
+        }
+
+        container.innerHTML = filtered.map(game => `
           <div class="game-card">
             <div class="game-card-image-container">
-              <img src="${thumbUrl}" alt="${game.title || game.name}" class="game-card-img" onerror="this.src='${DEFAULT_GAME_THUMBNAIL}'">
+              <img src="${game.thumbnail || DEFAULT_THUMBNAIL}" class="game-card-img" onerror="this.src='${DEFAULT_THUMBNAIL}'">
             </div>
-            <div class="game-card-body">
-              <h3 class="game-card-title">${game.title || game.name}</h3>
-              <div class="game-card-meta">${game.year || 2013} &bull; Public</div>
-              <div class="card-buttons">
-                <a href="${game.rbxlUrl}" target="_blank" class="play-btn">Play</a>
-              </div>
-            </div>
+            <h3 class="game-card-title">${game.title}</h3>
+            <div class="game-card-meta">By ${game.author || 'Developer'}</div>
+            <a href="${game.rbxlUrl}" target="_blank" class="play-btn">Play</a>
           </div>
-        `;
-      }).join('');
+        `).join('');
+
+      } else if (type === 'users') {
+        heading.textContent = query ? `User Search Results for "${query}"` : "Registered Users";
+
+        if (cachedUsers.length === 0) {
+          try {
+            const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+            if (res.ok) {
+              const data = await res.json();
+              cachedUsers = data.record.accounts || [];
+            }
+          } catch(e){}
+        }
+
+        const filtered = cachedUsers.filter(u => u.username.toLowerCase().includes(query) || String(u.id).includes(query));
+
+        if (filtered.length === 0) {
+          container.innerHTML = `<div class="empty-msg">No users found matching "${query}".</div>`;
+          return;
+        }
+
+        container.innerHTML = filtered.map(user => `
+          <div class="user-card">
+            <div class="user-card-image-container">
+              <img src="${user.avatar || 'https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png'}" class="user-card-img">
+            </div>
+            <h3 class="user-card-title">${user.username}</h3>
+            <div class="user-card-meta">User ID: #${user.id}</div>
+          </div>
+        `).join('');
+      }
     }
 
     async function loadForumPosts() {
       const list = document.getElementById('forum-posts-list');
       try {
-        const res = await fetch(JSONBIN_URL + "/latest", {
-          headers: { "X-Master-Key": JSONBIN_API_KEY }
-        });
+        const res = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         if (res.ok) {
           const data = await res.json();
           const posts = data.record.posts || [];
@@ -920,8 +814,6 @@
               <div class="forum-post-content">${escapeHtml(p.body)}</div>
             </div>
           `).join('');
-        } else {
-          list.innerHTML = `<p style="color:#c00; font-size:13px; text-align:center;">Configure JSONBin credentials to see live forum posts.</p>`;
         }
       } catch (err) {
         list.innerHTML = `<p style="color:#777; font-size:13px; text-align:center;">Failed to connect to forum database.</p>`;
@@ -942,10 +834,7 @@
       btn.textContent = 'Posting...';
 
       try {
-        const getRes = await fetch(JSONBIN_URL + "/latest", {
-          headers: { "X-Master-Key": JSONBIN_API_KEY }
-        });
-        
+        const getRes = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         let posts = [];
         if (getRes.ok) {
           const data = await getRes.json();
@@ -961,12 +850,9 @@
           date: new Date().toLocaleDateString()
         });
 
-        const putRes = await fetch(JSONBIN_URL, {
+        const putRes = await fetch(FORUM_URL, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': JSONBIN_API_KEY
-          },
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
           body: JSON.stringify({ posts: posts })
         });
 
@@ -974,8 +860,6 @@
           document.getElementById('forum-post-title-input').value = '';
           document.getElementById('forum-post-body-input').value = '';
           loadForumPosts();
-        } else {
-          alert('Error posting to global forum. Check JSONBin API keys.');
         }
       } catch (err) {
         alert('Failed to connect to forum backend.');
@@ -990,7 +874,7 @@
     }
 
     initUserSession();
-    fetchAndRenderGames();
+    executeSearch();
     loadForumPosts();
   </script>
 </body>
