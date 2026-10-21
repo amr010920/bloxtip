@@ -122,7 +122,7 @@
     .forum-post-author { font-size: 11px; color: #777; }
     .forum-post-content { font-size: 13px; color: #333; line-height: 1.4; }
 
-    /* EXACT ROBLOX CHAT DRAWER WITH FIXED SIZING BUG FIX */
+    /* ROBLOX-STYLE CHAT DRAWER WITH #00a2ff HEADER */
     .container_container__Ufhp_ {
       position: fixed;
       bottom: 0;
@@ -133,7 +133,7 @@
     }
 
     .chatMenu_chatMenuClosed__4a7jC {
-      background: #0074BD;
+      background: #00a2ff;
       border-top-left-radius: 5px;
       border-top-right-radius: 5px;
       box-shadow: 0 -2px 8px rgba(0,0,0,0.25);
@@ -143,10 +143,13 @@
     }
 
     .chatMenu_chatMenuHeader__Xy3ps {
+      background-color: #00a2ff;
       padding: 8px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px;
     }
 
     .chatMenu_header_left {
@@ -182,7 +185,7 @@
     .chatMenu_chatBody {
       display: none;
       background: white;
-      border: 1px solid #0074BD;
+      border: 1px solid #00a2ff;
       border-top: none;
       height: 340px;
       width: 280px;
@@ -192,7 +195,7 @@
     }
 
     .container_container__Ufhp_.open .chatMenu_chatMenuClosed__4a7jC {
-      background: #00568c;
+      background: #0088db;
     }
 
     .container_container__Ufhp_.open .chatMenu_chatBody {
@@ -223,8 +226,8 @@
 
     .chat-tab-btn.active {
       background: white;
-      color: #0074BD;
-      border-bottom: 2px solid #0074BD;
+      color: #00a2ff;
+      border-bottom: 2px solid #00a2ff;
     }
 
     .chat-tab-content {
@@ -239,7 +242,6 @@
       display: flex;
     }
 
-    /* SCROLL WINDOW & FIXED SIZING WRAPPERS */
     .chat-messages-area {
       flex: 1;
       min-height: 0;
@@ -282,7 +284,7 @@
     }
 
     .chat-msg-row.sent .chat-msg-bubble {
-      background: #0074BD;
+      background: #00a2ff;
       color: white;
       border-bottom-right-radius: 1px;
     }
@@ -353,7 +355,7 @@
 
     .dm-user-item:hover {
       background: #eef5fc;
-      color: #0074BD;
+      color: #00a2ff;
     }
 
     .request-card {
@@ -485,25 +487,18 @@
     <div class="chatMenu_chatMenuClosed__4a7jC" onclick="toggleChatDrawer()">
       <div class="chatMenu_chatMenuHeader__Xy3ps">
         <div class="chatMenu_header_left">
-          <svg class="chatMenu_icon_svg" viewBox="0 0 16 16">
-            <path d="M2 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0L10.7 12.4a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-          </svg>
           <p class="chatMenu_chatLabel__DDNOw">Chat</p>
           <span class="chatMenu_badge" id="chat-badge">0</span>
-        </div>
-        <span style="color:white; font-size:11px;" id="chat-toggle-icon">&#9650;</span>
-      </div>
-    </div>
-    <div class="chatMenu_chatBody">
-      <div class="chat-nav-tabs">
-        <button class="chat-tab-btn active" onclick="switchChatTab('dms')">
-          Friends
-        </button>
+            <div class="chatMenu_chatBody">
+             <div class="chat-nav-tabs">
+              <button class="chat-tab-btn active" onclick="switchChatTab('dms')">
+                Friends
+              </button>
         <button class="chat-tab-btn" onclick="switchChatTab('requests')">
           Requests <span id="req-count"></span>
         </button>
         <button class="chat-tab-btn" onclick="switchChatTab('add')">
-          + Add
+          Add
         </button>
       </div>
 
@@ -515,7 +510,7 @@
         <div id="active-chat-view" style="display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
           <div style="padding:6px 10px; background:#f0f0f0; border-bottom:1px solid #ddd; font-size:11px; font-weight:bold; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
             <div style="display:flex; align-items:center; gap:6px;">
-              <span style="cursor:pointer; color:#0074BD;" onclick="closeActiveDm()">&larr;</span>
+              <span style="cursor:pointer; color:#00a2ff;" onclick="closeActiveDm()">&larr;</span>
               <span id="active-chat-target" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">User</span>
             </div>
             <span style="cursor:pointer; color:#888;" onclick="closeActiveDm()">&#10005;</span>
@@ -541,7 +536,7 @@
         <div style="padding:15px 10px;">
           <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:6px; color:#333;">Send Chat Request:</label>
           <input type="text" id="dm-target-username" placeholder="Username..." style="width:100%; padding:6px; font-size:12px; margin-bottom:10px; border:1px solid #ccc; border-radius:3px;">
-          <button onclick="sendDmRequest()" style="width:100%; padding:7px; background:#0074BD; color:white; border:none; font-weight:bold; font-size:12px; cursor:pointer; border-radius:3px;">Send Request</button>
+          <button onclick="sendDmRequest()" style="width:100%; padding:7px; background:#00a2ff; color:white; border:none; font-weight:bold; font-size:12px; cursor:pointer; border-radius:3px;">Send Request</button>
         </div>
       </div>
     </div>
