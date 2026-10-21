@@ -101,13 +101,37 @@
     .empty-msg { grid-column: 1 / -1; text-align: center; padding: 30px 20px; background: #ffffff; border: 1px solid #cccccc; border-radius: 2px; color: #666666; }
 
     .game-card, .user-card { background: white; border: 1px solid #cccccc; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; padding: 10px; text-align: center; }
-    .game-card-image-container, .user-card-image-container { width: 100%; height: 100px; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+    .game-card-image-container, .user-card-image-container { width: 100%; height: 100px; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; cursor: pointer; }
     .game-card-img, .user-card-img { width: 100%; height: 100%; object-fit: cover; }
-    .game-card-title, .user-card-title { font-size: 13px; font-weight: bold; margin: 0 0 4px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .game-card-title, .user-card-title { font-size: 13px; font-weight: bold; margin: 0 0 4px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    .game-card-title:hover { text-decoration: underline; color: #0074BD; }
     .game-card-meta, .user-card-meta { font-size: 11px; color: #777777; }
 
     .play-btn { width: 100%; padding: 5px 0; border: 1px solid #018a41; border-radius: 2px; background: linear-gradient(to bottom, #02b757 0%, #018a41 100%); color: white; cursor: pointer; font-weight: bold; font-size: 12px; text-align: center; text-decoration: none; margin-top: 8px; display: block; }
     .play-btn:hover { background: linear-gradient(to bottom, #00cc61 0%, #02b757 100%); }
+
+    /* ROBLOX GAME DETAIL PAGE STYLES */
+    .container-main { max-width: 1000px; margin: 0 auto; width: 100%; font-family: Arial, sans-serif; }
+    .page-content { background: #fff; border: 1px solid #ccc; padding: 20px; border-radius: 4px; }
+    .game-main-content { display: flex; flex-wrap: wrap; gap: 20px; }
+    .game-thumb-container { flex: 1; min-width: 280px; }
+    .carousel-thumb { width: 100%; border-radius: 4px; border: 1px solid #ddd; }
+    .game-calls-to-action { flex: 1.5; min-width: 300px; display: flex; flex-direction: column; justify-content: space-between; }
+    .game-name { font-size: 24px; font-weight: bold; color: #333; margin-bottom: 5px; }
+    .game-creator { font-size: 14px; color: #666; margin-bottom: 15px; }
+    .game-creator a { color: #0074BD; text-decoration: none; font-weight: bold; }
+    .btn-primary-lg { background: #02b757; color: white; padding: 10px 24px; font-weight: bold; font-size: 16px; border-radius: 4px; text-decoration: none; display: inline-block; cursor: pointer; text-align: center; }
+    .btn-primary-lg:hover { background: #00cc61; }
+    .share-rate-favorite { display: flex; align-items: center; gap: 15px; list-style: none; margin-top: 15px; }
+    .rbx-tabs-horizontal { margin-top: 25px; }
+    .nav-tabs { display: flex; list-style: none; border-bottom: 2px solid #ddd; padding-left: 0; }
+    .nav-tabs li { margin-right: 15px; }
+    .nav-tabs li a { padding: 10px 15px; display: inline-block; color: #666; text-decoration: none; font-weight: bold; }
+    .nav-tabs li.active a { color: #0074BD; border-bottom: 3px solid #0074BD; margin-bottom: -2px; }
+    .tab-content { padding-top: 20px; }
+    .game-stats-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; list-style: none; margin-top: 15px; background: #f9f9f9; padding: 15px; border-radius: 4px; }
+    .game-stat .text-label { font-size: 11px; color: #777; }
+    .game-stat .text-lead { font-size: 14px; font-weight: bold; color: #333; }
 
     .forum-section { margin-top: 35px; }
     .forum-section h2 { font-size: 20px; font-weight: bold; margin: 0 0 12px; color: #333333; }
@@ -407,11 +431,11 @@
             <div class="hamburger-line"></div>
           </div>
         </button>
-        <button class="logo-btn" onclick="location.reload()" title="Bloxtip">
+        <button class="logo-btn" onclick="navigateToHome()" title="Bloxtip">
           <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Bloxtip" class="logo-img">
         </button>
         <div class="header-nav">
-          <a href="./" class="active">Games</a>
+          <a href="./" class="active" onclick="event.preventDefault(); navigateToHome();">Games</a>
           <a href="./catalog/">Catalog</a>
           <a href="./creation/" id="nav-create-link">Create</a>
           <a href="./download/">Download</a>
@@ -446,7 +470,7 @@
 
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
   <div class="sidebar" id="sidebar">
-    <a href="./" class="sidebar-item">Games</a>
+    <a href="./" class="sidebar-item" onclick="event.preventDefault(); navigateToHome(); toggleSidebar();">Games</a>
     <a href="./catalog/" class="sidebar-item">Catalog</a>
     <a href="./creation/" class="sidebar-item" id="sidebar-create-link">Develop / Create</a>
   </div>
@@ -456,8 +480,8 @@
   </div>
 
   <main class="main">
-    <div class="container">
-      <section class="page-header">
+    <div class="container" id="app-container">
+      <section class="page-header" id="page-header-section">
         <div class="profile-pic" id="profile-avatar">
           <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" alt="Avatar">
         </div>
@@ -474,7 +498,7 @@
         </div>
       </section>
 
-      <section class="forum-section">
+      <section class="forum-section" id="forum-section-container">
         <h2>Community Forum</h2>
         <div class="forum-box">
           <div class="forum-new-post">
@@ -650,6 +674,91 @@
       location.reload();
     }
 
+    function navigateToHome() {
+      window.history.pushState({}, '', './');
+      document.getElementById('page-header-section').style.display = 'flex';
+      document.getElementById('content-display-section').style.display = 'block';
+      document.getElementById('forum-section-container').style.display = 'block';
+      executeSearch();
+      loadForumPosts();
+    }
+
+    function slugify(text) {
+      return text.toString().toLowerCase()
+        .replace(/\s+/g, '-')           
+        .replace(/[^\w\-]+/g, '')       
+        .replace(/\-\-+/g, '-')         
+        .replace(/^-+/, '')             
+        .replace(/-+$/, '');            
+    }
+
+    async function openGameDetails(gameId, gameTitle, gameAuthor, gameThumbnail, gameRbxlUrl, gameDescription) {
+      const slug = slugify(gameTitle || 'game');
+      const newPath = `/games/${gameId}/${slug}`;
+      window.history.pushState({ gameId, gameTitle }, '', newPath);
+
+      document.getElementById('page-header-section').style.display = 'none';
+      document.getElementById('forum-section-container').style.display = 'none';
+      
+      const contentSection = document.getElementById('content-display-section');
+      contentSection.innerHTML = `
+        <div class="container-main">
+          <div id="game-detail-page" class="row page-content inline-social" data-place-id="${gameId}" data-ispartyleader="False">
+            <div class="col-xs-12 section-content game-main-content">
+              <div class="game-thumb-container">
+                <div id="carousel-game-details" class="carousel slide" data-ride="carousel" data-interval="false">
+                  <div class="carousel-inner" role="listbox">
+                    <div class="item active">
+                      <span><img class="carousel-thumb" src="${gameThumbnail || DEFAULT_THUMBNAIL}" alt="${escapeHtml(gameTitle)} screenshot"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="game-calls-to-action">
+                <div class="game-title-container">
+                  <h2 class="game-name" title="${escapeHtml(gameTitle)}">${escapeHtml(gameTitle)}</h2>
+                  <div class="game-creator"><span class="text-label">By</span> <a class="text-name" href="#">${escapeHtml(gameAuthor || 'Developer')}</a></div>
+                </div>
+                <div class="game-buttons-container">
+                  <div class="game-play-buttons">
+                    <a href="${gameRbxlUrl || '#'}" target="_blank" class="btn-primary-lg">Play</a>
+                  </div>
+                </div>
+                <ul class="share-rate-favorite">
+                  <li class="favorite-button-container">
+                    <span title="6" class="text-favorite favoriteCount">6</span>
+                    <div class="icon-favorite" style="display:inline-block; margin-left:4px; font-weight:bold; color:#e74c3c;">&hearts;</div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-xs-12 rbx-tabs-horizontal" data-place-id="${gameId}">
+              <ul id="horizontal-tabs" class="nav nav-tabs" role="tablist">
+                <li class="rbx-tab tab-about active"><a class="rbx-tab-heading" href="#about"><span>About</span></a></li>
+              </ul>
+              <div class="tab-content rbx-tab-content">
+                <div class="tab-pane active" id="about">
+                  <div class="section game-about-container">
+                    <div class="container-header"><h3>Description</h3></div>
+                    <div class="section-content">
+                      <pre class="game-description" style="white-space: pre-wrap; font-family: inherit; color: #444; margin-bottom:15px;">${escapeHtml(gameDescription || 'No description available.')}</pre>
+                      <ul class="game-stats-container">
+                        <li class="game-stat"><p class="text-label">Playing</p><p class="text-lead">0</p></li>
+                        <li class="game-stat"><p class="text-label">Visits</p><p class="text-lead">484</p></li>
+                        <li class="game-stat"><p class="text-label">Max Players</p><p class="text-lead">100</p></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      window.scrollTo(0, 0);
+    }
+
     async function executeSearch() {
       const type = document.getElementById('search-type').value;
       const query = document.getElementById('search-query').value.trim().toLowerCase();
@@ -680,10 +789,10 @@
 
         container.innerHTML = filtered.map(game => `
           <div class="game-card">
-            <div class="game-card-image-container">
+            <div class="game-card-image-container" onclick="openGameDetails('${game.id || Date.now()}', '${escapeHtml(game.title)}', '${escapeHtml(game.author || 'Developer')}', '${game.thumbnail || DEFAULT_THUMBNAIL}', '${game.rbxlUrl}', '${escapeHtml(game.description || '')}')">
               <img src="${game.thumbnail || DEFAULT_THUMBNAIL}" class="game-card-img" onerror="this.src='${DEFAULT_THUMBNAIL}'">
             </div>
-            <h3 class="game-card-title">${game.title}</h3>
+            <h3 class="game-card-title" onclick="openGameDetails('${game.id || Date.now()}', '${escapeHtml(game.title)}', '${escapeHtml(game.author || 'Developer')}', '${game.thumbnail || DEFAULT_THUMBNAIL}', '${game.rbxlUrl}', '${escapeHtml(game.description || '')}')">${game.title}</h3>
             <div class="game-card-meta">By ${game.author || 'Developer'}</div>
             <a href="${game.rbxlUrl}" target="_blank" class="play-btn">Play</a>
           </div>
@@ -943,6 +1052,7 @@
 
     async function loadForumPosts() {
       const list = document.getElementById('forum-posts-list');
+      if (!list) return;
       try {
         const res = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         if (res.ok) {
@@ -982,7 +1092,7 @@
         const getRes = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         let posts = [];
         if (getRes.ok) {
-          const data = await res.json();
+          const data = await getRes.json();
           posts = data.record.posts || [];
         }
 
@@ -1013,6 +1123,7 @@
     }
 
     function escapeHtml(str) {
+      if (!str) return '';
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
