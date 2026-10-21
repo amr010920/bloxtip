@@ -120,28 +120,28 @@
     .game-name { font-size: 24px; font-weight: bold; color: #333; margin-bottom: 5px; }
     .game-creator { font-size: 14px; color: #666; margin-bottom: 15px; }
     .game-creator a { color: #0074BD; text-decoration: none; font-weight: bold; }
-    .btn-primary-lg { background: #02b757; color: white; padding: 10px 24px; font-weight: bold; font-size: 16px; border-radius: 4px; text-decoration: none; display: inline-block; cursor: pointer; text-align: center; }
+    .btn-primary-lg { background: #02b757; color: white; padding: 10px 24px; font-weight: bold; font-size: 16px; border-radius: 4px; border: none; cursor: pointer; text-align: center; }
     .btn-primary-lg:hover { background: #00cc61; }
-    
-    /* LEGACY SVG VOTE SPRITES */
-    .icon-like-legacy, .icon-dislike-legacy {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      background-image: url('https://duckyblox.com/images/Shared/games_09202017.svg');
-      background-repeat: no-repeat;
-      cursor: pointer;
-      vertical-align: middle;
-    }
-    .icon-like-legacy { background-position: 0 0; }
-    .icon-like-legacy:hover { background-position: -20px 0; }
-    .icon-dislike-legacy { background-position: 0 -20px; }
-    .icon-dislike-legacy:hover { background-position: -20px -20px; }
 
-    .voting-panel { display: flex; align-items: center; gap: 12px; margin-top: 15px; background: #f5f5f5; padding: 8px 12px; border-radius: 4px; }
-    .vote-bar-wrapper { flex: 1; background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden; position: relative; }
+    /* SVG LIKE & DISLIKE VOTE ICONS */
+    .btn-vote-icon {
+      background: none;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 6px 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #444;
+    }
+    .btn-vote-icon:hover { background: #f0f0f0; }
+
+    .voting-panel { display: flex; align-items: center; gap: 10px; margin-top: 15px; background: #f9f9f9; padding: 10px 14px; border-radius: 4px; border: 1px solid #e0e0e0; }
+    .vote-bar-wrapper { flex: 1; background: #e0e0e0; height: 10px; border-radius: 5px; overflow: hidden; position: relative; }
     .vote-bar-fill { background: #02b757; height: 100%; width: 0%; transition: width 0.3s ease; }
-    .vote-count-text { font-size: 12px; font-weight: bold; color: #555; }
 
     .rbx-tabs-horizontal { margin-top: 25px; }
     .nav-tabs { display: flex; list-style: none; border-bottom: 2px solid #ddd; padding-left: 0; }
@@ -166,7 +166,7 @@
     .forum-post-author { font-size: 11px; color: #777; }
     .forum-post-content { font-size: 13px; color: #333; line-height: 1.4; }
 
-    /* ROBLOX-STYLE CHAT DRAWER WITH #00a2ff HEADER */
+    /* CHAT DRAWER & MOBILE DMS FIX */
     .container_container__Ufhp_ {
       position: fixed;
       bottom: 0;
@@ -174,6 +174,7 @@
       z-index: 9999;
       font-family: Arial, sans-serif;
       width: 280px;
+      max-width: calc(100vw - 20px);
     }
 
     .chatMenu_chatMenuClosed__4a7jC {
@@ -182,7 +183,6 @@
       border-top-right-radius: 5px;
       box-shadow: 0 -2px 8px rgba(0,0,0,0.25);
       cursor: pointer;
-      transition: background 0.15s ease;
       user-select: none;
     }
 
@@ -196,35 +196,8 @@
       border-top-right-radius: 5px;
     }
 
-    .chatMenu_header_left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .chatMenu_chatLabel__DDNOw {
-      color: white;
-      font-weight: bold;
-      font-size: 14px;
-      margin: 0;
-    }
-
-    .chatMenu_badge {
-      background: #e74c3c;
-      color: white;
-      font-size: 10px;
-      font-weight: bold;
-      padding: 1px 6px;
-      border-radius: 10px;
-      display: none;
-    }
-
-    .chatMenu_icon_svg {
-      width: 14px;
-      height: 14px;
-      fill: white;
-      cursor: pointer;
-    }
+    .chatMenu_chatLabel__DDNOw { color: white; font-weight: bold; font-size: 14px; margin: 0; }
+    .chatMenu_badge { background: #e74c3c; color: white; font-size: 10px; font-weight: bold; padding: 1px 6px; border-radius: 10px; display: none; }
 
     .chatMenu_chatBody {
       display: none;
@@ -233,58 +206,20 @@
       border-top: none;
       height: 340px;
       width: 280px;
+      max-width: 100%;
       flex-direction: column;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       overflow: hidden;
     }
 
-    .container_container__Ufhp_.open .chatMenu_chatMenuClosed__4a7jC {
-      background: #0088db;
-    }
+    .container_container__Ufhp_.open .chatMenu_chatBody { display: flex; }
 
-    .container_container__Ufhp_.open .chatMenu_chatBody {
-      display: flex;
-    }
+    .chat-nav-tabs { display: flex; background: #f1f1f1; border-bottom: 1px solid #dcdcdc; flex-shrink: 0; }
+    .chat-tab-btn { flex: 1; padding: 8px 4px; font-size: 11px; font-weight: bold; background: none; border: none; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .chat-tab-btn.active { background: white; color: #00a2ff; border-bottom: 2px solid #00a2ff; }
 
-    .chat-nav-tabs {
-      display: flex;
-      background: #f1f1f1;
-      border-bottom: 1px solid #dcdcdc;
-      flex-shrink: 0;
-    }
-
-    .chat-tab-btn {
-      flex: 1;
-      padding: 8px 4px;
-      font-size: 11px;
-      font-weight: bold;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #666;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-    }
-
-    .chat-tab-btn.active {
-      background: white;
-      color: #00a2ff;
-      border-bottom: 2px solid #00a2ff;
-    }
-
-    .chat-tab-content {
-      display: none;
-      flex: 1;
-      flex-direction: column;
-      overflow: hidden;
-      min-height: 0;
-    }
-
-    .chat-tab-content.active {
-      display: flex;
-    }
+    .chat-tab-content { display: none; flex: 1; flex-direction: column; overflow: hidden; min-height: 0; }
+    .chat-tab-content.active { display: flex; }
 
     .chat-messages-area {
       flex: 1;
@@ -300,51 +235,13 @@
       width: 100%;
     }
 
-    .chat-msg-row {
-      display: flex;
-      flex-direction: column;
-      max-width: 75%;
-      width: fit-content;
-      word-break: break-word;
-      overflow-wrap: anywhere;
-    }
+    .chat-msg-row { display: flex; flex-direction: column; max-width: 80%; word-break: break-word; overflow-wrap: anywhere; }
+    .chat-msg-row.sent { align-self: flex-end; }
+    .chat-msg-row.received { align-self: flex-start; }
 
-    .chat-msg-row.sent {
-      align-self: flex-end;
-    }
-
-    .chat-msg-row.received {
-      align-self: flex-start;
-    }
-
-    .chat-msg-bubble {
-      padding: 7px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      line-height: 1.35;
-      white-space: pre-wrap;
-      word-break: break-word;
-      overflow-wrap: anywhere;
-    }
-
-    .chat-msg-row.sent .chat-msg-bubble {
-      background: #00a2ff;
-      color: white;
-      border-bottom-right-radius: 1px;
-    }
-
-    .chat-msg-row.received .chat-msg-bubble {
-      background: #e4e6eb;
-      color: #1c1e21;
-      border-bottom-left-radius: 1px;
-    }
-
-    .chat-msg-author-tag {
-      font-size: 10px;
-      color: #777;
-      margin-bottom: 2px;
-      font-weight: bold;
-    }
+    .chat-msg-bubble { padding: 7px 10px; border-radius: 6px; font-size: 12px; line-height: 1.35; white-space: pre-wrap; word-break: break-word; }
+    .chat-msg-row.sent .chat-msg-bubble { background: #00a2ff; color: white; border-bottom-right-radius: 1px; }
+    .chat-msg-row.received .chat-msg-bubble { background: #e4e6eb; color: #1c1e21; border-bottom-left-radius: 1px; }
 
     .chat-input-area {
       padding: 8px;
@@ -356,81 +253,21 @@
       width: 100%;
     }
 
-    .chat-input-area input {
-      flex: 1;
-      min-width: 0;
-      padding: 6px 8px;
-      font-size: 12px;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-      outline: none;
-    }
+    .chat-input-area input { flex: 1; min-width: 0; padding: 6px 8px; font-size: 12px; border: 1px solid #ccc; border-radius: 3px; outline: none; }
+    .chat-input-area button.mobile-send-btn { padding: 6px 12px; background: #02b757; color: white; border: none; font-weight: bold; font-size: 12px; border-radius: 3px; cursor: pointer; flex-shrink: 0; }
 
-    .chat-input-area button {
-      padding: 6px 12px;
-      background: #02b757;
-      color: white;
-      border: none;
-      font-weight: bold;
-      font-size: 12px;
-      border-radius: 3px;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .chat-input-area button:hover {
-      background: #00cc61;
-    }
-
-    /* Hide the send button on desktop (min-width: 769px), keep visible on mobile */
+    /* Hide mobile send button on wider desktop screens if requested */
     @media (min-width: 769px) {
-      .chat-input-area button.mobile-send-btn {
-        display: none !important;
-      }
+      .chat-input-area button.mobile-send-btn { display: none !important; }
     }
 
-    .dm-user-item {
-      padding: 10px 12px;
-      background: #ffffff;
-      border-bottom: 1px solid #eeeeee;
-      font-size: 12px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .dm-user-item { padding: 10px 12px; background: #ffffff; border-bottom: 1px solid #eeeeee; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .dm-user-item:hover { background: #eef5fc; color: #00a2ff; }
 
-    .dm-user-item:hover {
-      background: #eef5fc;
-      color: #00a2ff;
-    }
-
-    .request-card {
-      background: #ffffff;
-      border: 1px solid #e0e0e0;
-      padding: 10px;
-      margin: 8px;
-      border-radius: 4px;
-      font-size: 12px;
-    }
-
-    .request-btn-group {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    .req-accept-btn {
-      flex: 1; background: #02b757; color: white; border: none; padding: 4px; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 2px;
-    }
-
-    .req-decline-btn {
-      flex: 1; background: #d9534f; color: white; border: none; padding: 4px; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 2px;
-    }
+    .request-card { background: #ffffff; border: 1px solid #e0e0e0; padding: 10px; margin: 8px; border-radius: 4px; font-size: 12px; }
+    .request-btn-group { display: flex; gap: 6px; margin-top: 8px; }
+    .req-accept-btn { flex: 1; background: #02b757; color: white; border: none; padding: 4px; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 2px; }
+    .req-decline-btn { flex: 1; background: #d9534f; color: white; border: none; padding: 4px; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 2px; }
 
     .footer { width: 100%; background: #ffffff; border-top: 1px solid #cccccc; margin-top: auto; padding: 15px 0; }
     .footer-container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
@@ -547,15 +384,9 @@
     
     <div class="chatMenu_chatBody">
       <div class="chat-nav-tabs">
-        <button class="chat-tab-btn active" onclick="switchChatTab('dms')">
-          Friends
-        </button>
-        <button class="chat-tab-btn" onclick="switchChatTab('requests')">
-          Requests <span id="req-count"></span>
-        </button>
-        <button class="chat-tab-btn" onclick="switchChatTab('add')">
-          Add
-        </button>
+        <button class="chat-tab-btn active" onclick="switchChatTab('dms')">Friends</button>
+        <button class="chat-tab-btn" onclick="switchChatTab('requests')">Requests <span id="req-count"></span></button>
+        <button class="chat-tab-btn" onclick="switchChatTab('add')">Add</button>
       </div>
 
       <!-- DM FRIENDS LIST & CONVERSATION THREAD -->
@@ -571,7 +402,6 @@
             </div>
             <span style="cursor:pointer; color:#888;" onclick="closeActiveDm()">&#10005;</span>
           </div>
-          <!-- MESSAGES CONTAINER -->
           <div class="chat-messages-area" id="chat-messages-list"></div>
           <div class="chat-input-area">
             <input type="text" id="chat-msg-input" placeholder="Type a message..." onkeyup="if(event.key==='Enter') sendChatMessage()">
@@ -748,33 +578,54 @@
       } catch (e) {}
     }
 
+    /* UNIQUE USER VISIT TRACKING */
     async function incrementPlaceVisits(placeId, rbxlUrl) {
       if (!placeId) return;
-      cachedVisits[placeId] = (cachedVisits[placeId] || 0) + 1;
+      const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
 
-      // Update active UI elements if visible
-      const visitSpan = document.getElementById(`visit-count-${placeId}`);
-      if (visitSpan) visitSpan.textContent = cachedVisits[placeId];
-
-      try {
-        await fetch(VISITS_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify({ visits: cachedVisits })
-        });
-      } catch (e) {}
-
-      if (rbxlUrl) window.open(rbxlUrl, '_blank');
-    }
-
-    async function handleVote(placeId, voteType) {
-      if (!placeId) return;
-      if (!cachedVotes[placeId]) {
-        cachedVotes[placeId] = { up: 0, down: 0 };
+      if (!cachedVisits[placeId]) {
+        cachedVisits[placeId] = { visitors: [] };
+      } else if (Array.isArray(cachedVisits[placeId])) {
+        cachedVisits[placeId] = { visitors: cachedVisits[placeId] };
       }
 
-      if (voteType === 'up') cachedVotes[placeId].up += 1;
-      if (voteType === 'down') cachedVotes[placeId].down += 1;
+      if (!cachedVisits[placeId].visitors.includes(currentUser)) {
+        cachedVisits[placeId].visitors.push(currentUser);
+
+        const count = cachedVisits[placeId].visitors.length;
+        const visitSpan = document.getElementById(`visit-count-${placeId}`);
+        if (visitSpan) visitSpan.textContent = count;
+
+        try {
+          await fetch(VISITS_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            body: JSON.stringify({ visits: cachedVisits })
+          });
+        } catch (e) {}
+      }
+
+      if (rbxlUrl && rbxlUrl !== '#') window.open(rbxlUrl, '_blank');
+    }
+
+    /* PERSISTENT VOTING SYSTEM */
+    async function handleVote(placeId, voteType) {
+      if (!placeId) return;
+      const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
+
+      if (!cachedVotes[placeId]) {
+        cachedVotes[placeId] = { up: [], down: [] };
+      }
+
+      let v = cachedVotes[placeId];
+      if (!Array.isArray(v.up)) v.up = [];
+      if (!Array.isArray(v.down)) v.down = [];
+
+      v.up = v.up.filter(u => u !== currentUser);
+      v.down = v.down.filter(u => u !== currentUser);
+
+      if (voteType === 'up') v.up.push(currentUser);
+      if (voteType === 'down') v.down.push(currentUser);
 
       updateVoteDisplay(placeId);
 
@@ -788,16 +639,18 @@
     }
 
     function updateVoteDisplay(placeId) {
-      const v = cachedVotes[placeId] || { up: 0, down: 0 };
-      const total = v.up + v.down;
-      const pct = total > 0 ? Math.round((v.up / total) * 100) : 0;
+      const v = cachedVotes[placeId] || { up: [], down: [] };
+      const upCount = Array.isArray(v.up) ? v.up.length : (typeof v.up === 'number' ? v.up : 0);
+      const downCount = Array.isArray(v.down) ? v.down.length : (typeof v.down === 'number' ? v.down : 0);
+      const total = upCount + downCount;
+      const pct = total > 0 ? Math.round((upCount / total) * 100) : 0;
 
       const upTxt = document.getElementById(`vote-up-${placeId}`);
       const downTxt = document.getElementById(`vote-down-${placeId}`);
       const fillBar = document.getElementById(`vote-bar-fill-${placeId}`);
 
-      if (upTxt) upTxt.textContent = v.up;
-      if (downTxt) downTxt.textContent = v.down;
+      if (upTxt) upTxt.textContent = upCount;
+      if (downTxt) downTxt.textContent = downCount;
       if (fillBar) fillBar.style.width = `${pct}%`;
     }
 
@@ -812,10 +665,14 @@
       await loadVisitsData();
       await loadVotesData();
 
-      const visits = cachedVisits[gameId] || 0;
-      const votes = cachedVotes[gameId] || { up: 0, down: 0 };
-      const totalVotes = votes.up + votes.down;
-      const votePct = totalVotes > 0 ? Math.round((votes.up / totalVotes) * 100) : 0;
+      const placeVisitData = cachedVisits[gameId];
+      const visitsCount = placeVisitData ? (Array.isArray(placeVisitData.visitors) ? placeVisitData.visitors.length : (typeof placeVisitData === 'number' ? placeVisitData : 0)) : 0;
+
+      const votes = cachedVotes[gameId] || { up: [], down: [] };
+      const upCount = Array.isArray(votes.up) ? votes.up.length : 0;
+      const downCount = Array.isArray(votes.down) ? votes.down.length : 0;
+      const totalVotes = upCount + downCount;
+      const votePct = totalVotes > 0 ? Math.round((upCount / totalVotes) * 100) : 0;
       
       const contentSection = document.getElementById('content-display-section');
       contentSection.innerHTML = `
@@ -844,13 +701,17 @@
 
                 <!-- VOTING PANEL -->
                 <div class="voting-panel">
-                  <span class="icon-like-legacy" title="Like" onclick="handleVote('${gameId}', 'up')"></span>
+                  <button class="btn-vote-icon" onclick="handleVote('${gameId}', 'up')">
+                    &#128077; Like
+                  </button>
                   <div class="vote-bar-wrapper">
                     <div class="vote-bar-fill" id="vote-bar-fill-${gameId}" style="width: ${votePct}%;"></div>
                   </div>
-                  <span class="icon-dislike-legacy" title="Dislike" onclick="handleVote('${gameId}', 'down')"></span>
-                  <span class="vote-count-text">
-                    [<span id="vote-up-${gameId}">${votes.up}</span> / <span id="vote-down-${gameId}">${votes.down}</span>]
+                  <button class="btn-vote-icon" onclick="handleVote('${gameId}', 'down')">
+                    &#128078; Dislike
+                  </button>
+                  <span style="font-size:12px; font-weight:bold; color:#555;">
+                    [<span id="vote-up-${gameId}">${upCount}</span> / <span id="vote-down-${gameId}">${downCount}</span>]
                   </span>
                 </div>
               </div>
@@ -868,7 +729,7 @@
                       <pre class="game-description" style="white-space: pre-wrap; font-family: inherit; color: #444; margin-bottom:15px;">${escapeHtml(gameDescription || 'No description available.')}</pre>
                       <ul class="game-stats-container">
                         <li class="game-stat"><p class="text-label">Playing</p><p class="text-lead">0</p></li>
-                        <li class="game-stat"><p class="text-label">Visits</p><p class="text-lead"><span id="visit-count-${gameId}">${visits}</span></p></li>
+                        <li class="game-stat"><p class="text-label">Visits</p><p class="text-lead"><span id="visit-count-${gameId}">${visitsCount}</span></p></li>
                         <li class="game-stat"><p class="text-label">Max Players</p><p class="text-lead">100</p></li>
                       </ul>
                     </div>
@@ -915,7 +776,9 @@
 
         container.innerHTML = filtered.map(game => {
           const gId = game.id || Date.now();
-          const visits = cachedVisits[gId] || 0;
+          const placeVisitData = cachedVisits[gId];
+          const visits = placeVisitData ? (Array.isArray(placeVisitData.visitors) ? placeVisitData.visitors.length : (typeof placeVisitData === 'number' ? placeVisitData : 0)) : 0;
+
           return `
             <div class="game-card">
               <div class="game-card-image-container" onclick="openGameDetails('${gId}', '${escapeHtml(game.title)}', '${escapeHtml(game.author || 'Developer')}', '${game.thumbnail || DEFAULT_THUMBNAIL}', '${game.rbxlUrl}', '${escapeHtml(game.description || '')}')">
@@ -952,7 +815,7 @@
         container.innerHTML = filtered.map(user => `
           <div class="user-card">
             <div class="user-card-image-container">
-              <img src="${user.avatar || 'https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png'}" class="user-card-img">
+              <img src="${user.avatar || 'https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png'}" class="user-card-img">
             </div>
             <h3 class="user-card-title">${user.username}</h3>
             <div class="user-card-meta">User ID: #${user.id}</div>
