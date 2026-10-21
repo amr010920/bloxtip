@@ -518,6 +518,107 @@
       line-height: 1.4;
     }
 
+    /* EXACT CHAT MENU STYLING */
+    .container_container__Ufhp_ {
+      position: fixed;
+      bottom: 0;
+      right: 20px;
+      z-index: 9999;
+      font-family: Arial, sans-serif;
+    }
+
+    .chatMenu_chatMenuClosed__4a7jC {
+      background: #0074BD;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.2);
+      width: 240px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chatMenu_chatMenuHeader__Xy3ps {
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chatMenu_chatLabel__DDNOw {
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .chatMenu_chatBody {
+      display: none;
+      background: white;
+      border: 1px solid #0074BD;
+      border-top: none;
+      height: 300px;
+      flex-direction: column;
+    }
+
+    .container_container__Ufhp_.open .chatMenu_chatMenuClosed__4a7jC {
+      background: #00568c;
+    }
+
+    .container_container__Ufhp_.open .chatMenu_chatBody {
+      display: flex;
+    }
+
+    .chat-messages-area {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #fdfdfd;
+    }
+
+    .chat-msg {
+      padding: 6px 8px;
+      background: #eef5fc;
+      border-radius: 3px;
+      border: 1px solid #d0e1f9;
+    }
+
+    .chat-msg-author {
+      font-weight: bold;
+      color: #0074BD;
+      margin-bottom: 2px;
+    }
+
+    .chat-input-area {
+      padding: 8px;
+      background: #f0f0f0;
+      border-top: 1px solid #ccc;
+      display: flex;
+      gap: 6px;
+    }
+
+    .chat-input-area input {
+      flex: 1;
+      padding: 5px;
+      font-size: 12px;
+      border: 1px solid #ccc;
+      border-radius: 2px;
+    }
+
+    .chat-input-area button {
+      padding: 5px 10px;
+      background: #02b757;
+      color: white;
+      border: none;
+      font-weight: bold;
+      font-size: 12px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
     .footer {
       width: 100%;
       background: #ffffff;
@@ -645,6 +746,25 @@
     </div>
   </main>
 
+  <!-- CHAT / MESSAGES DRAWER -->
+  <div class="container_container__Ufhp_" id="chat-container">
+    <div class="chatMenu_chatMenuClosed__4a7jC" onclick="toggleChatDrawer()">
+      <div class="chatMenu_chatMenuHeader__Xy3ps">
+        <p class="chatMenu_chatLabel__DDNOw">Chat</p>
+        <span style="color:white; font-size:12px;" id="chat-toggle-icon">&#9650;</span>
+      </div>
+    </div>
+    <div class="chatMenu_chatBody">
+      <div class="chat-messages-area" id="chat-messages-list">
+        <p style="color:#777; text-align:center; margin-top:20px;">Loading messages...</p>
+      </div>
+      <div class="chat-input-area">
+        <input type="text" id="chat-msg-input" placeholder="Type a message..." onkeyup="if(event.key==='Enter') sendChatMessage()">
+        <button onclick="sendChatMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-links">
@@ -660,11 +780,13 @@
     const GAMES_BIN_ID = "6ad78c3aac6210605a42bdca"; 
     const ACCOUNTS_BIN_ID = "6ad782eeac6210605a429ed7";
     const FORUM_BIN_ID = "6ad77eccffd5d160537c47d4"; 
+    const CHAT_BIN_ID = "6ad8bfccac6210605a45d063";
     const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi"; 
 
     const GAMES_URL = `https://api.jsonbin.io/v3/b/${GAMES_BIN_ID}`;
     const ACCOUNTS_URL = `https://api.jsonbin.io/v3/b/${ACCOUNTS_BIN_ID}`;
     const FORUM_URL = `https://api.jsonbin.io/v3/b/${FORUM_BIN_ID}`;
+    const CHAT_URL = `https://api.jsonbin.io/v3/b/${CHAT_BIN_ID}`;
     const DEFAULT_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
 
     let cachedGames = [];
@@ -676,6 +798,18 @@
     }
 
     document.getElementById('sidebar-toggle-btn').addEventListener('click', toggleSidebar);
+
+    function toggleChatDrawer() {
+      const container = document.getElementById('chat-container');
+      const icon = document.getElementById('chat-toggle-icon');
+      container.classList.toggle('open');
+      if (container.classList.contains('open')) {
+        icon.innerHTML = '&#9660;';
+        loadChatMessages();
+      } else {
+        icon.innerHTML = '&#9650;';
+      }
+    }
 
     function initUserSession() {
       const savedUser = localStorage.getItem('bloxtip_username');
@@ -778,6 +912,70 @@
             <div class="user-card-meta">User ID: #${user.id}</div>
           </div>
         `).join('');
+      }
+    }
+
+    async function loadChatMessages() {
+      const list = document.getElementById('chat-messages-list');
+      try {
+        const res = await fetch(CHAT_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (res.ok) {
+          const data = await res.json();
+          const messages = data.record.messages || [];
+          if (messages.length === 0) {
+            list.innerHTML = `<p style="color:#777; text-align:center; font-size:11px; margin-top:20px;">No messages yet. Say hello!</p>`;
+            return;
+          }
+          list.innerHTML = messages.map(m => `
+            <div class="chat-msg">
+              <div class="chat-msg-author">${escapeHtml(m.author)}</div>
+              <div>${escapeHtml(m.text)}</div>
+            </div>
+          `).join('');
+          list.scrollTop = list.scrollHeight;
+        }
+      } catch (err) {
+        list.innerHTML = `<p style="color:#c00; text-align:center; font-size:11px;">Failed to load chat.</p>`;
+      }
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chat-msg-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.disabled = true;
+      try {
+        const getRes = await fetch(CHAT_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        let messages = [];
+        if (getRes.ok) {
+          const data = await getRes.json();
+          messages = data.record.messages || [];
+        }
+
+        const author = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
+
+        messages.push({
+          author: author,
+          text: text,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+
+        const putRes = await fetch(CHAT_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ messages: messages })
+        });
+
+        if (putRes.ok) {
+          input.value = '';
+          loadChatMessages();
+        }
+      } catch (err) {
+        alert('Failed to send message.');
+      } finally {
+        input.disabled = false;
+        input.focus();
       }
     }
 
