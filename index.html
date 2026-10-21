@@ -466,16 +466,13 @@
       border-bottom: 1px solid #eee;
     }
 
-    .forum-input-title, .forum-input-body {
+    .forum-input-body {
       width: 100%;
       padding: 8px;
       margin-bottom: 8px;
       border: 1px solid #cccccc;
       font-size: 13px;
       font-family: inherit;
-    }
-
-    .forum-input-body {
       height: 60px;
       resize: vertical;
     }
@@ -508,12 +505,6 @@
       display: flex;
       justify-content: space-between;
       margin-bottom: 4px;
-    }
-
-    .forum-post-title {
-      font-weight: bold;
-      font-size: 14px;
-      color: #0074BD;
     }
 
     .forum-post-author {
@@ -583,7 +574,6 @@
         </div>
       </div>
 
-      <!-- UNIVERSAL SEARCH BAR FOR USERS AND GAMES -->
       <div class="search-container">
         <div class="search-wrapper">
           <select id="search-type" class="search-select">
@@ -633,7 +623,6 @@
         </div>
       </section>
 
-      <!-- RESULTS DISPLAY SECTION -->
       <section class="games-section" id="content-display-section">
         <h2 id="section-heading">Games</h2>
         <div class="games-grid" id="main-grid-container">
@@ -645,7 +634,6 @@
         <h2>Community Forum</h2>
         <div class="forum-box">
           <div class="forum-new-post">
-            <input type="text" id="forum-post-title-input" class="forum-input-title" placeholder="Post Title">
             <textarea id="forum-post-body-input" class="forum-input-body" placeholder="Write a forum post..."></textarea>
             <button class="forum-post-btn" id="post-thread-btn" onclick="submitForumPost()">Post Thread</button>
           </div>
@@ -669,7 +657,6 @@
   </footer>
 
   <script>
-    // JSONBin Settings
     const GAMES_BIN_ID = "6ad78c3aac6210605a42bdca"; 
     const ACCOUNTS_BIN_ID = "6ad782eeac6210605a429ed7";
     const FORUM_BIN_ID = "6ad77eccffd5d160537c47d4"; 
@@ -808,7 +795,6 @@
           list.innerHTML = posts.map(p => `
             <div class="forum-post-item">
               <div class="forum-post-header">
-                <span class="forum-post-title">${escapeHtml(p.title)}</span>
                 <span class="forum-post-author">By ${escapeHtml(p.author)} &bull; ${p.date}</span>
               </div>
               <div class="forum-post-content">${escapeHtml(p.body)}</div>
@@ -821,12 +807,11 @@
     }
 
     async function submitForumPost() {
-      const title = document.getElementById('forum-post-title-input').value.trim();
       const body = document.getElementById('forum-post-body-input').value.trim();
       const btn = document.getElementById('post-thread-btn');
 
-      if (!title || !body) {
-        alert('Please fill out both the post title and message!');
+      if (!body) {
+        alert('Please write a message before posting!');
         return;
       }
 
@@ -844,7 +829,6 @@
         const author = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
 
         posts.unshift({
-          title: title,
           body: body,
           author: author,
           date: new Date().toLocaleDateString()
@@ -857,7 +841,6 @@
         });
 
         if (putRes.ok) {
-          document.getElementById('forum-post-title-input').value = '';
           document.getElementById('forum-post-body-input').value = '';
           loadForumPosts();
         }
