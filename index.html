@@ -12,17 +12,8 @@
       --theme-primary-hover: #00cc61;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html, body {
-      height: 100%;
-      width: 100%;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; width: 100%; }
     body {
       background: #e3e3e3;
       color: #191919;
@@ -45,480 +36,91 @@
       padding: 0 15px;
     }
 
-    .nav-container {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .left-section {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .nav-container { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .left-section { display: flex; align-items: center; gap: 12px; }
 
     .menu-toggle-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 30px;
-      height: 30px;
-      border-radius: 3px;
+      background: none; border: none; cursor: pointer; padding: 4px;
+      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 3px;
     }
+    .menu-toggle-btn:hover { background: rgba(255, 255, 255, 0.15); }
 
-    .menu-toggle-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
+    .hamburger-icon { width: 18px; height: 14px; display: flex; flex-direction: column; justify-content: space-between; }
+    .hamburger-line { width: 100%; height: 2px; background-color: #ffffff; border-radius: 1px; }
 
-    .hamburger-icon {
-      width: 18px;
-      height: 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
+    .logo-btn { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; }
+    .logo-img { height: 28px; width: auto; object-fit: contain; }
 
-    .hamburger-line {
-      width: 100%;
-      height: 2px;
-      background-color: #ffffff;
-      border-radius: 1px;
-    }
+    .header-nav { display: flex; gap: 20px; margin-left: 20px; }
+    .header-nav a { color: white; text-decoration: none; font-size: 13px; font-weight: bold; padding: 4px 6px; border-radius: 2px; }
+    .header-nav a:hover { background: rgba(255, 255, 255, 0.15); }
 
-    .logo-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      display: flex;
-      align-items: center;
-    }
+    .search-container { flex: 0 1 360px; display: flex; align-items: center; margin: 0 15px; }
+    .search-wrapper { width: 100%; display: flex; background: white; border-radius: 2px; border: 1px solid #b8b8b8; }
+    .search-select { background: #f0f0f0; border: none; border-right: 1px solid #cccccc; padding: 0 6px; font-size: 12px; font-weight: bold; color: #333; cursor: pointer; outline: none; }
+    .search-input { flex: 1; border: none; height: 26px; padding: 0 10px; font-size: 13px; }
+    .search-input:focus { outline: none; }
+    .search-button { border: none; border-left: 1px solid #cccccc; cursor: pointer; height: 26px; width: 32px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; }
+    .search-button:hover { background: #e5e5e5; }
+    .search-icon-svg { width: 13px; height: 13px; fill: #555555; }
 
-    .logo-img {
-      height: 28px;
-      width: auto;
-      object-fit: contain;
-    }
+    .right-section { display: flex; align-items: center; gap: 10px; }
+    .auth-btn { background: #02b757; border: 1px solid #018a41; color: white; font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 2px; cursor: pointer; }
+    .auth-btn:hover { background: #00cc61; }
+    .auth-btn-sec { background: rgba(255, 255, 255, 0.2); border: 1px solid white; color: white; font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 2px; cursor: pointer; }
+    .auth-btn-sec:hover { background: rgba(255, 255, 255, 0.3); }
 
-    .header-nav {
-      display: flex;
-      gap: 20px;
-      margin-left: 20px;
-    }
+    .user-menu { color: white; padding: 4px 8px; font-size: 14px; display: flex; align-items: center; gap: 6px; }
 
-    .header-nav a {
-      color: white;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: bold;
-      padding: 4px 6px;
-      border-radius: 2px;
-    }
+    .sidebar-overlay { display: none; position: fixed; top: 40px; left: 0; width: 100vw; height: calc(100vh - 40px); background: rgba(0, 0, 0, 0.3); z-index: 1040; }
+    .sidebar-overlay.active { display: block; }
 
-    .header-nav a:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
+    .sidebar { position: fixed; top: 40px; left: -220px; width: 220px; height: calc(100vh - 40px); background: #ffffff; border-right: 1px solid #cccccc; z-index: 1045; transition: left 0.2s ease; padding: 10px 0; }
+    .sidebar.active { left: 0; }
+    .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #333333; text-decoration: none; font-size: 14px; font-weight: bold; }
+    .sidebar-item:hover { background: #eef5fc; color: #0074BD; }
 
-    /* SEARCH BAR & FILTER DROPDOWN STYLING */
-    .search-container {
-      flex: 0 1 360px;
-      display: flex;
-      align-items: center;
-      margin: 0 15px;
-    }
+    .alert-wrapper { background: #F68802; padding: 8px 15px; text-align: center; color: white; font-size: 14px; font-weight: bold; z-index: 1030; width: 100vw; margin-left: calc(-50vw + 50%); }
+    .alert-link { color: white; text-decoration: underline; }
 
-    .search-wrapper {
-      width: 100%;
-      display: flex;
-      background: white;
-      border-radius: 2px;
-      border: 1px solid #b8b8b8;
-    }
+    .main { flex: 1; width: 100%; display: flex; flex-direction: column; padding-top: 20px; padding-bottom: 40px; }
+    .container { max-width: 1100px; margin: 0 auto; width: 100%; padding: 0 15px; flex: 1; }
 
-    .search-select {
-      background: #f0f0f0;
-      border: none;
-      border-right: 1px solid #cccccc;
-      padding: 0 6px;
-      font-size: 12px;
-      font-weight: bold;
-      color: #333;
-      cursor: pointer;
-      outline: none;
-    }
+    .page-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; background: white; padding: 20px; border: 1px solid #cccccc; border-radius: 2px; }
+    .profile-pic { width: 100px; height: 100px; border-radius: 100%; background: #f0f0f0; border: 1px solid #dddddd; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
+    .page-header-text h1 { font-size: 28px; font-weight: normal; margin: 0 0 4px; color: #191919; }
+    .page-header-text p { color: #666666; font-size: 16px; margin: 0; }
 
-    .search-input {
-      flex: 1;
-      border: none;
-      height: 26px;
-      padding: 0 10px;
-      font-size: 13px;
-    }
+    .games-section h2, .users-section h2 { font-size: 20px; font-weight: bold; margin: 0 0 12px; color: #333333; }
+    .games-grid, .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
 
-    .search-input:focus {
-      outline: none;
-    }
+    .empty-msg { grid-column: 1 / -1; text-align: center; padding: 30px 20px; background: #ffffff; border: 1px solid #cccccc; border-radius: 2px; color: #666666; }
 
-    .search-button {
-      border: none;
-      border-left: 1px solid #cccccc;
-      cursor: pointer;
-      height: 26px;
-      width: 32px;
-      background: #f5f5f5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .game-card, .user-card { background: white; border: 1px solid #cccccc; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; padding: 10px; text-align: center; }
+    .game-card-image-container, .user-card-image-container { width: 100%; height: 100px; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+    .game-card-img, .user-card-img { width: 100%; height: 100%; object-fit: cover; }
+    .game-card-title, .user-card-title { font-size: 13px; font-weight: bold; margin: 0 0 4px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .game-card-meta, .user-card-meta { font-size: 11px; color: #777777; }
 
-    .search-button:hover {
-      background: #e5e5e5;
-    }
+    .play-btn { width: 100%; padding: 5px 0; border: 1px solid #018a41; border-radius: 2px; background: linear-gradient(to bottom, #02b757 0%, #018a41 100%); color: white; cursor: pointer; font-weight: bold; font-size: 12px; text-align: center; text-decoration: none; margin-top: 8px; display: block; }
+    .play-btn:hover { background: linear-gradient(to bottom, #00cc61 0%, #02b757 100%); }
 
-    .search-icon-svg {
-      width: 13px;
-      height: 13px;
-      fill: #555555;
-    }
+    .forum-section { margin-top: 35px; }
+    .forum-section h2 { font-size: 20px; font-weight: bold; margin: 0 0 12px; color: #333333; }
+    .forum-box { background: white; border: 1px solid #cccccc; border-radius: 2px; padding: 15px; }
+    .forum-new-post { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+    .forum-input-body { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #cccccc; font-size: 13px; font-family: inherit; height: 60px; resize: vertical; }
+    .forum-post-btn { background: #0074BD; border: 1px solid #00568c; color: white; padding: 6px 14px; font-size: 12px; font-weight: bold; border-radius: 2px; cursor: pointer; }
+    .forum-post-btn:hover { background: #00568c; }
+    .forum-post-item { padding: 12px 0; border-bottom: 1px dashed #dddddd; }
+    .forum-post-item:last-child { border-bottom: none; }
+    .forum-post-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .forum-post-author { font-size: 11px; color: #777; }
+    .forum-post-content { font-size: 13px; color: #333; line-height: 1.4; }
 
-    .right-section {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .auth-btn {
-      background: #02b757;
-      border: 1px solid #018a41;
-      color: white;
-      font-size: 12px;
-      font-weight: bold;
-      padding: 4px 10px;
-      border-radius: 2px;
-      cursor: pointer;
-    }
-
-    .auth-btn:hover {
-      background: #00cc61;
-    }
-
-    .auth-btn-sec {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid white;
-      color: white;
-      font-size: 12px;
-      font-weight: bold;
-      padding: 4px 10px;
-      border-radius: 2px;
-      cursor: pointer;
-    }
-
-    .auth-btn-sec:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    .user-menu {
-      color: white;
-      padding: 4px 8px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      top: 40px;
-      left: 0;
-      width: 100vw;
-      height: calc(100vh - 40px);
-      background: rgba(0, 0, 0, 0.3);
-      z-index: 1040;
-    }
-
-    .sidebar-overlay.active {
-      display: block;
-    }
-
-    .sidebar {
-      position: fixed;
-      top: 40px;
-      left: -220px;
-      width: 220px;
-      height: calc(100vh - 40px);
-      background: #ffffff;
-      border-right: 1px solid #cccccc;
-      z-index: 1045;
-      transition: left 0.2s ease;
-      padding: 10px 0;
-    }
-
-    .sidebar.active {
-      left: 0;
-    }
-
-    .sidebar-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 20px;
-      color: #333333;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .sidebar-item:hover {
-      background: #eef5fc;
-      color: #0074BD;
-    }
-
-    .alert-wrapper {
-      background: #F68802;
-      padding: 8px 15px;
-      text-align: center;
-      color: white;
-      font-size: 14px;
-      font-weight: bold;
-      z-index: 1030;
-      width: 100vw;
-      margin-left: calc(-50vw + 50%);
-    }
-
-    .alert-link {
-      color: white;
-      text-decoration: underline;
-    }
-
-    .main {
-      flex: 1;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      padding-top: 20px;
-      padding-bottom: 40px;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      width: 100%;
-      padding: 0 15px;
-      flex: 1;
-    }
-
-    .page-header {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      margin-bottom: 25px;
-      background: white;
-      padding: 20px;
-      border: 1px solid #cccccc;
-      border-radius: 2px;
-    }
-
-    .profile-pic {
-      width: 100px;
-      height: 100px;
-      border-radius: 100%;
-      background: #f0f0f0;
-      border: 1px solid #dddddd;
-      overflow: hidden;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .profile-pic img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .page-header-text h1 {
-      font-size: 28px;
-      font-weight: normal;
-      margin: 0 0 4px;
-      color: #191919;
-    }
-
-    .page-header-text p {
-      color: #666666;
-      font-size: 16px;
-      margin: 0;
-    }
-
-    .games-section h2, .users-section h2 {
-      font-size: 20px;
-      font-weight: bold;
-      margin: 0 0 12px;
-      color: #333333;
-    }
-
-    .games-grid, .users-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 15px;
-    }
-
-    .empty-msg {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 30px 20px;
-      background: #ffffff;
-      border: 1px solid #cccccc;
-      border-radius: 2px;
-      color: #666666;
-    }
-
-    .game-card, .user-card {
-      background: white;
-      border: 1px solid #cccccc;
-      border-radius: 2px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      padding: 10px;
-      text-align: center;
-    }
-
-    .game-card-image-container, .user-card-image-container {
-      width: 100%;
-      height: 100px;
-      background: #f5f5f5;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 8px;
-    }
-
-    .game-card-img, .user-card-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .game-card-title, .user-card-title {
-      font-size: 13px;
-      font-weight: bold;
-      margin: 0 0 4px;
-      color: #191919;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .game-card-meta, .user-card-meta {
-      font-size: 11px;
-      color: #777777;
-    }
-
-    .play-btn {
-      width: 100%;
-      padding: 5px 0;
-      border: 1px solid #018a41;
-      border-radius: 2px;
-      background: linear-gradient(to bottom, #02b757 0%, #018a41 100%);
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 12px;
-      text-align: center;
-      text-decoration: none;
-      margin-top: 8px;
-      display: block;
-    }
-
-    .play-btn:hover {
-      background: linear-gradient(to bottom, #00cc61 0%, #02b757 100%);
-    }
-
-    .forum-section {
-      margin-top: 35px;
-    }
-
-    .forum-section h2 {
-      font-size: 20px;
-      font-weight: bold;
-      margin: 0 0 12px;
-      color: #333333;
-    }
-
-    .forum-box {
-      background: white;
-      border: 1px solid #cccccc;
-      border-radius: 2px;
-      padding: 15px;
-    }
-
-    .forum-new-post {
-      margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .forum-input-body {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 8px;
-      border: 1px solid #cccccc;
-      font-size: 13px;
-      font-family: inherit;
-      height: 60px;
-      resize: vertical;
-    }
-
-    .forum-post-btn {
-      background: #0074BD;
-      border: 1px solid #00568c;
-      color: white;
-      padding: 6px 14px;
-      font-size: 12px;
-      font-weight: bold;
-      border-radius: 2px;
-      cursor: pointer;
-    }
-
-    .forum-post-btn:hover {
-      background: #00568c;
-    }
-
-    .forum-post-item {
-      padding: 12px 0;
-      border-bottom: 1px dashed #dddddd;
-    }
-
-    .forum-post-item:last-child {
-      border-bottom: none;
-    }
-
-    .forum-post-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-
-    .forum-post-author {
-      font-size: 11px;
-      color: #777;
-    }
-
-    .forum-post-content {
-      font-size: 13px;
-      color: #333;
-      line-height: 1.4;
-    }
-
-    /* EXACT CHAT MENU STYLING */
+    /* EXACT CHAT MENU STYLING WITH DM REQUEST SYSTEM */
     .container_container__Ufhp_ {
       position: fixed;
       bottom: 0;
@@ -532,7 +134,7 @@
       border-top-left-radius: 4px;
       border-top-right-radius: 4px;
       box-shadow: 0 -2px 6px rgba(0,0,0,0.2);
-      width: 240px;
+      width: 280px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
@@ -556,7 +158,7 @@
       background: white;
       border: 1px solid #0074BD;
       border-top: none;
-      height: 300px;
+      height: 340px;
       flex-direction: column;
     }
 
@@ -568,9 +170,44 @@
       display: flex;
     }
 
+    .chat-tabs {
+      display: flex;
+      background: #f0f0f0;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .chat-tab-btn {
+      flex: 1;
+      padding: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #555;
+    }
+
+    .chat-tab-btn.active {
+      background: white;
+      color: #0074BD;
+      border-bottom: 2px solid #0074BD;
+    }
+
+    .chat-tab-content {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .chat-tab-content.active {
+      display: flex;
+    }
+
     .chat-messages-area {
       flex: 1;
-      padding: 10px;
+      padding: 8px;
       overflow-y: auto;
       font-size: 12px;
       display: flex;
@@ -619,37 +256,64 @@
       cursor: pointer;
     }
 
-    .footer {
-      width: 100%;
-      background: #ffffff;
-      border-top: 1px solid #cccccc;
-      margin-top: auto;
-      padding: 15px 0;
-    }
-
-    .footer-container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 15px;
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 8px;
-    }
-
-    .footer-link {
-      color: #0074BD;
-      text-decoration: none;
+    .request-item {
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      padding: 8px;
+      margin-bottom: 6px;
+      border-radius: 3px;
       font-size: 12px;
     }
 
-    .footer-text {
-      color: #888888;
-      font-size: 11px;
-      line-height: 1.4;
+    .request-btn-group {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
     }
+
+    .req-accept-btn {
+      background: #02b757;
+      color: white;
+      border: none;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    .req-decline-btn {
+      background: #d9534f;
+      color: white;
+      border: none;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    .dm-user-item {
+      padding: 8px;
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 5px;
+    }
+
+    .dm-user-item:hover {
+      background: #eef5fc;
+      color: #0074BD;
+    }
+
+    .footer { width: 100%; background: #ffffff; border-top: 1px solid #cccccc; margin-top: auto; padding: 15px 0; }
+    .footer-container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
+    .footer-links { display: flex; gap: 15px; margin-bottom: 8px; }
+    .footer-link { color: #0074BD; text-decoration: none; font-size: 12px; }
+    .footer-text { color: #888888; font-size: 11px; line-height: 1.4; }
   </style>
 </head>
 <body>
@@ -746,21 +410,53 @@
     </div>
   </main>
 
-  <!-- CHAT / MESSAGES DRAWER -->
+  <!-- CHAT / DM REQUEST DRAWER -->
   <div class="container_container__Ufhp_" id="chat-container">
     <div class="chatMenu_chatMenuClosed__4a7jC" onclick="toggleChatDrawer()">
       <div class="chatMenu_chatMenuHeader__Xy3ps">
-        <p class="chatMenu_chatLabel__DDNOw">Chat</p>
+        <p class="chatMenu_chatLabel__DDNOw">Chat & DMs</p>
         <span style="color:white; font-size:12px;" id="chat-toggle-icon">&#9650;</span>
       </div>
     </div>
     <div class="chatMenu_chatBody">
-      <div class="chat-messages-area" id="chat-messages-list">
-        <p style="color:#777; text-align:center; margin-top:20px;">Loading messages...</p>
+      <div class="chat-tabs">
+        <button class="chat-tab-btn active" onclick="switchChatTab('dms')">My DMs</button>
+        <button class="chat-tab-btn" onclick="switchChatTab('requests')">Requests <span id="req-count"></span></button>
+        <button class="chat-tab-btn" onclick="switchChatTab('send')">Send Request</button>
       </div>
-      <div class="chat-input-area">
-        <input type="text" id="chat-msg-input" placeholder="Type a message..." onkeyup="if(event.key==='Enter') sendChatMessage()">
-        <button onclick="sendChatMessage()">Send</button>
+
+      <!-- ACTIVE DMS TAB -->
+      <div class="chat-tab-content active" id="tab-dms">
+        <div id="dm-chats-list" style="flex:1; overflow-y:auto;">
+          <p style="color:#777; text-align:center; font-size:11px; margin-top:20px;">No active DM conversations.</p>
+        </div>
+        <div id="active-chat-view" style="display:none; flex-direction:column; flex:1;">
+          <div style="padding:4px 8px; background:#e0e0e0; font-size:11px; font-weight:bold; display:flex; justify-content:space-between;">
+            <span id="active-chat-target">Chatting...</span>
+            <span style="cursor:pointer; color:#c00;" onclick="closeActiveDm()">[X]</span>
+          </div>
+          <div class="chat-messages-area" id="chat-messages-list"></div>
+          <div class="chat-input-area">
+            <input type="text" id="chat-msg-input" placeholder="Type a message..." onkeyup="if(event.key==='Enter') sendChatMessage()">
+            <button onclick="sendChatMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DM REQUESTS TAB -->
+      <div class="chat-tab-content" id="tab-requests">
+        <div id="incoming-requests-list" style="flex:1; overflow-y:auto;">
+          <p style="color:#777; text-align:center; font-size:11px; margin-top:20px;">No pending DM requests.</p>
+        </div>
+      </div>
+
+      <!-- SEND DM REQUEST TAB -->
+      <div class="chat-tab-content" id="tab-send">
+        <div style="padding:10px;">
+          <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:4px;">Username to Request DM:</label>
+          <input type="text" id="dm-target-username" placeholder="Enter username..." style="width:100%; padding:6px; font-size:12px; margin-bottom:8px; border:1px solid #ccc;">
+          <button onclick="sendDmRequest()" style="width:100%; padding:6px; background:#0074BD; color:white; border:none; font-weight:bold; font-size:12px; cursor:pointer; border-radius:2px;">Send DM Request</button>
+        </div>
       </div>
     </div>
   </div>
@@ -791,6 +487,7 @@
 
     let cachedGames = [];
     let cachedUsers = [];
+    let activeDmTarget = null;
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
@@ -805,9 +502,25 @@
       container.classList.toggle('open');
       if (container.classList.contains('open')) {
         icon.innerHTML = '&#9660;';
-        loadChatMessages();
+        loadChatData();
       } else {
         icon.innerHTML = '&#9650;';
+      }
+    }
+
+    function switchChatTab(tabName) {
+      document.querySelectorAll('.chat-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.chat-tab-content').forEach(c => c.classList.remove('active'));
+      
+      if (tabName === 'dms') {
+        document.querySelectorAll('.chat-tab-btn')[0].classList.add('active');
+        document.getElementById('tab-dms').classList.add('active');
+      } else if (tabName === 'requests') {
+        document.querySelectorAll('.chat-tab-btn')[1].classList.add('active');
+        document.getElementById('tab-requests').classList.add('active');
+      } else if (tabName === 'send') {
+        document.querySelectorAll('.chat-tab-btn')[2].classList.add('active');
+        document.getElementById('tab-send').classList.add('active');
       }
     }
 
@@ -915,48 +628,184 @@
       }
     }
 
-    async function loadChatMessages() {
-      const list = document.getElementById('chat-messages-list');
+    // CHAT & DM REQUEST BACKEND LOGIC
+    async function loadChatData() {
+      const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name');
       try {
         const res = await fetch(CHAT_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         if (res.ok) {
           const data = await res.json();
+          const requests = data.record.requests || [];
+          const connections = data.record.connections || [];
           const messages = data.record.messages || [];
-          if (messages.length === 0) {
-            list.innerHTML = `<p style="color:#777; text-align:center; font-size:11px; margin-top:20px;">No messages yet. Say hello!</p>`;
-            return;
+
+          // Render incoming requests for current user
+          const myRequests = requests.filter(r => r.to.toLowerCase() === currentUser.toLowerCase() && r.status === 'pending');
+          const reqCount = document.getElementById('req-count');
+          reqCount.textContent = myRequests.length > 0 ? `(${myRequests.length})` : '';
+
+          const reqList = document.getElementById('incoming-requests-list');
+          if (myRequests.length === 0) {
+            reqList.innerHTML = `<p style="color:#777; text-align:center; font-size:11px; margin-top:20px;">No pending DM requests.</p>`;
+          } else {
+            reqList.innerHTML = myRequests.map(r => `
+              <div class="request-item">
+                <div><strong>${escapeHtml(r.from)}</strong> wants to send you Direct Messages.</div>
+                <div class="request-btn-group">
+                  <button class="req-accept-btn" onclick="respondDmRequest('${r.id}', 'accepted')">Accept</button>
+                  <button class="req-decline-btn" onclick="respondDmRequest('${r.id}', 'declined')">Decline</button>
+                </div>
+              </div>
+            `).join('');
           }
-          list.innerHTML = messages.map(m => `
-            <div class="chat-msg">
-              <div class="chat-msg-author">${escapeHtml(m.author)}</div>
-              <div>${escapeHtml(m.text)}</div>
-            </div>
-          `).join('');
-          list.scrollTop = list.scrollHeight;
+
+          // Render active DM connections
+          const myConnections = connections.filter(c => c.user1.toLowerCase() === currentUser.toLowerCase() || c.user2.toLowerCase() === currentUser.toLowerCase());
+          const dmsList = document.getElementById('dm-chats-list');
+
+          if (myConnections.length === 0) {
+            dmsList.innerHTML = `<p style="color:#777; text-align:center; font-size:11px; margin-top:20px;">No active DM conversations.</p>`;
+          } else {
+            dmsList.innerHTML = myConnections.map(c => {
+              const otherUser = c.user1.toLowerCase() === currentUser.toLowerCase() ? c.user2 : c.user1;
+              return `<div class="dm-user-item" onclick="openActiveDm('${otherUser}')">💬 ${otherUser}</div>`;
+            }).join('');
+          }
+
+          // If currently inside an active chat thread, update messages
+          if (activeDmTarget) {
+            renderChatThread(messages, currentUser, activeDmTarget);
+          }
+        }
+      } catch (err) {}
+    }
+
+    async function sendDmRequest() {
+      const targetUser = document.getElementById('dm-target-username').value.trim();
+      const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name');
+
+      if (!targetUser) return alert('Please enter a username!');
+      if (targetUser.toLowerCase() === currentUser.toLowerCase()) return alert('You cannot DM yourself!');
+
+      try {
+        const getRes = await fetch(CHAT_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        let record = { requests: [], connections: [], messages: [] };
+        if (getRes.ok) {
+          const data = await getRes.json();
+          record = data.record;
+        }
+
+        record.requests = record.requests || [];
+        record.requests.push({
+          id: 'req_' + Date.now(),
+          from: currentUser,
+          to: targetUser,
+          status: 'pending'
+        });
+
+        const putRes = await fetch(CHAT_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify(record)
+        });
+
+        if (putRes.ok) {
+          alert(`DM request sent to ${targetUser}!`);
+          document.getElementById('dm-target-username').value = '';
+          switchChatTab('dms');
+          loadChatData();
         }
       } catch (err) {
-        list.innerHTML = `<p style="color:#c00; text-align:center; font-size:11px;">Failed to load chat.</p>`;
+        alert('Error sending DM request.');
       }
+    }
+
+    async function respondDmRequest(reqId, action) {
+      try {
+        const getRes = await fetch(CHAT_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (getRes.ok) {
+          const data = await getRes.json();
+          let record = data.record;
+          record.requests = record.requests || [];
+          record.connections = record.connections || [];
+
+          const reqIndex = record.requests.findIndex(r => r.id === reqId);
+          if (reqIndex !== -1) {
+            const req = record.requests[reqIndex];
+            if (action === 'accepted') {
+              record.connections.push({ user1: req.from, user2: req.to });
+            }
+            record.requests.splice(reqIndex, 1);
+          }
+
+          const putRes = await fetch(CHAT_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            body: JSON.stringify(record)
+          });
+
+          if (putRes.ok) {
+            loadChatData();
+          }
+        }
+      } catch (err) {}
+    }
+
+    function openActiveDm(targetUser) {
+      activeDmTarget = targetUser;
+      document.getElementById('dm-chats-list').style.display = 'none';
+      document.getElementById('active-chat-view').style.display = 'flex';
+      document.getElementById('active-chat-target').textContent = `Chat with ${targetUser}`;
+      loadChatData();
+    }
+
+    function closeActiveDm() {
+      activeDmTarget = null;
+      document.getElementById('dm-chats-list').style.display = 'block';
+      document.getElementById('active-chat-view').style.display = 'none';
+    }
+
+    function renderChatThread(messages, user1, user2) {
+      const list = document.getElementById('chat-messages-list');
+      const filteredMsgs = messages.filter(m => 
+        (m.from.toLowerCase() === user1.toLowerCase() && m.to.toLowerCase() === user2.toLowerCase()) ||
+        (m.from.toLowerCase() === user2.toLowerCase() && m.to.toLowerCase() === user1.toLowerCase())
+      );
+
+      if (filteredMsgs.length === 0) {
+        list.innerHTML = `<p style="color:#777; text-align:center; font-size:11px; margin-top:20px;">No messages yet. Say hi!</p>`;
+        return;
+      }
+
+      list.innerHTML = filteredMsgs.map(m => `
+        <div class="chat-msg">
+          <div class="chat-msg-author">${escapeHtml(m.from)}</div>
+          <div>${escapeHtml(m.text)}</div>
+        </div>
+      `).join('');
+      list.scrollTop = list.scrollHeight;
     }
 
     async function sendChatMessage() {
       const input = document.getElementById('chat-msg-input');
       const text = input.value.trim();
-      if (!text) return;
+      const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name');
+
+      if (!text || !activeDmTarget) return;
 
       input.disabled = true;
       try {
         const getRes = await fetch(CHAT_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        let messages = [];
+        let record = { requests: [], connections: [], messages: [] };
         if (getRes.ok) {
           const data = await getRes.json();
-          messages = data.record.messages || [];
+          record = data.record;
         }
 
-        const author = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
-
-        messages.push({
-          author: author,
+        record.messages = record.messages || [];
+        record.messages.push({
+          from: currentUser,
+          to: activeDmTarget,
           text: text,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         });
@@ -964,12 +813,12 @@
         const putRes = await fetch(CHAT_URL, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify({ messages: messages })
+          body: JSON.stringify(record)
         });
 
         if (putRes.ok) {
           input.value = '';
-          loadChatMessages();
+          loadChatData();
         }
       } catch (err) {
         alert('Failed to send message.');
