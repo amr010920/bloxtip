@@ -489,18 +489,23 @@
         <div class="chatMenu_header_left">
           <p class="chatMenu_chatLabel__DDNOw">Chat</p>
           <span class="chatMenu_badge" id="chat-badge">0</span>
-            <div class="chatMenu_chatBody">
-             <div class="chat-nav-tabs">
-              <button class="chat-tab-btn active" onclick="switchChatTab('dms')">
-                Friends
-              </button>
-               <button class="chat-tab-btn" onclick="switchChatTab('requests')">
-                Requests <span id="req-count"></span>
-              </button>
-                <button class="chat-tab-btn" onclick="switchChatTab('add')">
-                 Add
-               </button>
-               </div>
+        </div>
+        <span style="color:white; font-size:11px;" id="chat-toggle-icon">&#9650;</span>
+      </div>
+    </div>
+    
+    <div class="chatMenu_chatBody">
+      <div class="chat-nav-tabs">
+        <button class="chat-tab-btn active" onclick="switchChatTab('dms')">
+          Friends
+        </button>
+        <button class="chat-tab-btn" onclick="switchChatTab('requests')">
+          Requests <span id="req-count"></span>
+        </button>
+        <button class="chat-tab-btn" onclick="switchChatTab('add')">
+          Add
+        </button>
+      </div>
 
       <!-- DM FRIENDS LIST & CONVERSATION THREAD -->
       <div class="chat-tab-content active" id="tab-dms">
