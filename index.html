@@ -122,7 +122,27 @@
     .game-creator a { color: #0074BD; text-decoration: none; font-weight: bold; }
     .btn-primary-lg { background: #02b757; color: white; padding: 10px 24px; font-weight: bold; font-size: 16px; border-radius: 4px; text-decoration: none; display: inline-block; cursor: pointer; text-align: center; }
     .btn-primary-lg:hover { background: #00cc61; }
-    .share-rate-favorite { display: flex; align-items: center; gap: 15px; list-style: none; margin-top: 15px; }
+    
+    /* LEGACY SVG VOTE SPRITES */
+    .icon-like-legacy, .icon-dislike-legacy {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background-image: url('https://duckyblox.com/images/Shared/games_09202017.svg');
+      background-repeat: no-repeat;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+    .icon-like-legacy { background-position: 0 0; }
+    .icon-like-legacy:hover { background-position: -20px 0; }
+    .icon-dislike-legacy { background-position: 0 -20px; }
+    .icon-dislike-legacy:hover { background-position: -20px -20px; }
+
+    .voting-panel { display: flex; align-items: center; gap: 12px; margin-top: 15px; background: #f5f5f5; padding: 8px 12px; border-radius: 4px; }
+    .vote-bar-wrapper { flex: 1; background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden; position: relative; }
+    .vote-bar-fill { background: #02b757; height: 100%; width: 0%; transition: width 0.3s ease; }
+    .vote-count-text { font-size: 12px; font-weight: bold; color: #555; }
+
     .rbx-tabs-horizontal { margin-top: 25px; }
     .nav-tabs { display: flex; list-style: none; border-bottom: 2px solid #ddd; padding-left: 0; }
     .nav-tabs li { margin-right: 15px; }
@@ -594,16 +614,24 @@
     const ACCOUNTS_BIN_ID = "6ad782eeac6210605a429ed7";
     const FORUM_BIN_ID = "6ad77eccffd5d160537c47d4"; 
     const CHAT_BIN_ID = "6ad8bfccac6210605a45d063";
+    const VOTES_BIN_ID = "6ad8edb9ffd5d16053802668";
+    const VISITS_BIN_ID = "6ad8edfbffd5d16053802767";
+
     const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi"; 
 
     const GAMES_URL = `https://api.jsonbin.io/v3/b/${GAMES_BIN_ID}`;
     const ACCOUNTS_URL = `https://api.jsonbin.io/v3/b/${ACCOUNTS_BIN_ID}`;
     const FORUM_URL = `https://api.jsonbin.io/v3/b/${FORUM_BIN_ID}`;
     const CHAT_URL = `https://api.jsonbin.io/v3/b/${CHAT_BIN_ID}`;
+    const VOTES_URL = `https://api.jsonbin.io/v3/b/${VOTES_BIN_ID}`;
+    const VISITS_URL = `https://api.jsonbin.io/v3/b/${VISITS_BIN_ID}`;
+
     const DEFAULT_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
 
     let cachedGames = [];
     let cachedUsers = [];
+    let cachedVisits = {};
+    let cachedVotes = {};
     let activeDmTarget = null;
 
     function toggleSidebar() {
@@ -679,6 +707,14 @@
       document.getElementById('page-header-section').style.display = 'flex';
       document.getElementById('content-display-section').style.display = 'block';
       document.getElementById('forum-section-container').style.display = 'block';
+      
+      const contentSection = document.getElementById('content-display-section');
+      contentSection.innerHTML = `
+        <h2 id="section-heading">Games</h2>
+        <div class="games-grid" id="main-grid-container">
+          <p style="grid-column: 1 / -1; text-align: center; color: #666;">Loading global catalog...</p>
+        </div>
+      `;
       executeSearch();
       loadForumPosts();
     }
@@ -692,6 +728,79 @@
         .replace(/-+$/, '');            
     }
 
+    async function loadVisitsData() {
+      try {
+        const res = await fetch(VISITS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (res.ok) {
+          const data = await res.json();
+          cachedVisits = data.record.visits || {};
+        }
+      } catch (e) {}
+    }
+
+    async function loadVotesData() {
+      try {
+        const res = await fetch(VOTES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (res.ok) {
+          const data = await res.json();
+          cachedVotes = data.record.votes || {};
+        }
+      } catch (e) {}
+    }
+
+    async function incrementPlaceVisits(placeId, rbxlUrl) {
+      if (!placeId) return;
+      cachedVisits[placeId] = (cachedVisits[placeId] || 0) + 1;
+
+      // Update active UI elements if visible
+      const visitSpan = document.getElementById(`visit-count-${placeId}`);
+      if (visitSpan) visitSpan.textContent = cachedVisits[placeId];
+
+      try {
+        await fetch(VISITS_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ visits: cachedVisits })
+        });
+      } catch (e) {}
+
+      if (rbxlUrl) window.open(rbxlUrl, '_blank');
+    }
+
+    async function handleVote(placeId, voteType) {
+      if (!placeId) return;
+      if (!cachedVotes[placeId]) {
+        cachedVotes[placeId] = { up: 0, down: 0 };
+      }
+
+      if (voteType === 'up') cachedVotes[placeId].up += 1;
+      if (voteType === 'down') cachedVotes[placeId].down += 1;
+
+      updateVoteDisplay(placeId);
+
+      try {
+        await fetch(VOTES_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ votes: cachedVotes })
+        });
+      } catch (e) {}
+    }
+
+    function updateVoteDisplay(placeId) {
+      const v = cachedVotes[placeId] || { up: 0, down: 0 };
+      const total = v.up + v.down;
+      const pct = total > 0 ? Math.round((v.up / total) * 100) : 0;
+
+      const upTxt = document.getElementById(`vote-up-${placeId}`);
+      const downTxt = document.getElementById(`vote-down-${placeId}`);
+      const fillBar = document.getElementById(`vote-bar-fill-${placeId}`);
+
+      if (upTxt) upTxt.textContent = v.up;
+      if (downTxt) downTxt.textContent = v.down;
+      if (fillBar) fillBar.style.width = `${pct}%`;
+    }
+
     async function openGameDetails(gameId, gameTitle, gameAuthor, gameThumbnail, gameRbxlUrl, gameDescription) {
       const slug = slugify(gameTitle || 'game');
       const newPath = `/games/${gameId}/${slug}`;
@@ -699,11 +808,19 @@
 
       document.getElementById('page-header-section').style.display = 'none';
       document.getElementById('forum-section-container').style.display = 'none';
+
+      await loadVisitsData();
+      await loadVotesData();
+
+      const visits = cachedVisits[gameId] || 0;
+      const votes = cachedVotes[gameId] || { up: 0, down: 0 };
+      const totalVotes = votes.up + votes.down;
+      const votePct = totalVotes > 0 ? Math.round((votes.up / totalVotes) * 100) : 0;
       
       const contentSection = document.getElementById('content-display-section');
       contentSection.innerHTML = `
         <div class="container-main">
-          <div id="game-detail-page" class="row page-content inline-social" data-place-id="${gameId}" data-ispartyleader="False">
+          <div id="game-detail-page" class="row page-content inline-social" data-place-id="${gameId}">
             <div class="col-xs-12 section-content game-main-content">
               <div class="game-thumb-container">
                 <div id="carousel-game-details" class="carousel slide" data-ride="carousel" data-interval="false">
@@ -721,15 +838,21 @@
                 </div>
                 <div class="game-buttons-container">
                   <div class="game-play-buttons">
-                    <a href="${gameRbxlUrl || '#'}" target="_blank" class="btn-primary-lg">Play</a>
+                    <button class="btn-primary-lg" onclick="incrementPlaceVisits('${gameId}', '${gameRbxlUrl}')">Play</button>
                   </div>
                 </div>
-                <ul class="share-rate-favorite">
-                  <li class="favorite-button-container">
-                    <span title="6" class="text-favorite favoriteCount">6</span>
-                    <div class="icon-favorite" style="display:inline-block; margin-left:4px; font-weight:bold; color:#e74c3c;">&hearts;</div>
-                  </li>
-                </ul>
+
+                <!-- VOTING PANEL -->
+                <div class="voting-panel">
+                  <span class="icon-like-legacy" title="Like" onclick="handleVote('${gameId}', 'up')"></span>
+                  <div class="vote-bar-wrapper">
+                    <div class="vote-bar-fill" id="vote-bar-fill-${gameId}" style="width: ${votePct}%;"></div>
+                  </div>
+                  <span class="icon-dislike-legacy" title="Dislike" onclick="handleVote('${gameId}', 'down')"></span>
+                  <span class="vote-count-text">
+                    [<span id="vote-up-${gameId}">${votes.up}</span> / <span id="vote-down-${gameId}">${votes.down}</span>]
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -745,7 +868,7 @@
                       <pre class="game-description" style="white-space: pre-wrap; font-family: inherit; color: #444; margin-bottom:15px;">${escapeHtml(gameDescription || 'No description available.')}</pre>
                       <ul class="game-stats-container">
                         <li class="game-stat"><p class="text-label">Playing</p><p class="text-lead">0</p></li>
-                        <li class="game-stat"><p class="text-label">Visits</p><p class="text-lead">484</p></li>
+                        <li class="game-stat"><p class="text-label">Visits</p><p class="text-lead"><span id="visit-count-${gameId}">${visits}</span></p></li>
                         <li class="game-stat"><p class="text-label">Max Players</p><p class="text-lead">100</p></li>
                       </ul>
                     </div>
@@ -765,11 +888,14 @@
       const heading = document.getElementById('section-heading');
       const container = document.getElementById('main-grid-container');
 
+      if (!container) return;
       container.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #666;">Searching...</p>`;
 
       if (type === 'games') {
-        heading.textContent = query ? `Game Search Results for "${query}"` : "Games";
+        if(heading) heading.textContent = query ? `Game Search Results for "${query}"` : "Games";
         
+        await loadVisitsData();
+
         if (cachedGames.length === 0) {
           try {
             const res = await fetch(GAMES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
@@ -787,19 +913,24 @@
           return;
         }
 
-        container.innerHTML = filtered.map(game => `
-          <div class="game-card">
-            <div class="game-card-image-container" onclick="openGameDetails('${game.id || Date.now()}', '${escapeHtml(game.title)}', '${escapeHtml(game.author || 'Developer')}', '${game.thumbnail || DEFAULT_THUMBNAIL}', '${game.rbxlUrl}', '${escapeHtml(game.description || '')}')">
-              <img src="${game.thumbnail || DEFAULT_THUMBNAIL}" class="game-card-img" onerror="this.src='${DEFAULT_THUMBNAIL}'">
+        container.innerHTML = filtered.map(game => {
+          const gId = game.id || Date.now();
+          const visits = cachedVisits[gId] || 0;
+          return `
+            <div class="game-card">
+              <div class="game-card-image-container" onclick="openGameDetails('${gId}', '${escapeHtml(game.title)}', '${escapeHtml(game.author || 'Developer')}', '${game.thumbnail || DEFAULT_THUMBNAIL}', '${game.rbxlUrl}', '${escapeHtml(game.description || '')}')">
+                <img src="${game.thumbnail || DEFAULT_THUMBNAIL}" class="game-card-img" onerror="this.src='${DEFAULT_THUMBNAIL}'">
+              </div>
+              <h3 class="game-card-title" onclick="openGameDetails('${gId}', '${escapeHtml(game.title)}', '${escapeHtml(game.author || 'Developer')}', '${game.thumbnail || DEFAULT_THUMBNAIL}', '${game.rbxlUrl}', '${escapeHtml(game.description || '')}')">${game.title}</h3>
+              <div class="game-card-meta">By ${game.author || 'Developer'}</div>
+              <div class="game-card-meta" style="font-size:10px; color:#888; margin-top:2px;">Visits: ${visits}</div>
+              <button class="play-btn" onclick="incrementPlaceVisits('${gId}', '${game.rbxlUrl}')">Play</button>
             </div>
-            <h3 class="game-card-title" onclick="openGameDetails('${game.id || Date.now()}', '${escapeHtml(game.title)}', '${escapeHtml(game.author || 'Developer')}', '${game.thumbnail || DEFAULT_THUMBNAIL}', '${game.rbxlUrl}', '${escapeHtml(game.description || '')}')">${game.title}</h3>
-            <div class="game-card-meta">By ${game.author || 'Developer'}</div>
-            <a href="${game.rbxlUrl}" target="_blank" class="play-btn">Play</a>
-          </div>
-        `).join('');
+          `;
+        }).join('');
 
       } else if (type === 'users') {
-        heading.textContent = query ? `User Search Results for "${query}"` : "Registered Users";
+        if(heading) heading.textContent = query ? `User Search Results for "${query}"` : "Registered Users";
 
         if (cachedUsers.length === 0) {
           try {
