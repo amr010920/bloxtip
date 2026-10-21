@@ -338,6 +338,13 @@
       background: #00cc61;
     }
 
+    /* Hide the send button on desktop (min-width: 769px), keep visible on mobile */
+    @media (min-width: 769px) {
+      .chat-input-area button.mobile-send-btn {
+        display: none !important;
+      }
+    }
+
     .dm-user-item {
       padding: 10px 12px;
       background: #ffffff;
@@ -490,6 +497,7 @@
           <p class="chatMenu_chatLabel__DDNOw">Chat</p>
           <span class="chatMenu_badge" id="chat-badge">0</span>
         </div>
+        <span style="color:white; font-size:11px;" id="chat-toggle-icon">&#9650;</span>
       </div>
     </div>
     
@@ -523,6 +531,7 @@
           <div class="chat-messages-area" id="chat-messages-list"></div>
           <div class="chat-input-area">
             <input type="text" id="chat-msg-input" placeholder="Type a message..." onkeyup="if(event.key==='Enter') sendChatMessage()">
+            <button class="mobile-send-btn" onclick="sendChatMessage()">Send</button>
           </div>
         </div>
       </div>
@@ -585,10 +594,10 @@
       const icon = document.getElementById('chat-toggle-icon');
       container.classList.toggle('open');
       if (container.classList.contains('open')) {
-        icon.innerHTML = '&#9660;';
+        if(icon) icon.innerHTML = '&#9660;';
         loadChatData();
       } else {
-        icon.innerHTML = '&#9650;';
+        if(icon) icon.innerHTML = '&#9650;';
       }
     }
 
@@ -726,43 +735,49 @@
           const reqCount = document.getElementById('req-count');
           const badge = document.getElementById('chat-badge');
           
-          reqCount.textContent = myRequests.length > 0 ? `(${myRequests.length})` : '';
+          if(reqCount) reqCount.textContent = myRequests.length > 0 ? `(${myRequests.length})` : '';
           if (myRequests.length > 0) {
-            badge.textContent = myRequests.length;
-            badge.style.display = 'inline-block';
+            if(badge) {
+              badge.textContent = myRequests.length;
+              badge.style.display = 'inline-block';
+            }
           } else {
-            badge.style.display = 'none';
+            if(badge) badge.style.display = 'none';
           }
 
           const reqList = document.getElementById('incoming-requests-list');
-          if (myRequests.length === 0) {
-            reqList.innerHTML = `<p style="color:#777; text-align:center; font-size:11px; margin-top:30px;">No pending DM requests.</p>`;
-          } else {
-            reqList.innerHTML = myRequests.map(r => `
-              <div class="request-card">
-                <div><strong>${escapeHtml(r.from)}</strong> wants to chat with you.</div>
-                <div class="request-btn-group">
-                  <button class="req-accept-btn" onclick="respondDmRequest('${r.id}', 'accepted')">Accept</button>
-                  <button class="req-decline-btn" onclick="respondDmRequest('${r.id}', 'declined')">Decline</button>
+          if (reqList) {
+            if (myRequests.length === 0) {
+              reqList.innerHTML = `<p style="color:#777; text-align:center; font-size:11px; margin-top:30px;">No pending DM requests.</p>`;
+            } else {
+              reqList.innerHTML = myRequests.map(r => `
+                <div class="request-card">
+                  <div><strong>${escapeHtml(r.from)}</strong> wants to chat with you.</div>
+                  <div class="request-btn-group">
+                    <button class="req-accept-btn" onclick="respondDmRequest('${r.id}', 'accepted')">Accept</button>
+                    <button class="req-decline-btn" onclick="respondDmRequest('${r.id}', 'declined')">Decline</button>
+                  </div>
                 </div>
-              </div>
-            `).join('');
+              `).join('');
+            }
           }
 
           const myConnections = connections.filter(c => c.user1.toLowerCase() === currentUser.toLowerCase() || c.user2.toLowerCase() === currentUser.toLowerCase());
           const dmsList = document.getElementById('dm-chats-list');
 
-          if (myConnections.length === 0) {
-            dmsList.innerHTML = `<p style="color:#777; text-align:center; font-size:11px; margin-top:30px;">No friends added yet.</p>`;
-          } else {
-            dmsList.innerHTML = myConnections.map(c => {
-              const otherUser = c.user1.toLowerCase() === currentUser.toLowerCase() ? c.user2 : c.user1;
-              return `
-                <div class="dm-user-item" onclick="openActiveDm('${otherUser}')">
-                  <span style="width:8px; height:8px; background:#02b757; border-radius:100%; display:inline-block; flex-shrink:0;"></span>
-                  ${otherUser}
-                </div>`;
-            }).join('');
+          if (dmsList) {
+            if (myConnections.length === 0) {
+              dmsList.innerHTML = `<p style="color:#777; text-align:center; font-size:11px; margin-top:30px;">No friends added yet.</p>`;
+            } else {
+              dmsList.innerHTML = myConnections.map(c => {
+                const otherUser = c.user1.toLowerCase() === currentUser.toLowerCase() ? c.user2 : c.user1;
+                return `
+                  <div class="dm-user-item" onclick="openActiveDm('${otherUser}')">
+                    <span style="width:8px; height:8px; background:#02b757; border-radius:100%; display:inline-block; flex-shrink:0;"></span>
+                    ${otherUser}
+                  </div>`;
+              }).join('');
+            }
           }
 
           if (activeDmTarget) {
@@ -859,6 +874,7 @@
 
     function renderChatThread(messages, user1, user2) {
       const list = document.getElementById('chat-messages-list');
+      if (!list) return;
       const filteredMsgs = messages.filter(m => 
         (m.from.toLowerCase() === user1.toLowerCase() && m.to.toLowerCase() === user2.toLowerCase()) ||
         (m.from.toLowerCase() === user2.toLowerCase() && m.to.toLowerCase() === user1.toLowerCase())
@@ -884,6 +900,7 @@
 
     async function sendChatMessage() {
       const input = document.getElementById('chat-msg-input');
+      if (!input) return;
       const text = input.value.trim();
       const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name');
 
@@ -965,7 +982,7 @@
         const getRes = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         let posts = [];
         if (getRes.ok) {
-          const data = await getRes.json();
+          const data = await res.json();
           posts = data.record.posts || [];
         }
 
