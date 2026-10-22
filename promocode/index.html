@@ -1,0 +1,130 @@
+<!doctype html>
+<html class="light" dir="ltr" lang="en" style="height: 100%;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Promo Codes - Bloxtip</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Untitled-removebg-preview.png">
+  <style>
+    :root { --theme-navbar-bg: #0074BD; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #e3e3e3; font-family: Arial, sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+    .navbar { height: 40px; background-color: var(--theme-navbar-bg); display: flex; align-items: center; padding: 0 15px; color: white; justify-content: space-between; font-size: 14px; font-weight: bold; }
+    .navbar a { color: white; text-decoration: none; margin-right: 15px; }
+    .main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .promo-card { background: white; border: 1px solid #ccc; padding: 30px; border-radius: 4px; max-width: 420px; width: 100%; text-align: center; }
+    .promo-card h2 { font-size: 22px; color: #333; margin-bottom: 8px; }
+    .promo-card p { font-size: 13px; color: #666; margin-bottom: 20px; }
+    .promo-input { width: 100%; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 2px; margin-bottom: 12px; }
+    .promo-btn { background: #02b757; color: white; border: none; padding: 10px; font-weight: bold; font-size: 14px; border-radius: 2px; cursor: pointer; width: 100%; }
+    .promo-btn:hover { background: #00cc61; }
+    .back-link { display: inline-block; margin-top: 15px; color: #0074BD; font-size: 13px; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div>
+      <a href="./index.html">Home</a>
+      <a href="./catalog.html">Catalog</a>
+    </div>
+    <div>
+      Balance: <span id="nav-robux-bal">0</span> R$
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="promo-card">
+      <h2>Redeem Promo Codes</h2>
+      <p>Type your promo code below to claim free Robux directly saved to your account!</p>
+      <input type="text" id="promo-code-input" class="promo-input" placeholder="Enter code (e.g., discordmem12)">
+      <button class="promo-btn" onclick="redeemPromoCode()">Redeem Code</button>
+      <br>
+      <a href="./index.html" class="back-link">&larr; Return to Home</a>
+    </div>
+  </main>
+
+  <script>
+    const ROBUX_BIN_ID = "6ada423bac6210605a499e4e";
+    const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi";
+    const ROBUX_URL = `https://api.jsonbin.io/v3/b/${ROBUX_BIN_ID}`;
+
+    let cachedRobux = {};
+    let redeemedCodes = JSON.parse(localStorage.getItem('bloxtip_redeemed_codes') || '[]');
+
+    async function loadRobuxData() {
+      try {
+        const res = await fetch(ROBUX_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (res.ok) {
+          const data = await res.json();
+          cachedRobux = data.record.robux || data.record || {};
+        }
+      } catch (e) {}
+    }
+
+    function getUserRobux(username) {
+      if (!username) return 0;
+      const lower = username.toLowerCase();
+      if (cachedRobux[lower] === undefined) {
+        cachedRobux[lower] = 0;
+        setUserRobux(username, 0);
+      }
+      return cachedRobux[lower];
+    }
+
+    async function setUserRobux(username, amount) {
+      if (!username) return;
+      cachedRobux[username.toLowerCase()] = parseInt(amount, 10) || 0;
+      try {
+        await fetch(ROBUX_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ robux: cachedRobux })
+        });
+      } catch (e) {}
+    }
+
+    async function redeemPromoCode() {
+      const input = document.getElementById('promo-code-input');
+      const code = input.value.trim().toLowerCase();
+      if (!code) {
+        alert("Please enter a promo code.");
+        return;
+      }
+
+      const activeUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name');
+      if (!activeUser) {
+        alert("You must be logged in or active as a guest to redeem promo codes.");
+        return;
+      }
+
+      if (redeemedCodes.includes(code)) {
+        alert("You have already redeemed this promo code!");
+        return;
+      }
+
+      if (code === 'discordmem12') {
+        const currentBalance = getUserRobux(activeUser);
+        const newBalance = currentBalance + 500;
+        await setUserRobux(activeUser, newBalance);
+
+        redeemedCodes.push(code);
+        localStorage.setItem('bloxtip_redeemed_codes', JSON.stringify(redeemedCodes));
+
+        alert("Success! 500 Robux added to your account and saved to the private JSONBin!");
+        input.value = '';
+        document.getElementById('nav-robux-bal').textContent = newBalance;
+      } else {
+        alert("Invalid promo code.");
+      }
+    }
+
+    window.onload = async () => {
+      await loadRobuxData();
+      const activeUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
+      document.getElementById('nav-robux-bal').textContent = getUserRobux(activeUser);
+    };
+  </script>
+</body>
+</html>
