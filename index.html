@@ -24,7 +24,7 @@
       position: relative;
     }
 
-    /* TOP NAVBAR */
+    /* TOP NAVBAR MATCHING SCREENSHOT LAYOUT */
     .navbar {
       z-index: 1050;
       height: 40px;
@@ -45,12 +45,12 @@
       gap: 15px;
     }
     
-    .left-section { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .left-section { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
 
     .menu-toggle-btn {
-      background: none; border: none; cursor: pointer; padding: 4px;
+      background: none; border: none; cursor: pointer; padding: 2px;
       display: flex; align-items: center; justify-content: center;
-      width: 30px; height: 30px; border-radius: 3px;
+      width: 26px; height: 26px; border-radius: 3px;
     }
     .menu-toggle-btn:hover { background: rgba(255, 255, 255, 0.15); }
 
@@ -58,37 +58,69 @@
     .hamburger-line { width: 100%; height: 2px; background-color: #ffffff; border-radius: 1px; }
 
     .logo-btn { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; }
-    .logo-img { height: 28px; width: auto; object-fit: contain; }
+    .logo-img { height: 26px; width: auto; object-fit: contain; }
 
-    .header-nav { display: flex; gap: 12px; margin-left: 10px; }
-    .header-nav a { color: white; text-decoration: none; font-size: 13px; font-weight: bold; padding: 4px 6px; border-radius: 2px; }
-    .header-nav a:hover { background: rgba(255, 255, 255, 0.15); }
+    .header-nav { display: flex; gap: 16px; margin-left: 5px; }
+    .header-nav a { color: white; text-decoration: none; font-size: 14px; font-weight: bold; padding: 4px 2px; }
+    .header-nav a:hover { opacity: 0.85; }
 
-    /* CENTERED SEARCH BAR */
+    /* SEARCH BAR (WHITE WITH MAGNIFYING GLASS ON RIGHT) */
     .search-container { 
       flex: 1; 
-      max-width: 420px; 
+      max-width: 460px; 
       display: flex; 
       align-items: center; 
-      margin: 0 auto; 
+      margin: 0 15px; 
     }
-    .search-wrapper { width: 100%; display: flex; background: white; border-radius: 2px; border: 1px solid #b8b8b8; }
-    .search-select { background: #f0f0f0; border: none; border-right: 1px solid #cccccc; padding: 0 6px; font-size: 12px; font-weight: bold; color: #333; cursor: pointer; outline: none; }
-    .search-input { flex: 1; border: none; height: 26px; padding: 0 10px; font-size: 13px; }
+    .search-wrapper { 
+      width: 100%; 
+      display: flex; 
+      background: white; 
+      border-radius: 2px; 
+      height: 28px;
+      align-items: center;
+      padding-left: 8px;
+    }
+    .search-select { display: none; }
+    .search-input { 
+      flex: 1; 
+      border: none; 
+      height: 100%; 
+      padding: 0 6px; 
+      font-size: 13px; 
+      color: #333;
+    }
     .search-input:focus { outline: none; }
-    .search-button { border: none; border-left: 1px solid #cccccc; cursor: pointer; height: 26px; width: 32px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; }
-    .search-button:hover { background: #e5e5e5; }
-    .search-icon-svg { width: 13px; height: 13px; fill: #555555; }
+    .search-button { 
+      border: none; 
+      background: none;
+      cursor: pointer; 
+      height: 100%; 
+      width: 32px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+    }
+    .search-icon-svg { width: 15px; height: 15px; fill: #191919; }
 
-    .right-section { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    /* RIGHT SECTION LAYOUT */
+    .right-section { display: flex; align-items: center; gap: 12px; flex-shrink: 0; color: white; font-size: 13px; font-weight: bold; }
+    
+    .user-info-text { display: flex; align-items: center; gap: 4px; color: white; }
+
+    .nav-icon-btn {
+      background: none; border: none; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center;
+    }
+    .nav-icon-btn:hover { opacity: 0.8; }
+    .nav-icon-svg { width: 18px; height: 18px; fill: white; }
+
+    .robux-display { display: inline-flex; align-items: center; gap: 5px; font-weight: bold; font-size: 13px; color: white; }
+    .robux-icon { width: 18px; height: 18px; object-fit: contain; vertical-align: middle; }
+
     .auth-btn { background: #02b757; border: 1px solid #018a41; color: white; font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 2px; cursor: pointer; }
     .auth-btn:hover { background: #00cc61; }
     .auth-btn-sec { background: rgba(255, 255, 255, 0.2); border: 1px solid white; color: white; font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 2px; cursor: pointer; }
     .auth-btn-sec:hover { background: rgba(255, 255, 255, 0.3); }
-
-    .user-menu { color: white; padding: 4px 8px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
-    .robux-display { display: inline-flex; align-items: center; gap: 4px; font-weight: bold; background: rgba(0,0,0,0.25); padding: 3px 8px; border-radius: 3px; font-size: 12px; color: #55ff99; }
-    .robux-icon { width: 14px; height: 14px; object-fit: contain; vertical-align: middle; }
 
     /* SIDEBAR */
     .sidebar-overlay { display: none; position: fixed; top: 40px; left: 0; width: 100vw; height: calc(100vh - 40px); background: rgba(0, 0, 0, 0.3); z-index: 1040; }
@@ -148,19 +180,8 @@
     .btn-primary-lg { background: #02b757; color: white; padding: 10px 24px; font-weight: bold; font-size: 16px; border-radius: 4px; border: none; cursor: pointer; text-align: center; width: 100%; }
     .btn-primary-lg:hover { background: #00cc61; }
 
-    /* SVG LIKE & DISLIKE VOTE ICONS */
     .btn-vote-icon {
-      background: none;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      padding: 6px 10px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      font-weight: bold;
-      color: #444;
+      background: none; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: bold; color: #444;
     }
     .btn-vote-icon:hover { background: #f0f0f0; }
     .btn-vote-icon.active-vote { background: #eef5fc; border-color: #0074BD; color: #0074BD; }
@@ -229,34 +250,50 @@
         </div>
       </div>
 
-      <!-- CENTERED SEARCH BAR -->
+      <!-- SEARCH BAR MATCHING SCREENSHOT -->
       <div class="search-container">
         <div class="search-wrapper">
           <select id="search-type" class="search-select">
             <option value="games">Games</option>
             <option value="users">Users</option>
           </select>
-          <input type="text" id="search-query" class="search-input" placeholder="Search games or users..." onkeyup="executeSearch()">
+          <input type="text" id="search-query" class="search-input" placeholder="Search" onkeyup="executeSearch()">
           <button class="search-button" type="button" onclick="executeSearch()">
-            <svg class="search-icon-svg" viewBox="0 0 16 16">
-              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            <svg class="search-icon-svg" viewBox="0 0 24 24">
+              <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
             </svg>
           </button>
         </div>
       </div>
 
-      <!-- ROBUX, ICON, AND USERNAME NEXT TO SEARCH -->
+      <!-- RIGHT USER BAR WITH EXACT SEQUENCE -->
       <div class="right-section" id="auth-actions">
-        <a href="./signup" class="auth-btn" style="text-decoration:none;">Sign Up</a>
-        <a href="./login" class="auth-btn-sec" style="text-decoration:none;">Log In</a>
-        <span class="user-menu" id="user-menu-area" style="display:none;">
-          <span class="robux-display" id="user-robux-badge" title="Robux Balance">
-            <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/ROBUX_icon_3F19%2529.webp" class="robux-icon" alt="Robux">
-            <span id="robux-amount">0</span>
-          </span>
-          <span id="user-display">Guest</span>
-          <button style="background:none; border:none; color:white; cursor:pointer; font-size:12px;" onclick="logout()">[Log Out]</button>
-        </span>
+        <!-- USERNAME & AGE -->
+        <div class="user-info-text">
+          <span id="user-display">yepme2</span>: 13+
+        </div>
+
+        <!-- NOTIFICATION / FEED ICON -->
+        <button class="nav-icon-btn" title="Notifications">
+          <svg class="nav-icon-svg" viewBox="0 0 24 24">
+            <path d="M4 4h16v12H5.17L4 17.17V4m0-2c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H4zm2 10h12v2H6v-2zm0-3h12v2H6V9zm0-3h12v2H6V6z"/>
+          </svg>
+        </button>
+
+        <!-- ROBUX ICON AND BALANCE -->
+        <div class="robux-display" id="user-robux-badge" title="Robux Balance">
+          <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/ROBUX_icon_3F19%2529.webp" class="robux-icon" alt="Robux">
+          <span id="robux-amount">0</span>
+        </div>
+
+        <!-- SETTINGS GEAR ICON -->
+        <button class="nav-icon-btn" title="Settings">
+          <svg class="nav-icon-svg" viewBox="0 0 24 24">
+            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+          </svg>
+        </button>
+
+        <button style="background:none; border:none; color:white; cursor:pointer; font-size:12px; opacity:0.8;" onclick="logout()">[Log Out]</button>
       </div>
     </div>
   </nav>
@@ -414,21 +451,17 @@
       const savedUser = localStorage.getItem('bloxtip_username');
       const userDisplay = document.getElementById('user-display');
       const robuxAmountSpan = document.getElementById('robux-amount');
-      const userMenuArea = document.getElementById('user-menu-area');
-      const authActions = document.getElementById('auth-actions');
       const welcomeTitle = document.getElementById('welcome-title');
       const statusText = document.getElementById('account-status-text');
 
       if (savedUser) {
         if(userDisplay) {
           const badgeImg = isAdmin(savedUser) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : '';
-          userDisplay.innerHTML = `${savedUser} ${badgeImg}`;
+          userDisplay.innerHTML = `${savedUser}${badgeImg}`;
         }
         if(robuxAmountSpan) {
           robuxAmountSpan.textContent = getUserRobux(savedUser);
         }
-        if(userMenuArea) userMenuArea.style.display = 'inline-flex';
-        if(authActions) authActions.style.display = 'none';
         if(welcomeTitle) welcomeTitle.textContent = `Welcome back, ${savedUser}!`;
         if(statusText) statusText.textContent = `Account Active (Full Creation & Privilege Rights Enabled)`;
         renderAdminPanel();
@@ -440,8 +473,6 @@
           localStorage.setItem('bloxtip_guest_name', guestName);
         }
         if(userDisplay) userDisplay.textContent = guestName;
-        if(userMenuArea) userMenuArea.style.display = 'inline-flex';
-        if(authActions) authActions.style.display = 'none';
         if(welcomeTitle) welcomeTitle.textContent = `Welcome, ${guestName}!`;
         if(statusText) statusText.textContent = `You are playing as a Guest. Join games freely below!`;
       }
