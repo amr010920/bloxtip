@@ -115,6 +115,9 @@
     .ban-btn { background: #d9534f; border: 1px solid #b52b27; color: white; font-size: 11px; font-weight: bold; padding: 3px 6px; border-radius: 2px; cursor: pointer; margin-top: 6px; }
     .ban-btn:hover { background: #c9302c; }
 
+    .delete-forum-btn { background: #d9534f; border: none; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 2px; cursor: pointer; }
+    .delete-forum-btn:hover { background: #c9302c; }
+
     /* ROBLOX GAME DETAIL PAGE STYLES */
     .container-main { max-width: 1000px; margin: 0 auto; width: 100%; font-family: Arial, sans-serif; }
     .page-content { background: #fff; border: 1px solid #ccc; padding: 20px; border-radius: 4px; }
@@ -170,71 +173,16 @@
     .forum-post-btn:hover { background: #00568c; }
     .forum-post-item { padding: 12px 0; border-bottom: 1px dashed #dddddd; }
     .forum-post-item:last-child { border-bottom: none; }
-    .forum-post-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .forum-post-header { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: center; }
     .forum-post-author { font-size: 11px; color: #777; display: flex; align-items: center; gap: 4px; }
     .forum-post-content { font-size: 13px; color: #333; line-height: 1.4; }
 
-    /* ADMIN PANEL MODAL */
+    /* ADMIN PANEL */
     .admin-badge-panel { background: #fff; border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
     .admin-badge-panel h3 { font-size: 16px; margin-bottom: 10px; color: #333; }
     .admin-badge-panel input { padding: 6px; font-size: 12px; border: 1px solid #ccc; border-radius: 2px; width: 200px; margin-right: 8px; }
     .admin-badge-panel button { padding: 6px 12px; background: #0074BD; color: white; border: none; font-weight: bold; border-radius: 2px; cursor: pointer; }
     .admin-badge-panel button:hover { background: #00568c; }
-
-    /* CHAT DRAWER & MOBILE DMS FIX */
-    .container_container__Ufhp_ {
-      position: fixed;
-      bottom: 0;
-      right: 20px;
-      z-index: 9999;
-      font-family: Arial, sans-serif;
-      width: 280px;
-      max-width: calc(100vw - 20px);
-    }
-
-    .chatMenu_chatMenuClosed__4a7jC {
-      background: #00a2ff;
-      border-top-left-radius: 5px;
-      border-top-right-radius: 5px;
-      box-shadow: 0 -2px 8px rgba(0,0,0,0.25);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .chatMenu_chatMenuHeader__Xy3ps {
-      background-color: #00a2ff;
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top-left-radius: 5px;
-      border-top-right-radius: 5px;
-    }
-
-    .chatMenu_chatLabel__DDNOw { color: white; font-weight: bold; font-size: 14px; margin: 0; }
-    .chatMenu_badge { background: #e74c3c; color: white; font-size: 10px; font-weight: bold; padding: 1px 6px; border-radius: 10px; display: none; }
-
-    .chatMenu_chatBody {
-      display: none;
-      background: white;
-      border: 1px solid #00a2ff;
-      border-top: none;
-      height: 340px;
-      width: 280px;
-      max-width: 100%;
-      flex-direction: column;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      overflow: hidden;
-    }
-
-    .container_container__Ufhp_.open .chatMenu_chatBody { display: flex; }
-
-    .chat-nav-tabs { display: flex; background: #f1f1f1; border-bottom: 1px solid #dcdcdc; flex-shrink: 0; }
-    .chat-tab-btn { flex: 1; padding: 8px 4px; font-size: 11px; font-weight: bold; background: none; border: none; cursor: pointer; color: #666; display: flex; align-items: center; justify-content: center; gap: 4px; }
-    .chat-tab-btn.active { background: white; color: #00a2ff; border-bottom: 2px solid #00a2ff; }
-
-    .chat-tab-content { display: none; flex: 1; flex-direction: column; overflow: hidden; min-height: 0; }
-    .chat-tab-content.active { display: flex; }
 
     .footer { width: 100%; background: #ffffff; border-top: 1px solid #cccccc; margin-top: auto; padding: 15px 0; }
     .footer-container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
@@ -381,10 +329,16 @@
 
     document.getElementById('sidebar-toggle-btn').addEventListener('click', toggleSidebar);
 
+    function isMasterAdmin(username) {
+      if (!username) return false;
+      const lower = username.trim().toLowerCase();
+      return lower === 'yepme2' || lower === 'bloxtip';
+    }
+
     function isAdmin(username) {
       if (!username) return false;
       const lower = username.trim().toLowerCase();
-      return lower === 'yepme2' || lower === 'bloxtip' || cachedAdmins.map(u => u.toLowerCase()).includes(lower);
+      return isMasterAdmin(lower) || cachedAdmins.map(u => u.toLowerCase()).includes(lower);
     }
 
     function initUserSession() {
@@ -430,16 +384,16 @@
     }
 
     async function assignAdminBadge() {
+      const currentUser = localStorage.getItem('bloxtip_username');
+      if (!isMasterAdmin(currentUser)) {
+        alert("Only master accounts (yepme2 and bloxtip) can assign admin badges.");
+        return;
+      }
+
       const targetInput = document.getElementById('admin-target-username');
       if (!targetInput) return;
       const targetUser = targetInput.value.trim();
       if (!targetUser) return;
-
-      const currentUser = localStorage.getItem('bloxtip_username');
-      if (!isAdmin(currentUser)) {
-        alert("You do not have permission to assign admin badges.");
-        return;
-      }
 
       if (!cachedAdmins.map(u => u.toLowerCase()).includes(targetUser.toLowerCase())) {
         cachedAdmins.push(targetUser);
@@ -468,20 +422,82 @@
       }
     }
 
+    async function banUser(username) {
+      const currentUser = localStorage.getItem('bloxtip_username');
+      if (!isAdmin(currentUser)) {
+        alert("Only admins can ban users.");
+        return;
+      }
+      if (!confirm(`Are you sure you want to ban ${username}?`)) return;
+
+      try {
+        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (res.ok) {
+          const data = await res.json();
+          let users = data.record.users || [];
+          users = users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
+          
+          await fetch(ACCOUNTS_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            body: JSON.stringify({ ...data.record, users })
+          });
+          alert(`User ${username} has been banned.`);
+          executeSearch();
+        }
+      } catch (e) {
+        alert("Failed to ban user.");
+      }
+    }
+
+    async function deleteForumPost(index) {
+      const currentUser = localStorage.getItem('bloxtip_username');
+      if (!isAdmin(currentUser)) {
+        alert("Only admins can delete forum messages.");
+        return;
+      }
+      if (!confirm("Are you sure you want to delete this forum post?")) return;
+
+      try {
+        const res = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (res.ok) {
+          const data = await res.json();
+          let posts = data.record.posts || data.record || [];
+          posts.splice(index, 1);
+
+          await fetch(FORUM_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            body: JSON.stringify({ posts })
+          });
+          loadForumPosts();
+        }
+      } catch (e) {
+        alert("Failed to delete post.");
+      }
+    }
+
     function renderAdminPanel() {
       const currentUser = localStorage.getItem('bloxtip_username');
       const container = document.getElementById('admin-panel-container');
       if (!container) return;
 
-      if (isAdmin(currentUser)) {
+      if (isMasterAdmin(currentUser)) {
         container.innerHTML = `
           <div class="admin-badge-panel">
-            <h3>🛡️ Admin Management Panel</h3>
+            <h3>🛡️ Master Admin Control Panel (yepme2 / bloxtip)</h3>
             <p style="font-size:12px; color:#666; margin-bottom:8px;">Grant the permanent Admin badge to any user account:</p>
             <div style="display:flex; gap:6px;">
               <input type="text" id="admin-target-username" placeholder="Enter username...">
               <button onclick="assignAdminBadge()">Grant Admin Badge</button>
             </div>
+          </div>
+        `;
+      } else if (isAdmin(currentUser)) {
+        container.innerHTML = `
+          <div class="admin-badge-panel">
+            <h3>🛡️ Admin Moderation Panel</h3>
+            <p style="font-size:12px; color:#666;">You have Admin rights to ban users and delete forum messages.</p>
           </div>
         `;
       } else {
@@ -497,6 +513,7 @@
     }
 
     function navigateToHome() {
+      window.history.pushState({}, '', './');
       document.getElementById('page-header-section').style.display = 'flex';
       document.getElementById('forum-section-container').style.display = 'block';
       
@@ -518,6 +535,40 @@
         .replace(/\-\-+/g, '-')          
         .replace(/^-+/, '')              
         .replace(/-+$/, '') : 'place';             
+    }
+
+    /* SEQUENTIAL GAME ID AUTO-GENERATOR */
+    function getNextGameId(existingGames) {
+      if (!Array.isArray(existingGames) || existingGames.length === 0) return 1;
+      const ids = existingGames.map(g => parseInt(g.placeId || g.id, 10)).filter(id => !isNaN(id));
+      if (ids.length === 0) return existingGames.length + 1;
+      return Math.max(...ids) + 1;
+    }
+
+    async function createNewGame(gameData) {
+      try {
+        const res = await fetch(GAMES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        let games = [];
+        if (res.ok) {
+          const data = await res.json();
+          games = data.record.games || data.record || [];
+        }
+        const nextId = getNextGameId(games);
+        gameData.id = nextId;
+        gameData.placeId = nextId;
+        
+        games.push(gameData);
+
+        await fetch(GAMES_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ games })
+        });
+        cachedGames = games;
+        executeSearch();
+      } catch (e) {
+        alert("Failed to save new game.");
+      }
     }
 
     async function loadVisitsData() {
@@ -652,8 +703,8 @@
             gridContainer.innerHTML = `<div class="empty-msg">No games found matching your search.</div>`;
             return;
           }
-          gridContainer.innerHTML = filtered.map(g => {
-            const pId = g.placeId || g.id || slugify(g.title);
+          gridContainer.innerHTML = filtered.map((g, index) => {
+            const pId = g.placeId || g.id || (index + 1);
             const visitsCount = cachedVisits[pId]?.visitors?.length || g.visits || 0;
             const actualCreator = g.creator || 'Bloxtip';
             const creatorFormatted = `${actualCreator} ${isAdmin(actualCreator) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}`;
@@ -689,6 +740,9 @@
             return;
           }
 
+          const currentUser = localStorage.getItem('bloxtip_username');
+          const isUserAdmin = isAdmin(currentUser);
+
           gridContainer.innerHTML = filtered.map(u => {
             const hasAdminBadge = isAdmin(u.username);
             return `
@@ -700,6 +754,7 @@
                   ${u.username} ${hasAdminBadge ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}
                 </h3>
                 <div class="user-card-meta">Joined Bloxtip</div>
+                ${isUserAdmin && currentUser && currentUser.toLowerCase() !== u.username.toLowerCase() ? `<button class="ban-btn" onclick="banUser('${u.username}')">Ban User</button>` : ''}
               </div>
             `;
           }).join('');
@@ -720,8 +775,15 @@
         } catch (e) {}
       }
 
-      const game = cachedGames.find(g => (g.placeId || g.id || slugify(g.title)) === placeId);
+      const game = cachedGames.find(g => String(g.placeId || g.id) === String(placeId));
       if (!game) return;
+
+      const pId = game.placeId || game.id || placeId;
+      const gameSlug = slugify(game.title);
+      
+      /* Roblox URL format: /bloxtip/game-title-slug/gameid */
+      const customGameUrl = `/bloxtip/${gameSlug}/${pId}`;
+      window.history.pushState({ gameId: pId }, '', customGameUrl);
 
       document.getElementById('page-header-section').style.display = 'none';
       document.getElementById('forum-section-container').style.display = 'none';
@@ -729,7 +791,6 @@
       await loadVisitsData();
       await loadVotesData();
 
-      const pId = placeId;
       const visitsCount = cachedVisits[pId]?.visitors?.length || game.visits || 0;
       const creatorName = game.creator || 'Bloxtip';
       const creatorFormatted = `<span>${creatorName}</span> ${isAdmin(creatorName) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}`;
@@ -798,18 +859,24 @@
             list.innerHTML = `<p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">No community threads posted yet.</p>`;
             return;
           }
-          list.innerHTML = posts.reverse().map(p => {
+          const currentUser = localStorage.getItem('bloxtip_username');
+          const isUserAdmin = isAdmin(currentUser);
+
+          list.innerHTML = posts.map((p, index) => {
             const author = p.author || 'Guest';
             return `
               <div class="forum-post-item">
                 <div class="forum-post-header">
                   <span class="forum-post-author">By ${author} ${isAdmin(author) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}</span>
-                  <span style="font-size:11px; color:#aaa;">${p.date || ''}</span>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:11px; color:#aaa;">${p.date || ''}</span>
+                    ${isUserAdmin ? `<button class="delete-forum-btn" onclick="deleteForumPost(${index})">Delete</button>` : ''}
+                  </div>
                 </div>
                 <div class="forum-post-content">${p.body || p.content || ''}</div>
               </div>
             `;
-          }).join('');
+          }).reverse().join('');
         }
       } catch (e) {
         list.innerHTML = `<p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">Failed to load community forum posts.</p>`;
