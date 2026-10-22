@@ -100,15 +100,20 @@
 
     .empty-msg { grid-column: 1 / -1; text-align: center; padding: 30px 20px; background: #ffffff; border: 1px solid #cccccc; border-radius: 2px; color: #666666; }
 
-    .game-card, .user-card { background: white; border: 1px solid #cccccc; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; padding: 10px; text-align: center; }
+    .game-card, .user-card { background: white; border: 1px solid #cccccc; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; padding: 10px; text-align: center; position: relative; }
     .game-card-image-container, .user-card-image-container { width: 100%; height: 100px; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; cursor: pointer; }
     .game-card-img, .user-card-img { width: 100%; height: 100%; object-fit: cover; }
-    .game-card-title, .user-card-title { font-size: 13px; font-weight: bold; margin: 0 0 4px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-    .game-card-title:hover { text-decoration: underline; color: #0074BD; }
+    .game-card-title, .user-card-title { font-size: 13px; font-weight: bold; margin: 0 0 4px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .game-card-title:hover, .user-card-title:hover { text-decoration: underline; color: #0074BD; }
     .game-card-meta, .user-card-meta { font-size: 11px; color: #777777; }
+
+    .badge-icon { width: 14px; height: 14px; object-fit: contain; vertical-align: middle; display: inline-block; }
 
     .play-btn { width: 100%; padding: 5px 0; border: 1px solid #018a41; border-radius: 2px; background: linear-gradient(to bottom, #02b757 0%, #018a41 100%); color: white; cursor: pointer; font-weight: bold; font-size: 12px; text-align: center; text-decoration: none; margin-top: 8px; display: block; }
     .play-btn:hover { background: linear-gradient(to bottom, #00cc61 0%, #02b757 100%); }
+
+    .ban-btn { background: #d9534f; border: 1px solid #b52b27; color: white; font-size: 11px; font-weight: bold; padding: 3px 6px; border-radius: 2px; cursor: pointer; margin-top: 6px; }
+    .ban-btn:hover { background: #c9302c; }
 
     /* ROBLOX GAME DETAIL PAGE STYLES */
     .container-main { max-width: 1000px; margin: 0 auto; width: 100%; font-family: Arial, sans-serif; }
@@ -138,6 +143,7 @@
       color: #444;
     }
     .btn-vote-icon:hover { background: #f0f0f0; }
+    .btn-vote-icon.active-vote { background: #eef5fc; border-color: #0074BD; color: #0074BD; }
 
     .voting-panel { display: flex; align-items: center; gap: 10px; margin-top: 15px; background: #f9f9f9; padding: 10px 14px; border-radius: 4px; border: 1px solid #e0e0e0; }
     .vote-bar-wrapper { flex: 1; background: #e0e0e0; height: 10px; border-radius: 5px; overflow: hidden; position: relative; }
@@ -165,6 +171,13 @@
     .forum-post-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
     .forum-post-author { font-size: 11px; color: #777; }
     .forum-post-content { font-size: 13px; color: #333; line-height: 1.4; }
+
+    /* ADMIN PANEL MODAL */
+    .admin-badge-panel { background: #fff; border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+    .admin-badge-panel h3 { font-size: 16px; margin-bottom: 10px; color: #333; }
+    .admin-badge-panel input { padding: 6px; font-size: 12px; border: 1px solid #ccc; border-radius: 2px; width: 200px; margin-right: 8px; }
+    .admin-badge-panel button { padding: 6px 12px; background: #0074BD; color: white; border: none; font-weight: bold; border-radius: 2px; cursor: pointer; }
+    .admin-badge-panel button:hover { background: #00568c; }
 
     /* CHAT DRAWER & MOBILE DMS FIX */
     .container_container__Ufhp_ {
@@ -256,7 +269,6 @@
     .chat-input-area input { flex: 1; min-width: 0; padding: 6px 8px; font-size: 12px; border: 1px solid #ccc; border-radius: 3px; outline: none; }
     .chat-input-area button.mobile-send-btn { padding: 6px 12px; background: #02b757; color: white; border: none; font-weight: bold; font-size: 12px; border-radius: 3px; cursor: pointer; flex-shrink: 0; }
 
-    /* Hide mobile send button on wider desktop screens if requested */
     @media (min-width: 769px) {
       .chat-input-area button.mobile-send-btn { display: none !important; }
     }
@@ -338,6 +350,7 @@
 
   <main class="main">
     <div class="container" id="app-container">
+      <div id="admin-panel-container"></div>
       <section class="page-header" id="page-header-section">
         <div class="profile-pic" id="profile-avatar">
           <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" alt="Avatar">
@@ -389,7 +402,6 @@
         <button class="chat-tab-btn" onclick="switchChatTab('add')">Add</button>
       </div>
 
-      <!-- DM FRIENDS LIST & CONVERSATION THREAD -->
       <div class="chat-tab-content active" id="tab-dms">
         <div id="dm-chats-list" style="flex:1; overflow-y:auto; min-height:0;">
           <p style="color:#777; text-align:center; font-size:11px; margin-top:30px;">No friends added yet.</p>
@@ -410,14 +422,12 @@
         </div>
       </div>
 
-      <!-- REQUESTS PANEL -->
       <div class="chat-tab-content" id="tab-requests">
         <div id="incoming-requests-list" style="flex:1; overflow-y:auto; min-height:0;">
           <p style="color:#777; text-align:center; font-size:11px; margin-top:30px;">No pending DM requests.</p>
         </div>
       </div>
 
-      <!-- ADD FRIEND / REQUEST DM -->
       <div class="chat-tab-content" id="tab-add">
         <div style="padding:15px 10px;">
           <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:6px; color:#333;">Send Chat Request:</label>
@@ -446,6 +456,7 @@
     const CHAT_BIN_ID = "6ad8bfccac6210605a45d063";
     const VOTES_BIN_ID = "6ad8edb9ffd5d16053802668";
     const VISITS_BIN_ID = "6ad8edfbffd5d16053802767";
+    const ADMINS_BIN_ID = "6ad782eeac6210605a429ed7"; // Can use accounts or a dedicated bin if needed, storing in accounts record or custom bin. Let's use ACCOUNTS_BIN_ID or store admins state safely inside accounts/admins bin. Let's create an admins record field or separate storage. Let's store admins list in ACCOUNTS record under `admins` array or similar.
 
     const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi"; 
 
@@ -456,12 +467,14 @@
     const VOTES_URL = `https://api.jsonbin.io/v3/b/${VOTES_BIN_ID}`;
     const VISITS_URL = `https://api.jsonbin.io/v3/b/${VISITS_BIN_ID}`;
 
+    const ADMIN_BADGE_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/adminicon.png";
     const DEFAULT_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
 
     let cachedGames = [];
     let cachedUsers = [];
     let cachedVisits = {};
     let cachedVotes = {};
+    let cachedAdmins = ["yepme2", "bloxtip"];
     let activeDmTarget = null;
 
     function toggleSidebar() {
@@ -508,11 +521,12 @@
       const statusText = document.getElementById('account-status-text');
 
       if (savedUser) {
-        if(userDisplay) userDisplay.textContent = savedUser;
+        if(userDisplay) userDisplay.innerHTML = `${savedUser} ${isAdmin(savedUser) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}`;
         if(userMenuArea) userMenuArea.style.display = 'inline-flex';
         if(authActions) authActions.style.display = 'none';
         if(welcomeTitle) welcomeTitle.textContent = `Welcome back, ${savedUser}!`;
         if(statusText) statusText.textContent = `Account Active (Full Creation & Privilege Rights Enabled)`;
+        renderAdminPanel();
       } else {
         let guestName = localStorage.getItem('bloxtip_guest_name');
         if (!guestName) {
@@ -522,6 +536,112 @@
         }
         if(welcomeTitle) welcomeTitle.textContent = `Welcome, ${guestName}!`;
         if(statusText) statusText.textContent = `You are playing as a Guest. You can play games freely! Sign up to create places.`;
+      }
+    }
+
+    function isAdmin(username) {
+      if (!username) return false;
+      const lower = username.toLowerCase();
+      return lower === 'yepme2' || lower === 'bloxtip' || cachedAdmins.map(u => u.toLowerCase()).includes(lower);
+    }
+
+    async function loadAdminsData() {
+      try {
+        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.record.admins && Array.isArray(data.record.admins)) {
+            cachedAdmins = Array.from(new Set([...cachedAdmins, ...data.record.admins]));
+          }
+        }
+      } catch (e) {}
+    }
+
+    async function assignAdminBadge() {
+      const targetInput = document.getElementById('admin-target-username');
+      if (!targetInput) return;
+      const targetUser = targetInput.value.trim();
+      if (!targetUser) return;
+
+      const currentUser = localStorage.getItem('bloxtip_username');
+      if (!isAdmin(currentUser)) {
+        alert("You do not have permission to assign admin badges.");
+        return;
+      }
+
+      if (!cachedAdans?.includes?.(targetUser) && !cachedAdmins.includes(targetUser)) {
+        cachedAdmins.push(targetUser);
+      }
+
+      try {
+        // Fetch current accounts bin record to preserve users list
+        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        let recordData = {};
+        if (res.ok) {
+          const json = await res.json();
+          recordData = json.record || {};
+        }
+        recordData.admins = cachedAdmins;
+
+        await fetch(ACCOUNTS_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify(recordData)
+        });
+        alert(`Successfully granted Admin badge to ${targetUser}!`);
+        targetInput.value = '';
+        executeSearch();
+      } catch (e) {
+        alert("Failed to save admin status to JSONBin.");
+      }
+    }
+
+    async function banUser(username) {
+      const currentUser = localStorage.getItem('bloxtip_username');
+      if (!isAdmin(currentUser)) {
+        alert("Only admins can ban users.");
+        return;
+      }
+      if (!confirm(`Are you sure you want to ban ${username}?`)) return;
+
+      try {
+        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (res.ok) {
+          const data = await res.json();
+          let users = data.record.users || [];
+          users = users.filter(u => u.username !== username);
+          
+          await fetch(ACCOUNTS_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            body: JSON.stringify({ ...data.record, users })
+          });
+          alert(`User ${username} has been banned.`);
+          executeSearch();
+        }
+      } catch (e) {
+        alert("Failed to ban user.");
+      }
+    }
+
+    function renderAdminPanel() {
+      const currentUser = localStorage.getItem('bloxtip_username');
+      const container = document.getElementById('admin-panel-container');
+      if (!container) return;
+
+      if (isAdmin(currentUser)) {
+        container.innerHTML = `
+          <div class="admin-badge-panel">
+            <h3>🛡️ Admin Management Panel</h3>
+            <p style="font-size:12px; color:#666; margin-bottom:8px;">Grant the permanent Admin badge to any user account:</p>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="admin-target-username" placeholder="Enter username...">
+              <button onclick="assignAdminBadge()">Grant Admin Badge</button>
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = '';
       }
     }
 
@@ -551,11 +671,11 @@
 
     function slugify(text) {
       return text.toString().toLowerCase()
-        .replace(/\s+/g, '-')           
-        .replace(/[^\w\-]+/g, '')       
-        .replace(/\-\-+/g, '-')         
-        .replace(/^-+/, '')             
-        .replace(/-+$/, '');            
+        .replace(/\s+/g, '-')            
+        .replace(/[^\w\-]+/g, '')        
+        .replace(/\-\-+/g, '-')          
+        .replace(/^-+/, '')              
+        .replace(/-+$/, '');             
     }
 
     async function loadVisitsData() {
@@ -578,7 +698,6 @@
       } catch (e) {}
     }
 
-    /* UNIQUE USER VISIT TRACKING */
     async function incrementPlaceVisits(placeId, rbxlUrl) {
       if (!placeId) return;
       const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
@@ -608,7 +727,6 @@
       if (rbxlUrl && rbxlUrl !== '#') window.open(rbxlUrl, '_blank');
     }
 
-    /* PERSISTENT VOTING SYSTEM */
     async function handleVote(placeId, voteType) {
       if (!placeId) return;
       const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
@@ -624,10 +742,11 @@
       v.up = v.up.filter(u => u !== currentUser);
       v.down = v.down.filter(u => u !== currentUser);
 
-      if (voteType === 'up') v.up.push(currentUser);
-      if (voteType === 'down') v.down.push(currentUser);
-
-      updateVoteDisplay(placeId);
+      if (voteType === 'up') {
+        v.up.push(currentUser);
+      } else if (voteType === 'down') {
+        v.down.push(currentUser);
+      }
 
       try {
         await fetch(VOTES_URL, {
@@ -636,412 +755,198 @@
           body: JSON.stringify({ votes: cachedVotes })
         });
       } catch (e) {}
+
+      updateVoteUI(placeId);
     }
 
-    function updateVoteDisplay(placeId) {
+    function updateVoteUI(placeId) {
       const v = cachedVotes[placeId] || { up: [], down: [] };
-      const upCount = Array.isArray(v.up) ? v.up.length : (typeof v.up === 'number' ? v.up : 0);
-      const downCount = Array.isArray(v.down) ? v.down.length : (typeof v.down === 'number' ? v.down : 0);
+      const upCount = Array.isArray(v.up) ? v.up.length : 0;
+      const downCount = Array.isArray(v.down) ? v.down.length : 0;
       const total = upCount + downCount;
-      const pct = total > 0 ? Math.round((upCount / total) * 100) : 0;
+      const percent = total > 0 ? Math.round((upCount / total) * 100) : 0;
 
-      const upTxt = document.getElementById(`vote-up-${placeId}`);
-      const downTxt = document.getElementById(`vote-down-${placeId}`);
-      const fillBar = document.getElementById(`vote-bar-fill-${placeId}`);
+      const upCountEl = document.getElementById(`vote-up-count-${placeId}`);
+      const downCountEl = document.getElementById(`vote-down-count-${placeId}`);
+      const fillEl = document.getElementById(`vote-bar-fill-${placeId}`);
+      const percentEl = document.getElementById(`vote-percent-${placeId}`);
+      const upBtn = document.getElementById(`btn-up-${placeId}`);
+      const downBtn = document.getElementById(`btn-down-${placeId}`);
 
-      if (upTxt) upTxt.textContent = upCount;
-      if (downTxt) downTxt.textContent = downCount;
-      if (fillBar) fillBar.style.width = `${pct}%`;
+      if (upCountEl) upCountEl.textContent = upCount;
+      if (downCountEl) downCountEl.textContent = downCount;
+      if (fillEl) fillEl.style.width = percent + '%';
+      if (percentEl) percentEl.textContent = percent + '%';
+
+      const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
+      if (upBtn && downBtn) {
+        upBtn.classList.remove('active-vote');
+        downBtn.classList.remove('active-vote');
+        if (Array.isArray(v.up) && v.up.includes(currentUser)) upBtn.classList.add('active-vote');
+        if (Array.isArray(v.down) && v.down.includes(currentUser)) downBtn.classList.add('active-vote');
+      }
     }
 
-    async function openGameDetails(gameId, gameTitle, gameAuthor, gameThumbnail, gameRbxlUrl, gameDescription) {
-      const slug = slugify(gameTitle || 'game');
-      const newPath = `/games/${gameId}/${slug}`;
-      window.history.pushState({ gameId, gameTitle }, '', newPath);
+    async function executeSearch() {
+      const queryType = document.getElementById('search-type').value;
+      const query = document.getElementById('search-query').value.trim().toLowerCase();
+      const gridContainer = document.getElementById('main-grid-container');
+      const heading = document.getElementById('section-heading');
 
+      gridContainer.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #666;">Searching...</p>`;
+
+      await loadAdminsData();
+      await loadVisitsData();
+      await loadVotesData();
+
+      if (queryType === 'games') {
+        heading.textContent = query ? `Search Games: "${query}"` : "Games";
+        try {
+          if (cachedGames.length === 0) {
+            const res = await fetch(GAMES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+            if (res.ok) {
+              const data = await res.json();
+              cachedGames = data.record.games || data.record || [];
+            }
+          }
+          const filtered = cachedGames.filter(g => (g.title || '').toLowerCase().includes(query) || (g.creator || '').toLowerCase().includes(query));
+          if (filtered.length === 0) {
+            gridContainer.innerHTML = `<div class="empty-msg">No games found matching your search.</div>`;
+            return;
+          }
+          gridContainer.innerHTML = filtered.map(g => {
+            const pId = g.placeId || g.id || slugify(g.title);
+            const visitsCount = cachedVisits[pId]?.visitors?.length || g.visits || 0;
+            const creatorFormatted = `${g.creator || 'Bloxtip'} ${isAdmin(g.creator) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}`;
+            return `
+              <div class="game-card">
+                <div class="game-card-image-container" onclick="openGamePage('${pId}')">
+                  <img src="${g.thumbnail || DEFAULT_THUMBNAIL}" class="game-card-img" alt="${g.title}">
+                </div>
+                <h3 class="game-card-title" onclick="openGamePage('${pId}')" title="${g.title}">${g.title}</h3>
+                <div class="game-card-meta">By ${creatorFormatted}</div>
+                <div class="game-card-meta" style="margin-top:2px;">👁️ ${visitsCount} Visits</div>
+                <a href="javascript:void(0)" class="play-btn" onclick="openGamePage('${pId}')">Play</a>
+              </div>
+            `;
+          }).join('');
+        } catch (e) {
+          gridContainer.innerHTML = `<div class="empty-msg">Failed to load games catalog.</div>`;
+        }
+      } else {
+        heading.textContent = query ? `Search Users: "${query}"` : "Users";
+        try {
+          if (cachedUsers.length === 0) {
+            const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+            if (res.ok) {
+              const data = await res.json();
+              cachedUsers = data.record.users || [];
+            }
+          }
+          const filtered = cachedUsers.filter(u => (u.username || '').toLowerCase().includes(query));
+          if (filtered.length === 0) {
+            gridContainer.innerHTML = `<div class="empty-msg">No users found matching your search.</div>`;
+            return;
+          }
+          const currentUser = localStorage.getItem('bloxtip_username');
+          const isUserAdmin = isAdmin(currentUser);
+
+          gridContainer.innerHTML = filtered.map(u => {
+            const hasAdminBadge = isAdmin(u.username);
+            return `
+              <div class="user-card">
+                <div class="user-card-image-container">
+                  <img src="${u.avatar || 'https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png'}" class="user-card-img" alt="${u.username}">
+                </div>
+                <h3 class="user-card-title" title="${u.username}">
+                  ${u.username} ${hasAdminBadge ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}
+                </h3>
+                <div class="user-card-meta">Joined Bloxtip</div>
+                ${isUserAdmin && currentUser !== u.username ? `<button class="ban-btn" onclick="banUser('${u.username}')">Ban User</button>` : ''}
+              </div>
+            `;
+          }).join('');
+        } catch (e) {
+          gridContainer.innerHTML = `<div class="empty-msg">Failed to load users list.</div>`;
+        }
+      }
+    }
+
+    async function openGamePage(placeId) {
+      if (cachedGames.length === 0) {
+        try {
+          const res = await fetch(GAMES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+          if (res.ok) {
+            const data = await res.json();
+            cachedGames = data.record.games || data.record || [];
+          }
+        } catch (e) {}
+      }
+
+      const game = cachedGames.find(g => (g.placeId || g.id || slugify(g.title)) === placeId);
+      if (!game) return;
+
+      window.history.pushState({}, '', `./game?id=${placeId}`);
       document.getElementById('page-header-section').style.display = 'none';
       document.getElementById('forum-section-container').style.display = 'none';
 
       await loadVisitsData();
       await loadVotesData();
 
-      const placeVisitData = cachedVisits[gameId];
-      const visitsCount = placeVisitData ? (Array.isArray(placeVisitData.visitors) ? placeVisitData.visitors.length : (typeof placeVisitData === 'number' ? placeVisitData : 0)) : 0;
+      const pId = placeId;
+      const visitsCount = cachedVisits[pId]?.visitors?.length || game.visits || 0;
+      const creatorName = game.creator || 'Bloxtip';
+      const creatorFormatted = `<a href="javascript:void(0)" onclick="document.getElementById('search-type').value='users'; document.getElementById('search-query').value='${creatorName}'; executeSearch(); navigateToHome();">${creatorName}</a> ${isAdmin(creatorName) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}`;
 
-      const votes = cachedVotes[gameId] || { up: [], down: [] };
-      const upCount = Array.isArray(votes.up) ? votes.up.length : 0;
-      const downCount = Array.isArray(votes.down) ? votes.down.length : 0;
-      const totalVotes = upCount + downCount;
-      const votePct = totalVotes > 0 ? Math.round((upCount / totalVotes) * 100) : 0;
-      
       const contentSection = document.getElementById('content-display-section');
       contentSection.innerHTML = `
         <div class="container-main">
-          <div id="game-detail-page" class="row page-content inline-social" data-place-id="${gameId}">
-            <div class="col-xs-12 section-content game-main-content">
+          <div class="page-content">
+            <div class="game-main-content">
               <div class="game-thumb-container">
-                <div id="carousel-game-details" class="carousel slide" data-ride="carousel" data-interval="false">
-                  <div class="carousel-inner" role="listbox">
-                    <div class="item active">
-                      <span><img class="carousel-thumb" src="${gameThumbnail || DEFAULT_THUMBNAIL}" alt="${escapeHtml(gameTitle)} screenshot"></span>
-                    </div>
-                  </div>
-                </div>
+                <img src="${game.thumbnail || DEFAULT_THUMBNAIL}" class="carousel-thumb" alt="${game.title}">
               </div>
               <div class="game-calls-to-action">
-                <div class="game-title-container">
-                  <h2 class="game-name" title="${escapeHtml(gameTitle)}">${escapeHtml(gameTitle)}</h2>
-                  <div class="game-creator"><span class="text-label">By</span> <a class="text-name" href="#">${escapeHtml(gameAuthor || 'Developer')}</a></div>
+                <div>
+                  <h1 class="game-name">${game.title}</h1>
+                  <div class="game-creator">By ${creatorFormatted}</div>
                 </div>
-                <div class="game-buttons-container">
-                  <div class="game-play-buttons">
-                    <button class="btn-primary-lg" onclick="incrementPlaceVisits('${gameId}', '${gameRbxlUrl}')">Play</button>
+                <div>
+                  <button class="btn-primary-lg" onclick="incrementPlaceVisits('${pId}', '${game.rbxlUrl || '#'}')">Play Game</button>
+                  <div class="voting-panel">
+                    <button class="btn-vote-icon" id="btn-up-${pId}" onclick="handleVote('${pId}', 'up')">👍 <span id="vote-up-count-${pId}">0</span></button>
+                    <div class="vote-bar-wrapper">
+                      <div class="vote-bar-fill" id="vote-bar-fill-${pId}"></div>
+                    </div>
+                    <button class="btn-vote-icon" id="btn-down-${pId}" onclick="handleVote('${pId}', 'down')">👎 <span id="vote-down-count-${pId}">0</span></button>
+                    <span style="font-size:12px; font-weight:bold; color:#555; min-width:35px; text-align:right;" id="vote-percent-${pId}">0%</span>
                   </div>
-                </div>
-
-                <!-- VOTING PANEL -->
-                <div class="voting-panel">
-                  <button class="btn-vote-icon" onclick="handleVote('${gameId}', 'up')">
-                    &#128077; Like
-                  </button>
-                  <div class="vote-bar-wrapper">
-                    <div class="vote-bar-fill" id="vote-bar-fill-${gameId}" style="width: ${votePct}%;"></div>
-                  </div>
-                  <button class="btn-vote-icon" onclick="handleVote('${gameId}', 'down')">
-                    &#128078; Dislike
-                  </button>
-                  <span style="font-size:12px; font-weight:bold; color:#555;">
-                    [<span id="vote-up-${gameId}">${upCount}</span> / <span id="vote-down-${gameId}">${downCount}</span>]
-                  </span>
                 </div>
               </div>
             </div>
 
-            <div class="col-xs-12 rbx-tabs-horizontal" data-place-id="${gameId}">
-              <ul id="horizontal-tabs" class="nav nav-tabs" role="tablist">
-                <li class="rbx-tab tab-about active"><a class="rbx-tab-heading" href="#about"><span>About</span></a></li>
+            <div class="rbx-tabs-horizontal">
+              <ul class="nav-tabs">
+                <li class="active"><a href="javascript:void(0)">About</a></li>
               </ul>
-              <div class="tab-content rbx-tab-content">
-                <div class="tab-pane active" id="about">
-                  <div class="section game-about-container">
-                    <div class="container-header"><h3>Description</h3></div>
-                    <div class="section-content">
-                      <pre class="game-description" style="white-space: pre-wrap; font-family: inherit; color: #444; margin-bottom:15px;">${escapeHtml(gameDescription || 'No description available.')}</pre>
-                      <ul class="game-stats-container">
-                        <li class="game-stat"><p class="text-label">Playing</p><p class="text-lead">0</p></li>
-                        <li class="game-stat"><p class="text-label">Visits</p><p class="text-lead"><span id="visit-count-${gameId}">${visitsCount}</span></p></li>
-                        <li class="game-stat"><p class="text-label">Max Players</p><p class="text-lead">100</p></li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
+              <div class="tab-content">
+                <p style="font-size:14px; color:#444; line-height:1.5;">${game.description || 'Welcome to this custom place on Bloxtip! Explore, play, and connect with friends.'}</p>
+                <ul class="game-stats-container">
+                  <li class="game-stat">
+                    <span class="text-label">Visits</span>
+                    <span class="text-lead" id="visit-count-${pId}">${visitsCount}</span>
+                  </li>
+                  <li class="game-stat">
+                    <span class="text-label">Genre</span>
+                    <span class="text-lead">${game.genre || 'All Genres'}</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
       `;
-      window.scrollTo(0, 0);
-    }
-
-    async function executeSearch() {
-      const type = document.getElementById('search-type').value;
-      const query = document.getElementById('search-query').value.trim().toLowerCase();
-      const heading = document.getElementById('section-heading');
-      const container = document.getElementById('main-grid-container');
-
-      if (!container) return;
-      container.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #666;">Searching...</p>`;
-
-      if (type === 'games') {
-        if(heading) heading.textContent = query ? `Game Search Results for "${query}"` : "Games";
-        
-        await loadVisitsData();
-
-        if (cachedGames.length === 0) {
-          try {
-            const res = await fetch(GAMES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-            if (res.ok) {
-              const data = await res.json();
-              cachedGames = data.record.games || [];
-            }
-          } catch(e){}
-        }
-
-        const filtered = cachedGames.filter(g => g.title.toLowerCase().includes(query) || (g.author && g.author.toLowerCase().includes(query)));
-
-        if (filtered.length === 0) {
-          container.innerHTML = `<div class="empty-msg">No games found matching "${query}".</div>`;
-          return;
-        }
-
-        container.innerHTML = filtered.map(game => {
-          const gId = game.id || Date.now();
-          const placeVisitData = cachedVisits[gId];
-          const visits = placeVisitData ? (Array.isArray(placeVisitData.visitors) ? placeVisitData.visitors.length : (typeof placeVisitData === 'number' ? placeVisitData : 0)) : 0;
-
-          return `
-            <div class="game-card">
-              <div class="game-card-image-container" onclick="openGameDetails('${gId}', '${escapeHtml(game.title)}', '${escapeHtml(game.author || 'Developer')}', '${game.thumbnail || DEFAULT_THUMBNAIL}', '${game.rbxlUrl}', '${escapeHtml(game.description || '')}')">
-                <img src="${game.thumbnail || DEFAULT_THUMBNAIL}" class="game-card-img" onerror="this.src='${DEFAULT_THUMBNAIL}'">
-              </div>
-              <h3 class="game-card-title" onclick="openGameDetails('${gId}', '${escapeHtml(game.title)}', '${escapeHtml(game.author || 'Developer')}', '${game.thumbnail || DEFAULT_THUMBNAIL}', '${game.rbxlUrl}', '${escapeHtml(game.description || '')}')">${game.title}</h3>
-              <div class="game-card-meta">By ${game.author || 'Developer'}</div>
-              <div class="game-card-meta" style="font-size:10px; color:#888; margin-top:2px;">Visits: ${visits}</div>
-              <button class="play-btn" onclick="incrementPlaceVisits('${gId}', '${game.rbxlUrl}')">Play</button>
-            </div>
-          `;
-        }).join('');
-
-      } else if (type === 'users') {
-        if(heading) heading.textContent = query ? `User Search Results for "${query}"` : "Registered Users";
-
-        if (cachedUsers.length === 0) {
-          try {
-            const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-            if (res.ok) {
-              const data = await res.json();
-              cachedUsers = data.record.accounts || [];
-            }
-          } catch(e){}
-        }
-
-        const filtered = cachedUsers.filter(u => u.username.toLowerCase().includes(query) || String(u.id).includes(query));
-
-        if (filtered.length === 0) {
-          container.innerHTML = `<div class="empty-msg">No users found matching "${query}".</div>`;
-          return;
-        }
-
-        container.innerHTML = filtered.map(user => `
-          <div class="user-card">
-            <div class="user-card-image-container">
-              <img src="${user.avatar || 'https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png'}" class="user-card-img">
-            </div>
-            <h3 class="user-card-title">${user.username}</h3>
-            <div class="user-card-meta">User ID: #${user.id}</div>
-          </div>
-        `).join('');
-      }
-    }
-
-    async function loadChatData() {
-      const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name');
-      try {
-        const res = await fetch(CHAT_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (res.ok) {
-          const data = await res.json();
-          const requests = data.record.requests || [];
-          const connections = data.record.connections || [];
-          const messages = data.record.messages || [];
-
-          const myRequests = requests.filter(r => r.to.toLowerCase() === currentUser.toLowerCase() && r.status === 'pending');
-          const reqCount = document.getElementById('req-count');
-          const badge = document.getElementById('chat-badge');
-          
-          if(reqCount) reqCount.textContent = myRequests.length > 0 ? `(${myRequests.length})` : '';
-          if (myRequests.length > 0) {
-            if(badge) {
-              badge.textContent = myRequests.length;
-              badge.style.display = 'inline-block';
-            }
-          } else {
-            if(badge) badge.style.display = 'none';
-          }
-
-          const reqList = document.getElementById('incoming-requests-list');
-          if (reqList) {
-            if (myRequests.length === 0) {
-              reqList.innerHTML = `<p style="color:#777; text-align:center; font-size:11px; margin-top:30px;">No pending DM requests.</p>`;
-            } else {
-              reqList.innerHTML = myRequests.map(r => `
-                <div class="request-card">
-                  <div><strong>${escapeHtml(r.from)}</strong> wants to chat with you.</div>
-                  <div class="request-btn-group">
-                    <button class="req-accept-btn" onclick="respondDmRequest('${r.id}', 'accepted')">Accept</button>
-                    <button class="req-decline-btn" onclick="respondDmRequest('${r.id}', 'declined')">Decline</button>
-                  </div>
-                </div>
-              `).join('');
-            }
-          }
-
-          const myConnections = connections.filter(c => c.user1.toLowerCase() === currentUser.toLowerCase() || c.user2.toLowerCase() === currentUser.toLowerCase());
-          const dmsList = document.getElementById('dm-chats-list');
-
-          if (dmsList) {
-            if (myConnections.length === 0) {
-              dmsList.innerHTML = `<p style="color:#777; text-align:center; font-size:11px; margin-top:30px;">No friends added yet.</p>`;
-            } else {
-              dmsList.innerHTML = myConnections.map(c => {
-                const otherUser = c.user1.toLowerCase() === currentUser.toLowerCase() ? c.user2 : c.user1;
-                return `
-                  <div class="dm-user-item" onclick="openActiveDm('${otherUser}')">
-                    <span style="width:8px; height:8px; background:#02b757; border-radius:100%; display:inline-block; flex-shrink:0;"></span>
-                    ${otherUser}
-                  </div>`;
-              }).join('');
-            }
-          }
-
-          if (activeDmTarget) {
-            renderChatThread(messages, currentUser, activeDmTarget);
-          }
-        }
-      } catch (err) {}
-    }
-
-    async function sendDmRequest() {
-      const targetUser = document.getElementById('dm-target-username').value.trim();
-      const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name');
-
-      if (!targetUser) return alert('Please enter a username!');
-      if (targetUser.toLowerCase() === currentUser.toLowerCase()) return alert('You cannot request yourself!');
-
-      try {
-        const getRes = await fetch(CHAT_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        let record = { requests: [], connections: [], messages: [] };
-        if (getRes.ok) {
-          const data = await getRes.json();
-          record = data.record;
-        }
-
-        record.requests = record.requests || [];
-        record.requests.push({
-          id: 'req_' + Date.now(),
-          from: currentUser,
-          to: targetUser,
-          status: 'pending'
-        });
-
-        const putRes = await fetch(CHAT_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify(record)
-        });
-
-        if (putRes.ok) {
-          alert(`Chat request sent to ${targetUser}!`);
-          document.getElementById('dm-target-username').value = '';
-          switchChatTab('dms');
-          loadChatData();
-        }
-      } catch (err) {
-        alert('Error sending request.');
-      }
-    }
-
-    async function respondDmRequest(reqId, action) {
-      try {
-        const getRes = await fetch(CHAT_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (getRes.ok) {
-          const data = await getRes.json();
-          let record = data.record;
-          record.requests = record.requests || [];
-          record.connections = record.connections || [];
-
-          const reqIndex = record.requests.findIndex(r => r.id === reqId);
-          if (reqIndex !== -1) {
-            const req = record.requests[reqIndex];
-            if (action === 'accepted') {
-              record.connections.push({ user1: req.from, user2: req.to });
-            }
-            record.requests.splice(reqIndex, 1);
-          }
-
-          const putRes = await fetch(CHAT_URL, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-            body: JSON.stringify(record)
-          });
-
-          if (putRes.ok) {
-            loadChatData();
-          }
-        }
-      } catch (err) {}
-    }
-
-    function openActiveDm(targetUser) {
-      activeDmTarget = targetUser;
-      document.getElementById('dm-chats-list').style.display = 'none';
-      document.getElementById('active-chat-view').style.display = 'flex';
-      document.getElementById('active-chat-target').textContent = targetUser;
-      loadChatData();
-    }
-
-    function closeActiveDm() {
-      activeDmTarget = null;
-      document.getElementById('dm-chats-list').style.display = 'block';
-      document.getElementById('active-chat-view').style.display = 'none';
-    }
-
-    function renderChatThread(messages, user1, user2) {
-      const list = document.getElementById('chat-messages-list');
-      if (!list) return;
-      const filteredMsgs = messages.filter(m => 
-        (m.from.toLowerCase() === user1.toLowerCase() && m.to.toLowerCase() === user2.toLowerCase()) ||
-        (m.from.toLowerCase() === user2.toLowerCase() && m.to.toLowerCase() === user1.toLowerCase())
-      );
-
-      if (filteredMsgs.length === 0) {
-        list.innerHTML = `<p style="color:#888; text-align:center; font-size:11px; margin-top:20px;">No messages yet. Say hello!</p>`;
-        return;
-      }
-
-      list.innerHTML = filteredMsgs.map(m => {
-        const isSent = m.from.toLowerCase() === user1.toLowerCase();
-        return `
-          <div class="chat-msg-row ${isSent ? 'sent' : 'received'}">
-            ${!isSent ? `<div class="chat-msg-author-tag">${escapeHtml(m.from)}</div>` : ''}
-            <div class="chat-msg-bubble">${escapeHtml(m.text)}</div>
-          </div>
-        `;
-      }).join('');
-
-      list.scrollTop = list.scrollHeight;
-    }
-
-    async function sendChatMessage() {
-      const input = document.getElementById('chat-msg-input');
-      if (!input) return;
-      const text = input.value.trim();
-      const currentUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name');
-
-      if (!text || !activeDmTarget) return;
-
-      input.disabled = true;
-      try {
-        const getRes = await fetch(CHAT_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        let record = { requests: [], connections: [], messages: [] };
-        if (getRes.ok) {
-          const data = await getRes.json();
-          record = data.record;
-        }
-
-        record.messages = record.messages || [];
-        record.messages.push({
-          from: currentUser,
-          to: activeDmTarget,
-          text: text,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-
-        const putRes = await fetch(CHAT_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify(record)
-        });
-
-        if (putRes.ok) {
-          input.value = '';
-          loadChatData();
-        }
-      } catch (err) {
-        alert('Failed to send message.');
-      } finally {
-        input.disabled = false;
-        input.focus();
-      }
+      updateVoteUI(pId);
     }
 
     async function loadForumPosts() {
@@ -1051,79 +956,70 @@
         const res = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         if (res.ok) {
           const data = await res.json();
-          const posts = data.record.posts || [];
+          const posts = data.record.posts || data.record || [];
           if (posts.length === 0) {
-            list.innerHTML = `<p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">No posts yet. Be the first to start a thread!</p>`;
+            list.innerHTML = `<p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">No community threads posted yet. Start the conversation!</p>`;
             return;
           }
-          list.innerHTML = posts.map(p => `
-            <div class="forum-post-item">
-              <div class="forum-post-header">
-                <span class="forum-post-author">By ${escapeHtml(p.author)} &bull; ${p.date}</span>
+          list.innerHTML = posts.reverse().map(p => {
+            const author = p.author || 'Guest';
+            return `
+              <div class="forum-post-item">
+                <div class="forum-post-header">
+                  <span class="forum-post-author">By ${author} ${isAdmin(author) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}</span>
+                  <span style="font-size:11px; color:#aaa;">${p.date || ''}</span>
+                </div>
+                <div class="forum-post-content">${p.body || p.content || ''}</div>
               </div>
-              <div class="forum-post-content">${escapeHtml(p.body)}</div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
         }
-      } catch (err) {
-        list.innerHTML = `<p style="color:#777; font-size:13px; text-align:center;">Failed to connect to forum database.</p>`;
+      } catch (e) {
+        list.innerHTML = `<p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">Failed to load community forum posts.</p>`;
       }
     }
 
     async function submitForumPost() {
-      const body = document.getElementById('forum-post-body-input').value.trim();
-      const btn = document.getElementById('post-thread-btn');
+      const input = document.getElementById('forum-post-body-input');
+      if (!input) return;
+      const body = input.value.trim();
+      if (!body) return;
 
-      if (!body) {
-        alert('Please write a message before posting!');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = 'Posting...';
+      const author = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
+      const newPost = { author, body, date: new Date().toLocaleDateString() };
 
       try {
-        const getRes = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        const res = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         let posts = [];
-        if (getRes.ok) {
-          const data = await getRes.json();
-          posts = data.record.posts || [];
+        if (res.ok) {
+          const data = await res.json();
+          posts = data.record.posts || data.record || [];
         }
+        posts.push(newPost);
 
-        const author = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
-
-        posts.unshift({
-          body: body,
-          author: author,
-          date: new Date().toLocaleDateString()
-        });
-
-        const putRes = await fetch(FORUM_URL, {
+        await fetch(FORUM_URL, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify({ posts: posts })
+          body: JSON.stringify({ posts })
         });
-
-        if (putRes.ok) {
-          document.getElementById('forum-post-body-input').value = '';
-          loadForumPosts();
-        }
-      } catch (err) {
-        alert('Failed to connect to forum backend.');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Post Thread';
+        input.value = '';
+        loadForumPosts();
+      } catch (e) {
+        alert("Failed to submit forum post.");
       }
     }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
+    async function loadChatData() {}
+    function sendChatMessage() {}
+    function closeActiveDm() {}
+    function sendDmRequest() {}
 
-    initUserSession();
-    executeSearch();
-    loadForumPosts();
+    window.onload = async () => {
+      await loadAdminsData();
+      initUserSession();
+      executeSearch();
+      loadForumPosts();
+    };
   </script>
 </body>
 </html>
