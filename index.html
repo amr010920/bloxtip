@@ -105,9 +105,9 @@
     .game-card-img, .user-card-img { width: 100%; height: 100%; object-fit: cover; }
     .game-card-title, .user-card-title { font-size: 13px; font-weight: bold; margin: 0 0 4px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
     .game-card-title:hover, .user-card-title:hover { text-decoration: underline; color: #0074BD; }
-    .game-card-meta, .user-card-meta { font-size: 11px; color: #777777; }
+    .game-card-meta, .user-card-meta { font-size: 11px; color: #777777; display: flex; align-items: center; justify-content: center; gap: 2px; }
 
-    .badge-icon { width: 14px; height: 14px; object-fit: contain; vertical-align: middle; display: inline-block; }
+    .badge-icon { width: 15px; height: 15px; object-fit: contain; vertical-align: middle; display: inline-block; margin-left: 3px; }
 
     .play-btn { width: 100%; padding: 5px 0; border: 1px solid #018a41; border-radius: 2px; background: linear-gradient(to bottom, #02b757 0%, #018a41 100%); color: white; cursor: pointer; font-weight: bold; font-size: 12px; text-align: center; text-decoration: none; margin-top: 8px; display: block; }
     .play-btn:hover { background: linear-gradient(to bottom, #00cc61 0%, #02b757 100%); }
@@ -118,14 +118,16 @@
     /* ROBLOX GAME DETAIL PAGE STYLES */
     .container-main { max-width: 1000px; margin: 0 auto; width: 100%; font-family: Arial, sans-serif; }
     .page-content { background: #fff; border: 1px solid #ccc; padding: 20px; border-radius: 4px; }
+    .back-btn-link { display: inline-block; margin-bottom: 15px; color: #0074BD; font-weight: bold; text-decoration: none; font-size: 13px; cursor: pointer; }
+    .back-btn-link:hover { text-decoration: underline; }
     .game-main-content { display: flex; flex-wrap: wrap; gap: 20px; }
     .game-thumb-container { flex: 1; min-width: 280px; }
     .carousel-thumb { width: 100%; border-radius: 4px; border: 1px solid #ddd; }
     .game-calls-to-action { flex: 1.5; min-width: 300px; display: flex; flex-direction: column; justify-content: space-between; }
     .game-name { font-size: 24px; font-weight: bold; color: #333; margin-bottom: 5px; }
-    .game-creator { font-size: 14px; color: #666; margin-bottom: 15px; }
+    .game-creator { font-size: 14px; color: #666; margin-bottom: 15px; display: flex; align-items: center; gap: 4px; }
     .game-creator a { color: #0074BD; text-decoration: none; font-weight: bold; }
-    .btn-primary-lg { background: #02b757; color: white; padding: 10px 24px; font-weight: bold; font-size: 16px; border-radius: 4px; border: none; cursor: pointer; text-align: center; }
+    .btn-primary-lg { background: #02b757; color: white; padding: 10px 24px; font-weight: bold; font-size: 16px; border-radius: 4px; border: none; cursor: pointer; text-align: center; width: 100%; }
     .btn-primary-lg:hover { background: #00cc61; }
 
     /* SVG LIKE & DISLIKE VOTE ICONS */
@@ -169,7 +171,7 @@
     .forum-post-item { padding: 12px 0; border-bottom: 1px dashed #dddddd; }
     .forum-post-item:last-child { border-bottom: none; }
     .forum-post-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
-    .forum-post-author { font-size: 11px; color: #777; }
+    .forum-post-author { font-size: 11px; color: #777; display: flex; align-items: center; gap: 4px; }
     .forum-post-content { font-size: 13px; color: #333; line-height: 1.4; }
 
     /* ADMIN PANEL MODAL */
@@ -234,53 +236,6 @@
     .chat-tab-content { display: none; flex: 1; flex-direction: column; overflow: hidden; min-height: 0; }
     .chat-tab-content.active { display: flex; }
 
-    .chat-messages-area {
-      flex: 1;
-      min-height: 0;
-      padding: 10px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      background: #f9f9f9;
-      width: 100%;
-    }
-
-    .chat-msg-row { display: flex; flex-direction: column; max-width: 80%; word-break: break-word; overflow-wrap: anywhere; }
-    .chat-msg-row.sent { align-self: flex-end; }
-    .chat-msg-row.received { align-self: flex-start; }
-
-    .chat-msg-bubble { padding: 7px 10px; border-radius: 6px; font-size: 12px; line-height: 1.35; white-space: pre-wrap; word-break: break-word; }
-    .chat-msg-row.sent .chat-msg-bubble { background: #00a2ff; color: white; border-bottom-right-radius: 1px; }
-    .chat-msg-row.received .chat-msg-bubble { background: #e4e6eb; color: #1c1e21; border-bottom-left-radius: 1px; }
-
-    .chat-input-area {
-      padding: 8px;
-      background: #f0f0f0;
-      border-top: 1px solid #e0e0e0;
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-      width: 100%;
-    }
-
-    .chat-input-area input { flex: 1; min-width: 0; padding: 6px 8px; font-size: 12px; border: 1px solid #ccc; border-radius: 3px; outline: none; }
-    .chat-input-area button.mobile-send-btn { padding: 6px 12px; background: #02b757; color: white; border: none; font-weight: bold; font-size: 12px; border-radius: 3px; cursor: pointer; flex-shrink: 0; }
-
-    @media (min-width: 769px) {
-      .chat-input-area button.mobile-send-btn { display: none !important; }
-    }
-
-    .dm-user-item { padding: 10px 12px; background: #ffffff; border-bottom: 1px solid #eeeeee; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-    .dm-user-item:hover { background: #eef5fc; color: #00a2ff; }
-
-    .request-card { background: #ffffff; border: 1px solid #e0e0e0; padding: 10px; margin: 8px; border-radius: 4px; font-size: 12px; }
-    .request-btn-group { display: flex; gap: 6px; margin-top: 8px; }
-    .req-accept-btn { flex: 1; background: #02b757; color: white; border: none; padding: 4px; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 2px; }
-    .req-decline-btn { flex: 1; background: #d9534f; color: white; border: none; padding: 4px; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 2px; }
-
     .footer { width: 100%; background: #ffffff; border-top: 1px solid #cccccc; margin-top: auto; padding: 15px 0; }
     .footer-container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
     .footer-links { display: flex; gap: 15px; margin-bottom: 8px; }
@@ -317,7 +272,7 @@
             <option value="games">Games</option>
             <option value="users">Users</option>
           </select>
-          <input type="text" id="search-query" class="search-input" placeholder="Search games or users..." onkeyup="if(event.key==='Enter') executeSearch()">
+          <input type="text" id="search-query" class="search-input" placeholder="Search games or users..." onkeyup="executeSearch()">
           <button class="search-button" type="button" onclick="executeSearch()">
             <svg class="search-icon-svg" viewBox="0 0 16 16">
               <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
@@ -351,6 +306,7 @@
   <main class="main">
     <div class="container" id="app-container">
       <div id="admin-panel-container"></div>
+      
       <section class="page-header" id="page-header-section">
         <div class="profile-pic" id="profile-avatar">
           <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" alt="Avatar">
@@ -383,61 +339,6 @@
     </div>
   </main>
 
-  <!-- ROBLOX-STYLE CHAT DRAWER -->
-  <div class="container_container__Ufhp_" id="chat-container">
-    <div class="chatMenu_chatMenuClosed__4a7jC" onclick="toggleChatDrawer()">
-      <div class="chatMenu_chatMenuHeader__Xy3ps">
-        <div class="chatMenu_header_left">
-          <p class="chatMenu_chatLabel__DDNOw">Chat</p>
-          <span class="chatMenu_badge" id="chat-badge">0</span>
-        </div>
-        <span style="color:white; font-size:11px;" id="chat-toggle-icon">&#9650;</span>
-      </div>
-    </div>
-    
-    <div class="chatMenu_chatBody">
-      <div class="chat-nav-tabs">
-        <button class="chat-tab-btn active" onclick="switchChatTab('dms')">Friends</button>
-        <button class="chat-tab-btn" onclick="switchChatTab('requests')">Requests <span id="req-count"></span></button>
-        <button class="chat-tab-btn" onclick="switchChatTab('add')">Add</button>
-      </div>
-
-      <div class="chat-tab-content active" id="tab-dms">
-        <div id="dm-chats-list" style="flex:1; overflow-y:auto; min-height:0;">
-          <p style="color:#777; text-align:center; font-size:11px; margin-top:30px;">No friends added yet.</p>
-        </div>
-        <div id="active-chat-view" style="display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
-          <div style="padding:6px 10px; background:#f0f0f0; border-bottom:1px solid #ddd; font-size:11px; font-weight:bold; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
-            <div style="display:flex; align-items:center; gap:6px;">
-              <span style="cursor:pointer; color:#00a2ff;" onclick="closeActiveDm()">&larr;</span>
-              <span id="active-chat-target" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">User</span>
-            </div>
-            <span style="cursor:pointer; color:#888;" onclick="closeActiveDm()">&#10005;</span>
-          </div>
-          <div class="chat-messages-area" id="chat-messages-list"></div>
-          <div class="chat-input-area">
-            <input type="text" id="chat-msg-input" placeholder="Type a message..." onkeyup="if(event.key==='Enter') sendChatMessage()">
-            <button class="mobile-send-btn" onclick="sendChatMessage()">Send</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="chat-tab-content" id="tab-requests">
-        <div id="incoming-requests-list" style="flex:1; overflow-y:auto; min-height:0;">
-          <p style="color:#777; text-align:center; font-size:11px; margin-top:30px;">No pending DM requests.</p>
-        </div>
-      </div>
-
-      <div class="chat-tab-content" id="tab-add">
-        <div style="padding:15px 10px;">
-          <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:6px; color:#333;">Send Chat Request:</label>
-          <input type="text" id="dm-target-username" placeholder="Username..." style="width:100%; padding:6px; font-size:12px; margin-bottom:10px; border:1px solid #ccc; border-radius:3px;">
-          <button onclick="sendDmRequest()" style="width:100%; padding:7px; background:#00a2ff; color:white; border:none; font-weight:bold; font-size:12px; cursor:pointer; border-radius:3px;">Send Request</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-links">
@@ -453,17 +354,14 @@
     const GAMES_BIN_ID = "6ad78c3aac6210605a42bdca"; 
     const ACCOUNTS_BIN_ID = "6ad782eeac6210605a429ed7";
     const FORUM_BIN_ID = "6ad77eccffd5d160537c47d4"; 
-    const CHAT_BIN_ID = "6ad8bfccac6210605a45d063";
     const VOTES_BIN_ID = "6ad8edb9ffd5d16053802668";
     const VISITS_BIN_ID = "6ad8edfbffd5d16053802767";
-    const ADMINS_BIN_ID = "6ad782eeac6210605a429ed7"; // Can use accounts or a dedicated bin if needed, storing in accounts record or custom bin. Let's use ACCOUNTS_BIN_ID or store admins state safely inside accounts/admins bin. Let's create an admins record field or separate storage. Let's store admins list in ACCOUNTS record under `admins` array or similar.
 
     const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi"; 
 
     const GAMES_URL = `https://api.jsonbin.io/v3/b/${GAMES_BIN_ID}`;
     const ACCOUNTS_URL = `https://api.jsonbin.io/v3/b/${ACCOUNTS_BIN_ID}`;
     const FORUM_URL = `https://api.jsonbin.io/v3/b/${FORUM_BIN_ID}`;
-    const CHAT_URL = `https://api.jsonbin.io/v3/b/${CHAT_BIN_ID}`;
     const VOTES_URL = `https://api.jsonbin.io/v3/b/${VOTES_BIN_ID}`;
     const VISITS_URL = `https://api.jsonbin.io/v3/b/${VISITS_BIN_ID}`;
 
@@ -475,7 +373,6 @@
     let cachedVisits = {};
     let cachedVotes = {};
     let cachedAdmins = ["yepme2", "bloxtip"];
-    let activeDmTarget = null;
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
@@ -484,32 +381,10 @@
 
     document.getElementById('sidebar-toggle-btn').addEventListener('click', toggleSidebar);
 
-    function toggleChatDrawer() {
-      const container = document.getElementById('chat-container');
-      const icon = document.getElementById('chat-toggle-icon');
-      container.classList.toggle('open');
-      if (container.classList.contains('open')) {
-        if(icon) icon.innerHTML = '&#9660;';
-        loadChatData();
-      } else {
-        if(icon) icon.innerHTML = '&#9650;';
-      }
-    }
-
-    function switchChatTab(tabName) {
-      document.querySelectorAll('.chat-tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.chat-tab-content').forEach(c => c.classList.remove('active'));
-      
-      if (tabName === 'dms') {
-        document.querySelectorAll('.chat-tab-btn')[0].classList.add('active');
-        document.getElementById('tab-dms').classList.add('active');
-      } else if (tabName === 'requests') {
-        document.querySelectorAll('.chat-tab-btn')[1].classList.add('active');
-        document.getElementById('tab-requests').classList.add('active');
-      } else if (tabName === 'add') {
-        document.querySelectorAll('.chat-tab-btn')[2].classList.add('active');
-        document.getElementById('tab-add').classList.add('active');
-      }
+    function isAdmin(username) {
+      if (!username) return false;
+      const lower = username.trim().toLowerCase();
+      return lower === 'yepme2' || lower === 'bloxtip' || cachedAdmins.map(u => u.toLowerCase()).includes(lower);
     }
 
     function initUserSession() {
@@ -521,7 +396,10 @@
       const statusText = document.getElementById('account-status-text');
 
       if (savedUser) {
-        if(userDisplay) userDisplay.innerHTML = `${savedUser} ${isAdmin(savedUser) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}`;
+        if(userDisplay) {
+          const badgeImg = isAdmin(savedUser) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : '';
+          userDisplay.innerHTML = `${savedUser} ${badgeImg}`;
+        }
         if(userMenuArea) userMenuArea.style.display = 'inline-flex';
         if(authActions) authActions.style.display = 'none';
         if(welcomeTitle) welcomeTitle.textContent = `Welcome back, ${savedUser}!`;
@@ -535,14 +413,8 @@
           localStorage.setItem('bloxtip_guest_name', guestName);
         }
         if(welcomeTitle) welcomeTitle.textContent = `Welcome, ${guestName}!`;
-        if(statusText) statusText.textContent = `You are playing as a Guest. You can play games freely! Sign up to create places.`;
+        if(statusText) statusText.textContent = `You are playing as a Guest. Join games freely below!`;
       }
-    }
-
-    function isAdmin(username) {
-      if (!username) return false;
-      const lower = username.toLowerCase();
-      return lower === 'yepme2' || lower === 'bloxtip' || cachedAdmins.map(u => u.toLowerCase()).includes(lower);
     }
 
     async function loadAdminsData() {
@@ -550,8 +422,8 @@
         const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         if (res.ok) {
           const data = await res.json();
-          if (data.record.admins && Array.isArray(data.record.admins)) {
-            cachedAdmins = Array.from(new Set([...cachedAdmins, ...data.record.admins]));
+          if (data.record && Array.isArray(data.record.admins)) {
+            cachedAdmins = Array.from(new Set(["yepme2", "bloxtip", ...data.record.admins]));
           }
         }
       } catch (e) {}
@@ -569,12 +441,11 @@
         return;
       }
 
-      if (!cachedAdans?.includes?.(targetUser) && !cachedAdmins.includes(targetUser)) {
+      if (!cachedAdmins.map(u => u.toLowerCase()).includes(targetUser.toLowerCase())) {
         cachedAdmins.push(targetUser);
       }
 
       try {
-        // Fetch current accounts bin record to preserve users list
         const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         let recordData = {};
         if (res.ok) {
@@ -590,37 +461,10 @@
         });
         alert(`Successfully granted Admin badge to ${targetUser}!`);
         targetInput.value = '';
+        initUserSession();
         executeSearch();
       } catch (e) {
-        alert("Failed to save admin status to JSONBin.");
-      }
-    }
-
-    async function banUser(username) {
-      const currentUser = localStorage.getItem('bloxtip_username');
-      if (!isAdmin(currentUser)) {
-        alert("Only admins can ban users.");
-        return;
-      }
-      if (!confirm(`Are you sure you want to ban ${username}?`)) return;
-
-      try {
-        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (res.ok) {
-          const data = await res.json();
-          let users = data.record.users || [];
-          users = users.filter(u => u.username !== username);
-          
-          await fetch(ACCOUNTS_URL, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-            body: JSON.stringify({ ...data.record, users })
-          });
-          alert(`User ${username} has been banned.`);
-          executeSearch();
-        }
-      } catch (e) {
-        alert("Failed to ban user.");
+        alert("Failed to save admin status.");
       }
     }
 
@@ -653,9 +497,7 @@
     }
 
     function navigateToHome() {
-      window.history.pushState({}, '', './');
       document.getElementById('page-header-section').style.display = 'flex';
-      document.getElementById('content-display-section').style.display = 'block';
       document.getElementById('forum-section-container').style.display = 'block';
       
       const contentSection = document.getElementById('content-display-section');
@@ -670,12 +512,12 @@
     }
 
     function slugify(text) {
-      return text.toString().toLowerCase()
+      return text ? text.toString().toLowerCase()
         .replace(/\s+/g, '-')            
         .replace(/[^\w\-]+/g, '')        
         .replace(/\-\-+/g, '-')          
         .replace(/^-+/, '')              
-        .replace(/-+$/, '');             
+        .replace(/-+$/, '') : 'place';             
     }
 
     async function loadVisitsData() {
@@ -793,11 +635,7 @@
       const gridContainer = document.getElementById('main-grid-container');
       const heading = document.getElementById('section-heading');
 
-      gridContainer.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #666;">Searching...</p>`;
-
-      await loadAdminsData();
-      await loadVisitsData();
-      await loadVotesData();
+      if (!gridContainer || !heading) return;
 
       if (queryType === 'games') {
         heading.textContent = query ? `Search Games: "${query}"` : "Games";
@@ -817,7 +655,9 @@
           gridContainer.innerHTML = filtered.map(g => {
             const pId = g.placeId || g.id || slugify(g.title);
             const visitsCount = cachedVisits[pId]?.visitors?.length || g.visits || 0;
-            const creatorFormatted = `${g.creator || 'Bloxtip'} ${isAdmin(g.creator) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}`;
+            const actualCreator = g.creator || 'Bloxtip';
+            const creatorFormatted = `${actualCreator} ${isAdmin(actualCreator) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}`;
+            
             return `
               <div class="game-card">
                 <div class="game-card-image-container" onclick="openGamePage('${pId}')">
@@ -826,7 +666,7 @@
                 <h3 class="game-card-title" onclick="openGamePage('${pId}')" title="${g.title}">${g.title}</h3>
                 <div class="game-card-meta">By ${creatorFormatted}</div>
                 <div class="game-card-meta" style="margin-top:2px;">👁️ ${visitsCount} Visits</div>
-                <a href="javascript:void(0)" class="play-btn" onclick="openGamePage('${pId}')">Play</a>
+                <button class="play-btn" onclick="openGamePage('${pId}')">Play</button>
               </div>
             `;
           }).join('');
@@ -848,8 +688,6 @@
             gridContainer.innerHTML = `<div class="empty-msg">No users found matching your search.</div>`;
             return;
           }
-          const currentUser = localStorage.getItem('bloxtip_username');
-          const isUserAdmin = isAdmin(currentUser);
 
           gridContainer.innerHTML = filtered.map(u => {
             const hasAdminBadge = isAdmin(u.username);
@@ -862,7 +700,6 @@
                   ${u.username} ${hasAdminBadge ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}
                 </h3>
                 <div class="user-card-meta">Joined Bloxtip</div>
-                ${isUserAdmin && currentUser !== u.username ? `<button class="ban-btn" onclick="banUser('${u.username}')">Ban User</button>` : ''}
               </div>
             `;
           }).join('');
@@ -886,7 +723,6 @@
       const game = cachedGames.find(g => (g.placeId || g.id || slugify(g.title)) === placeId);
       if (!game) return;
 
-      window.history.pushState({}, '', `./game?id=${placeId}`);
       document.getElementById('page-header-section').style.display = 'none';
       document.getElementById('forum-section-container').style.display = 'none';
 
@@ -896,12 +732,13 @@
       const pId = placeId;
       const visitsCount = cachedVisits[pId]?.visitors?.length || game.visits || 0;
       const creatorName = game.creator || 'Bloxtip';
-      const creatorFormatted = `<a href="javascript:void(0)" onclick="document.getElementById('search-type').value='users'; document.getElementById('search-query').value='${creatorName}'; executeSearch(); navigateToHome();">${creatorName}</a> ${isAdmin(creatorName) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}`;
+      const creatorFormatted = `<span>${creatorName}</span> ${isAdmin(creatorName) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}`;
 
       const contentSection = document.getElementById('content-display-section');
       contentSection.innerHTML = `
         <div class="container-main">
           <div class="page-content">
+            <a class="back-btn-link" onclick="navigateToHome()">&larr; Back to Games</a>
             <div class="game-main-content">
               <div class="game-thumb-container">
                 <img src="${game.thumbnail || DEFAULT_THUMBNAIL}" class="carousel-thumb" alt="${game.title}">
@@ -958,7 +795,7 @@
           const data = await res.json();
           const posts = data.record.posts || data.record || [];
           if (posts.length === 0) {
-            list.innerHTML = `<p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">No community threads posted yet. Start the conversation!</p>`;
+            list.innerHTML = `<p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">No community threads posted yet.</p>`;
             return;
           }
           list.innerHTML = posts.reverse().map(p => {
@@ -1009,13 +846,10 @@
       }
     }
 
-    async function loadChatData() {}
-    function sendChatMessage() {}
-    function closeActiveDm() {}
-    function sendDmRequest() {}
-
     window.onload = async () => {
       await loadAdminsData();
+      await loadVisitsData();
+      await loadVotesData();
       initUserSession();
       executeSearch();
       loadForumPosts();
