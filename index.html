@@ -64,7 +64,7 @@
     .header-nav a { color: white; text-decoration: none; font-size: 14px; font-weight: bold; padding: 4px 2px; }
     .header-nav a:hover { opacity: 0.85; }
 
-    /* SEARCH BAR (WHITE WITH MAGNIFYING GLASS ON RIGHT) */
+    /* SEARCH BAR */
     .search-container { 
       flex: 1; 
       max-width: 460px; 
@@ -103,7 +103,7 @@
     }
     .search-icon-svg { width: 15px; height: 15px; fill: #191919; }
 
-    /* RIGHT SECTION LAYOUT */
+    /* RIGHT SECTION */
     .right-section { display: flex; align-items: center; gap: 12px; flex-shrink: 0; color: white; font-size: 13px; font-weight: bold; }
     
     .user-info-text { display: flex; align-items: center; gap: 4px; color: white; }
@@ -116,11 +116,6 @@
 
     .robux-display { display: inline-flex; align-items: center; gap: 5px; font-weight: bold; font-size: 13px; color: white; }
     .robux-icon { width: 18px; height: 18px; object-fit: contain; vertical-align: middle; }
-
-    .auth-btn { background: #02b757; border: 1px solid #018a41; color: white; font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 2px; cursor: pointer; }
-    .auth-btn:hover { background: #00cc61; }
-    .auth-btn-sec { background: rgba(255, 255, 255, 0.2); border: 1px solid white; color: white; font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 2px; cursor: pointer; }
-    .auth-btn-sec:hover { background: rgba(255, 255, 255, 0.3); }
 
     /* SIDEBAR */
     .sidebar-overlay { display: none; position: fixed; top: 40px; left: 0; width: 100vw; height: calc(100vh - 40px); background: rgba(0, 0, 0, 0.3); z-index: 1040; }
@@ -250,7 +245,7 @@
         </div>
       </div>
 
-      <!-- SEARCH BAR MATCHING SCREENSHOT -->
+      <!-- SEARCH BAR -->
       <div class="search-container">
         <div class="search-wrapper">
           <select id="search-type" class="search-select">
@@ -266,27 +261,23 @@
         </div>
       </div>
 
-      <!-- RIGHT USER BAR WITH EXACT SEQUENCE -->
+      <!-- USER INFO, ROBUX, & ICONS -->
       <div class="right-section" id="auth-actions">
-        <!-- USERNAME & AGE -->
         <div class="user-info-text">
-          <span id="user-display">yepme2</span>: 13+
+          <span id="user-display">Guest</span>: 13+
         </div>
 
-        <!-- NOTIFICATION / FEED ICON -->
         <button class="nav-icon-btn" title="Notifications">
           <svg class="nav-icon-svg" viewBox="0 0 24 24">
             <path d="M4 4h16v12H5.17L4 17.17V4m0-2c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H4zm2 10h12v2H6v-2zm0-3h12v2H6V9zm0-3h12v2H6V6z"/>
           </svg>
         </button>
 
-        <!-- ROBUX ICON AND BALANCE -->
         <div class="robux-display" id="user-robux-badge" title="Robux Balance">
           <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/ROBUX_icon_3F19%2529.webp" class="robux-icon" alt="Robux">
           <span id="robux-amount">0</span>
         </div>
 
-        <!-- SETTINGS GEAR ICON -->
         <button class="nav-icon-btn" title="Settings">
           <svg class="nav-icon-svg" viewBox="0 0 24 24">
             <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
@@ -408,30 +399,24 @@
         const res = await fetch(ROBUX_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         if (res.ok) {
           const data = await res.json();
-          cachedRobux = data.record.robux || data.record || {};
-          if (!data.record || Object.keys(data.record).length === 0) {
-            await setUserRobuxDefault();
-          }
+          // Support both direct record objects and nested record.robux maps
+          const recordData = data.record || {};
+          cachedRobux = recordData.robux || (Object.keys(recordData).length > 0 ? recordData : {});
         }
       } catch (e) {
-        await setUserRobuxDefault();
+        cachedRobux = {};
       }
-    }
-
-    async function setUserRobuxDefault() {
-      cachedRobux = {};
-      try {
-        await fetch(ROBUX_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify({ robux: cachedRobux })
-        });
-      } catch (e) {}
     }
 
     function getUserRobux(username) {
       if (!username) return 0;
-      return cachedRobux[username.toLowerCase()] || 0;
+      const lower = username.toLowerCase();
+      // Auto-initialize pre-existing or new accounts at 0 Robux if missing from JSON bin
+      if (cachedRobux[lower] === undefined) {
+        cachedRobux[lower] = 0;
+        setUserRobux(username, 0);
+      }
+      return cachedRobux[lower];
     }
 
     async function setUserRobux(username, amount) {
@@ -454,26 +439,36 @@
       const welcomeTitle = document.getElementById('welcome-title');
       const statusText = document.getElementById('account-status-text');
 
-      if (savedUser) {
-        if(userDisplay) {
-          const badgeImg = isAdmin(savedUser) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : '';
-          userDisplay.innerHTML = `${savedUser}${badgeImg}`;
-        }
-        if(robuxAmountSpan) {
-          robuxAmountSpan.textContent = getUserRobux(savedUser);
-        }
-        if(welcomeTitle) welcomeTitle.textContent = `Welcome back, ${savedUser}!`;
-        if(statusText) statusText.textContent = `Account Active (Full Creation & Privilege Rights Enabled)`;
-        renderAdminPanel();
-      } else {
+      let activeName = savedUser;
+      if (!activeName) {
         let guestName = localStorage.getItem('bloxtip_guest_name');
         if (!guestName) {
           const randomGuestId = Math.floor(1000 + Math.random() * 9000);
           guestName = `Guest ${randomGuestId}`;
           localStorage.setItem('bloxtip_guest_name', guestName);
         }
-        if(userDisplay) userDisplay.textContent = guestName;
-        if(welcomeTitle) welcomeTitle.textContent = `Welcome, ${guestName}!`;
+        activeName = guestName;
+      }
+
+      if (userDisplay) {
+        if (savedUser && isAdmin(savedUser)) {
+          const badgeImg = `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">`;
+          userDisplay.innerHTML = `${savedUser}${badgeImg}`;
+        } else {
+          userDisplay.textContent = activeName;
+        }
+      }
+
+      if (robuxAmountSpan) {
+        robuxAmountSpan.textContent = getUserRobux(activeName);
+      }
+
+      if (savedUser) {
+        if(welcomeTitle) welcomeTitle.textContent = `Welcome back, ${savedUser}!`;
+        if(statusText) statusText.textContent = `Account Active (Full Creation & Privilege Rights Enabled)`;
+        renderAdminPanel();
+      } else {
+        if(welcomeTitle) welcomeTitle.textContent = `Welcome, ${activeName}!`;
         if(statusText) statusText.textContent = `You are playing as a Guest. Join games freely below!`;
       }
     }
