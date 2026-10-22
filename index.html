@@ -73,7 +73,9 @@
     .auth-btn-sec { background: rgba(255, 255, 255, 0.2); border: 1px solid white; color: white; font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 2px; cursor: pointer; }
     .auth-btn-sec:hover { background: rgba(255, 255, 255, 0.3); }
 
-    .user-menu { color: white; padding: 4px 8px; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+    .user-menu { color: white; padding: 4px 8px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .robux-display { display: inline-flex; align-items: center; gap: 4px; font-weight: bold; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 3px; font-size: 12px; color: #55ff99; }
+    .robux-icon { width: 14px; height: 14px; object-fit: contain; vertical-align: middle; }
 
     /* SIDEBAR */
     .sidebar-overlay { display: none; position: fixed; top: 40px; left: 0; width: 100vw; height: calc(100vh - 40px); background: rgba(0, 0, 0, 0.3); z-index: 1040; }
@@ -180,7 +182,7 @@
     /* ADMIN PANEL */
     .admin-badge-panel { background: #fff; border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
     .admin-badge-panel h3 { font-size: 16px; margin-bottom: 10px; color: #333; }
-    .admin-badge-panel input { padding: 6px; font-size: 12px; border: 1px solid #ccc; border-radius: 2px; width: 200px; margin-right: 8px; }
+    .admin-badge-panel input { padding: 6px; font-size: 12px; border: 1px solid #ccc; border-radius: 2px; width: 180px; margin-right: 6px; margin-bottom: 6px; }
     .admin-badge-panel button { padding: 6px 12px; background: #0074BD; color: white; border: none; font-weight: bold; border-radius: 2px; cursor: pointer; }
     .admin-badge-panel button:hover { background: #00568c; }
 
@@ -234,7 +236,11 @@
         <a href="./login" class="auth-btn-sec" style="text-decoration:none;">Log In</a>
         <span class="user-menu" id="user-menu-area" style="display:none;">
           <span id="user-display">Guest</span>
-          <button style="background:none; border:none; color:white; cursor:pointer; font-size:12px; margin-left:8px;" onclick="logout()">[Log Out]</button>
+          <span class="robux-display" id="user-robux-badge">
+            <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/ROBUX_icon_3F19%2529.webp" class="robux-icon" alt="Robux">
+            <span id="robux-amount">0</span>
+          </span>
+          <button style="background:none; border:none; color:white; cursor:pointer; font-size:12px; margin-left:4px;" onclick="logout()">[Log Out]</button>
         </span>
       </div>
     </div>
@@ -304,6 +310,7 @@
     const FORUM_BIN_ID = "6ad77eccffd5d160537c47d4"; 
     const VOTES_BIN_ID = "6ad8edb9ffd5d16053802668";
     const VISITS_BIN_ID = "6ad8edfbffd5d16053802767";
+    const ROBUX_BIN_ID = "6ada423bac6210605a499e4e";
 
     const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi"; 
 
@@ -312,14 +319,17 @@
     const FORUM_URL = `https://api.jsonbin.io/v3/b/${FORUM_BIN_ID}`;
     const VOTES_URL = `https://api.jsonbin.io/v3/b/${VOTES_BIN_ID}`;
     const VISITS_URL = `https://api.jsonbin.io/v3/b/${VISITS_BIN_ID}`;
+    const ROBUX_URL = `https://api.jsonbin.io/v3/b/${ROBUX_BIN_ID}`;
 
     const ADMIN_BADGE_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/adminicon.png";
+    const ROBUX_ICON_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/ROBUX_icon_3F19%2529.webp";
     const DEFAULT_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
 
     let cachedGames = [];
     let cachedUsers = [];
     let cachedVisits = {};
     let cachedVotes = {};
+    let cachedRobux = {};
     let cachedAdmins = ["yepme2", "bloxtip"];
 
     function toggleSidebar() {
@@ -341,9 +351,38 @@
       return isMasterAdmin(lower) || cachedAdmins.map(u => u.toLowerCase()).includes(lower);
     }
 
-    function initUserSession() {
+    async function loadRobuxData() {
+      try {
+        const res = await fetch(ROBUX_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (res.ok) {
+          const data = await res.json();
+          cachedRobux = data.record.robux || data.record || {};
+        }
+      } catch (e) {}
+    }
+
+    function getUserRobux(username) {
+      if (!username) return 0;
+      return cachedRobux[username.toLowerCase()] || 0;
+    }
+
+    async function setUserRobux(username, amount) {
+      if (!username) return;
+      cachedRobux[username.toLowerCase()] = parseInt(amount, 10) || 0;
+      try {
+        await fetch(ROBUX_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify({ robux: cachedRobux })
+        });
+      } catch (e) {}
+    }
+
+    async function initUserSession() {
+      await loadRobuxData();
       const savedUser = localStorage.getItem('bloxtip_username');
       const userDisplay = document.getElementById('user-display');
+      const robuxAmountSpan = document.getElementById('robux-amount');
       const userMenuArea = document.getElementById('user-menu-area');
       const authActions = document.getElementById('auth-actions');
       const welcomeTitle = document.getElementById('welcome-title');
@@ -353,6 +392,9 @@
         if(userDisplay) {
           const badgeImg = isAdmin(savedUser) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : '';
           userDisplay.innerHTML = `${savedUser} ${badgeImg}`;
+        }
+        if(robuxAmountSpan) {
+          robuxAmountSpan.textContent = getUserRobux(savedUser);
         }
         if(userMenuArea) userMenuArea.style.display = 'inline-flex';
         if(authActions) authActions.style.display = 'none';
@@ -422,6 +464,28 @@
       }
     }
 
+    async function grantUserRobux() {
+      const currentUser = localStorage.getItem('bloxtip_username');
+      if (!isMasterAdmin(currentUser)) {
+        alert("Only master accounts (yepme2 and bloxtip) can manage Robux balances.");
+        return;
+      }
+      const targetUser = document.getElementById('robux-target-username').value.trim();
+      const amount = parseInt(document.getElementById('robux-target-amount').value, 10);
+      if (!targetUser || isNaN(amount)) {
+        alert("Please enter a valid username and Robux amount.");
+        return;
+      }
+
+      const currentBalance = getUserRobux(targetUser);
+      const newBalance = currentBalance + amount;
+      await setUserRobux(targetUser, newBalance);
+      alert(`Successfully added ${amount} Robux to ${targetUser}! New balance: ${newBalance}`);
+      document.getElementById('robux-target-username').value = '';
+      document.getElementById('robux-target-amount').value = '';
+      initUserSession();
+    }
+
     async function banUser(username) {
       const currentUser = localStorage.getItem('bloxtip_username');
       if (!isAdmin(currentUser)) {
@@ -486,10 +550,16 @@
         container.innerHTML = `
           <div class="admin-badge-panel">
             <h3>🛡️ Master Admin Control Panel (yepme2 / bloxtip)</h3>
-            <p style="font-size:12px; color:#666; margin-bottom:8px;">Grant the permanent Admin badge to any user account:</p>
-            <div style="display:flex; gap:6px;">
-              <input type="text" id="admin-target-username" placeholder="Enter username...">
-              <button onclick="assignAdminBadge()">Grant Admin Badge</button>
+            <div style="margin-bottom: 10px;">
+              <p style="font-size:12px; color:#666; margin-bottom:4px;">Grant Admin Badge:</p>
+              <input type="text" id="admin-target-username" placeholder="Username...">
+              <button onclick="assignAdminBadge()">Grant Badge</button>
+            </div>
+            <div>
+              <p style="font-size:12px; color:#666; margin-bottom:4px;">Give/Modify Robux Balance:</p>
+              <input type="text" id="robux-target-username" placeholder="Username...">
+              <input type="number" id="robux-target-amount" placeholder="Amount (+/-)..." style="width:130px;">
+              <button onclick="grantUserRobux()">Update Robux</button>
             </div>
           </div>
         `;
@@ -537,38 +607,11 @@
         .replace(/-+$/, '') : 'place';             
     }
 
-    /* SEQUENTIAL GAME ID AUTO-GENERATOR */
     function getNextGameId(existingGames) {
       if (!Array.isArray(existingGames) || existingGames.length === 0) return 1;
       const ids = existingGames.map(g => parseInt(g.placeId || g.id, 10)).filter(id => !isNaN(id));
       if (ids.length === 0) return existingGames.length + 1;
       return Math.max(...ids) + 1;
-    }
-
-    async function createNewGame(gameData) {
-      try {
-        const res = await fetch(GAMES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        let games = [];
-        if (res.ok) {
-          const data = await res.json();
-          games = data.record.games || data.record || [];
-        }
-        const nextId = getNextGameId(games);
-        gameData.id = nextId;
-        gameData.placeId = nextId;
-        
-        games.push(gameData);
-
-        await fetch(GAMES_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify({ games })
-        });
-        cachedGames = games;
-        executeSearch();
-      } catch (e) {
-        alert("Failed to save new game.");
-      }
     }
 
     async function loadVisitsData() {
@@ -745,6 +788,7 @@
 
           gridContainer.innerHTML = filtered.map(u => {
             const hasAdminBadge = isAdmin(u.username);
+            const userRobux = getUserRobux(u.username);
             return `
               <div class="user-card">
                 <div class="user-card-image-container">
@@ -753,7 +797,9 @@
                 <h3 class="user-card-title" title="${u.username}">
                   ${u.username} ${hasAdminBadge ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">` : ''}
                 </h3>
-                <div class="user-card-meta">Joined Bloxtip</div>
+                <div class="user-card-meta">
+                  <img src="${ROBUX_ICON_URL}" style="width:12px; height:12px;"> ${userRobux} R$
+                </div>
                 ${isUserAdmin && currentUser && currentUser.toLowerCase() !== u.username.toLowerCase() ? `<button class="ban-btn" onclick="banUser('${u.username}')">Ban User</button>` : ''}
               </div>
             `;
@@ -780,8 +826,6 @@
 
       const pId = game.placeId || game.id || placeId;
       const gameSlug = slugify(game.title);
-      
-      /* Roblox URL format: /bloxtip/game-title-slug/gameid */
       const customGameUrl = `/bloxtip/${gameSlug}/${pId}`;
       window.history.pushState({ gameId: pId }, '', customGameUrl);
 
@@ -917,6 +961,7 @@
       await loadAdminsData();
       await loadVisitsData();
       await loadVotesData();
+      await loadRobuxData();
       initUserSession();
       executeSearch();
       loadForumPosts();
