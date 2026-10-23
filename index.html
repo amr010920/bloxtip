@@ -149,13 +149,11 @@
       box-shadow: 0 -2px 6px rgba(0,0,0,0.15);
     }
     
-    /* BUTTONS HIDDEN BY DEFAULT WHEN CLOSED */
     .chat-header-actions {
       display: none;
       align-items: center;
       gap: 10px;
     }
-    /* BUTTONS VISIBLE ONLY WHEN OPENED */
     .chat-widget-container.open .chat-header-actions {
       display: flex;
     }
@@ -260,6 +258,94 @@
       font-size: 10px;
       color: #888;
       flex-shrink: 0;
+    }
+
+    /* DIRECT MESSAGE CONVERSATION WINDOW */
+    .dm-conversation-window {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      right: 310px;
+      width: 300px;
+      height: 380px;
+      background: white;
+      border: 1px solid #ccc;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
+      z-index: 1075;
+      flex-direction: column;
+    }
+    .dm-conversation-window.active { display: flex; }
+    .dm-conv-header {
+      background: var(--theme-chat-blue);
+      color: white;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dm-conv-close {
+      background: none;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .dm-conv-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .dm-msg-bubble {
+      max-width: 80%;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1.3;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    .dm-msg-sent {
+      align-self: flex-end;
+      background: #0074BD;
+      color: white;
+    }
+    .dm-msg-received {
+      align-self: flex-start;
+      background: #e4e6eb;
+      color: #1c1e21;
+    }
+    .dm-conv-footer {
+      padding: 8px;
+      border-top: 1px solid #ddd;
+      display: flex;
+      gap: 6px;
+      background: white;
+    }
+    .dm-conv-input {
+      flex: 1;
+      padding: 6px;
+      font-size: 12px;
+      border: 1px solid #ccc;
+      border-radius: 2px;
+    }
+    .dm-conv-send-btn {
+      background: var(--theme-chat-blue);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 2px;
     }
 
     .alert-wrapper { background: #F68802; padding: 8px 15px; text-align: center; color: white; font-size: 14px; font-weight: bold; z-index: 1030; width: 100vw; margin-left: calc(-50vw + 50%); }
@@ -393,8 +479,23 @@
         <input type="text" id="chat-search-friends-input" class="chat-search-input" placeholder="Search for friends" onkeyup="filterChatFriends()">
       </div>
       <div class="chat-friends-list" id="chat-friends-list-container">
-        <!-- Dynamic content loaded from messages bin -->
+        <!-- Dynamic content loaded from data store -->
       </div>
+    </div>
+  </div>
+
+  <!-- DIRECT MESSAGE CONVERSATION WINDOW -->
+  <div class="dm-conversation-window" id="dm-conversation-window">
+    <div class="dm-conv-header">
+      <span id="dm-target-username">User</span>
+      <button class="dm-conv-close" onclick="closeDmConversation()">×</button>
+    </div>
+    <div class="dm-conv-messages" id="dm-conv-messages">
+      <!-- Conversation history -->
+    </div>
+    <div class="dm-conv-footer">
+      <input type="text" id="dm-conv-input-text" class="dm-conv-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendDirectMessage()">
+      <button class="dm-conv-send-btn" onclick="sendDirectMessage()">Send</button>
     </div>
   </div>
 
@@ -483,6 +584,7 @@
     let cachedVisits = {};
     let cachedRobux = {};
     let cachedAdmins = ["yepme2", "bloxtip"];
+    let activeChatTarget = null;
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
@@ -513,7 +615,6 @@
           const messages = rec.messages || [];
           const connections = rec.connections || [];
 
-          // Get connected friends
           let friends = [];
           connections.forEach(conn => {
             if (conn.user1 === currentUser) friends.push(conn.user2);
@@ -526,12 +627,11 @@
           }
 
           container.innerHTML = friends.map(friend => {
-            // Find last message between users
             const friendMsgs = messages.filter(m => (m.from === friend && m.to === currentUser) || (m.from === currentUser && m.to === friend));
             const lastMsg = friendMsgs.length ? friendMsgs[friendMsgs.length - 1] : { text: 'No messages yet', time: '' };
 
             return `
-              <div class="chat-friend-item">
+              <div class="chat-friend-item" onclick="openDmConversation('${friend}')">
                 <div class="chat-friend-pfp-wrapper">
                   <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" class="chat-friend-pfp">
                   <div class="chat-online-dot"></div>
@@ -548,6 +648,79 @@
       } catch (e) {
         container.innerHTML = `<div style="padding:15px; text-align:center; color:#777; font-size:12px;">Failed to load chat data.</div>`;
       }
+    }
+
+    async function openDmConversation(username) {
+      activeChatTarget = username;
+      document.getElementById('dm-target-username').textContent = username;
+      const convWin = document.getElementById('dm-conversation-window');
+      convWin.classList.add('active');
+      await renderDmConversationMessages();
+    }
+
+    function closeDmConversation() {
+      activeChatTarget = null;
+      document.getElementById('dm-conversation-window').classList.remove('active');
+    }
+
+    async function renderDmConversationMessages() {
+      if (!activeChatTarget) return;
+      const container = document.getElementById('dm-conv-messages');
+      const currentUser = localStorage.getItem('bloxtip_username') || 'yepme2';
+
+      try {
+        const res = await fetch(MESSAGES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (res.ok) {
+          const messages = (await res.json()).record.messages || [];
+          const conversation = messages.filter(m => (m.from === currentUser && m.to === activeChatTarget) || (m.from === activeChatTarget && m.to === currentUser));
+
+          if (conversation.length === 0) {
+            container.innerHTML = `<div style="color:#777; font-size:12px; text-align:center; margin-top:20px;">No messages yet. Say hello!</div>`;
+            return;
+          }
+
+          container.innerHTML = conversation.map(m => `
+            <div class="dm-msg-bubble ${m.from === currentUser ? 'dm-msg-sent' : 'dm-msg-received'}">
+              ${m.text}
+            </div>
+          `).join('');
+          container.scrollTop = container.scrollHeight;
+        }
+      } catch (e) {}
+    }
+
+    async function sendDirectMessage() {
+      const input = document.getElementById('dm-conv-input-text');
+      const text = input.value.trim();
+      if (!text || !activeChatTarget) return;
+
+      const currentUser = localStorage.getItem('bloxtip_username') || 'yepme2';
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      try {
+        const res = await fetch(MESSAGES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        if (res.ok) {
+          const rec = (await res.json()).record || {};
+          let messages = rec.messages || [];
+          messages.push({
+            from: currentUser,
+            to: activeChatTarget,
+            text: text,
+            time: timeStr
+          });
+          rec.messages = messages;
+
+          await fetch(MESSAGES_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            body: JSON.stringify(rec)
+          });
+
+          input.value = '';
+          renderDmConversationMessages();
+          loadChatFriends();
+        }
+      } catch (e) {}
     }
 
     function filterChatFriends() {
@@ -680,11 +853,11 @@
 
       if (savedUser) {
         if(welcomeTitle) welcomeTitle.textContent = `Welcome back, ${savedUser}!`;
-        if(statusText) statusText.textContent = `Account Active & Synced to JSONBin!`;
+        if(statusText) statusText.textContent = `Account Active`;
         renderAdminPanel();
       } else {
         if(welcomeTitle) welcomeTitle.textContent = `Welcome, ${activeName}!`;
-        if(statusText) statusText.textContent = `Playing as a Guest. Automatically registered to JSONBin database!`;
+        if(statusText) statusText.textContent = `Playing as a Guest. Join games freely below!`;
       }
     }
 
