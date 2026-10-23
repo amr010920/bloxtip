@@ -47,11 +47,31 @@
 
   <script>
     const ROBUX_BIN_ID = "6ada423bac6210605a499e4e";
+    const ACCOUNTS_BIN_ID = "6ad782eeac6210605a429ed7";
     const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi";
     const ROBUX_URL = `https://api.jsonbin.io/v3/b/${ROBUX_BIN_ID}`;
+    const ACCOUNTS_URL = `https://api.jsonbin.io/v3/b/${ACCOUNTS_BIN_ID}`;
 
     let cachedRobux = {};
     let redeemedCodes = JSON.parse(localStorage.getItem('bloxtip_redeemed_codes') || '[]');
+
+    async function syncUserToJSONBin(username) {
+      if (!username) return;
+      try {
+        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        let recordData = res.ok ? (await res.json()).record || {} : {};
+        let users = recordData.users || [];
+        if (!users.some(u => u.username && u.username.toLowerCase() === username.toLowerCase())) {
+          users.push({ username, avatar: "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png", joined: new Date().toLocaleDateString() });
+          recordData.users = users;
+          await fetch(ACCOUNTS_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            body: JSON.stringify(recordData)
+          });
+        }
+      } catch (e) {}
+    }
 
     async function loadRobuxData() {
       try {
@@ -122,7 +142,8 @@
 
     window.onload = async () => {
       await loadRobuxData();
-      const activeUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
+      let activeUser = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
+      await syncUserToJSONBin(activeUser);
       document.getElementById('nav-robux-bal').textContent = getUserRobux(activeUser);
     };
   </script>
