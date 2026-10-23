@@ -148,17 +148,24 @@
       cursor: pointer;
       box-shadow: 0 -2px 6px rgba(0,0,0,0.15);
     }
+    
+    /* BUTTONS HIDDEN BY DEFAULT WHEN CLOSED */
     .chat-header-actions {
-      display: flex;
+      display: none;
       align-items: center;
       gap: 10px;
     }
+    /* BUTTONS VISIBLE ONLY WHEN OPENED */
+    .chat-widget-container.open .chat-header-actions {
+      display: flex;
+    }
+
     .chat-action-icon {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       cursor: pointer;
       object-fit: contain;
-      filter: brightness(0) invert(1);
+      display: block;
     }
     .chat-action-icon:hover { opacity: 0.8; }
 
@@ -246,6 +253,8 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
     .chat-friend-time {
       font-size: 10px;
@@ -292,7 +301,7 @@
     .forum-post-item { padding: 12px 0; border-bottom: 1px dashed #dddddd; }
     .forum-post-header { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: center; }
     .forum-post-author { font-size: 11px; color: #777; display: flex; align-items: center; gap: 4px; }
-    .forum-post-content { font-size: 13px; color: #333; line-height: 1.4; }
+    .forum-post-content { font-size: 13px; color: #333; line-height: 1.4; word-break: break-word; overflow-wrap: anywhere; }
 
     /* ADMIN PANEL */
     .admin-badge-panel { background: #fff; border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
@@ -369,8 +378,8 @@
     </div>
   </nav>
 
-  <!-- CLASSIC BOTTOM-RIGHT CHAT / DM WIDGET (#00a2ff) -->
-  <div class="chat-widget-container">
+  <!-- CLASSIC BOTTOM-RIGHT CHAT WIDGET (#00a2ff) -->
+  <div class="chat-widget-container" id="chat-widget-container">
     <div class="chat-header-bar" onclick="toggleChatDrawer()">
       <span>Chat</span>
       <div class="chat-header-actions" onclick="event.stopPropagation()">
@@ -384,7 +393,7 @@
         <input type="text" id="chat-search-friends-input" class="chat-search-input" placeholder="Search for friends" onkeyup="filterChatFriends()">
       </div>
       <div class="chat-friends-list" id="chat-friends-list-container">
-        <!-- Populated dynamically -->
+        <!-- Dynamic content loaded from messages bin -->
       </div>
     </div>
   </div>
@@ -455,24 +464,23 @@
     const VOTES_BIN_ID = "6ad8edb9ffd5d16053802668";
     const VISITS_BIN_ID = "6ad8edfbffd5d16053802767";
     const ROBUX_BIN_ID = "6ada423bac6210605a499e4e";
+    const MESSAGES_BIN_ID = "6ad8bfccac6210605a45d063";
 
     const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi"; 
 
     const GAMES_URL = `https://api.jsonbin.io/v3/b/${GAMES_BIN_ID}`;
     const ACCOUNTS_URL = `https://api.jsonbin.io/v3/b/${ACCOUNTS_BIN_ID}`;
     const FORUM_URL = `https://api.jsonbin.io/v3/b/${FORUM_BIN_ID}`;
-    const VOTES_URL = `https://api.jsonbin.io/v3/b/${VOTES_URL}`;
     const VISITS_URL = `https://api.jsonbin.io/v3/b/${VISITS_BIN_ID}`;
     const ROBUX_URL = `https://api.jsonbin.io/v3/b/${ROBUX_BIN_ID}`;
+    const MESSAGES_URL = `https://api.jsonbin.io/v3/b/${MESSAGES_BIN_ID}`;
 
     const ADMIN_BADGE_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/adminicon.png";
     const ROBUX_ICON_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/ROBUX_icon_3F19%2529.webp";
     const DEFAULT_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
 
     let cachedGames = [];
-    let cachedUsers = [];
     let cachedVisits = {};
-    let cachedVotes = {};
     let cachedRobux = {};
     let cachedAdmins = ["yepme2", "bloxtip"];
 
@@ -482,8 +490,12 @@
     }
 
     function toggleChatDrawer() {
+      const container = document.getElementById('chat-widget-container');
       const drawer = document.getElementById('chat-body-drawer');
+      
+      container.classList.toggle('open');
       drawer.classList.toggle('active');
+      
       if (drawer.classList.contains('active')) {
         loadChatFriends();
       }
@@ -491,30 +503,50 @@
 
     async function loadChatFriends() {
       const container = document.getElementById('chat-friends-list-container');
+      const currentUser = localStorage.getItem('bloxtip_username') || 'yepme2';
+
       try {
-        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        const res = await fetch(MESSAGES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         if (res.ok) {
           const data = await res.json();
-          const users = data.record.users || [];
-          if (users.length === 0) {
-            container.innerHTML = `<div style="padding:15px; text-align:center; color:#777; font-size:12px;">No friends found.</div>`;
+          const rec = data.record || {};
+          const messages = rec.messages || [];
+          const connections = rec.connections || [];
+
+          // Get connected friends
+          let friends = [];
+          connections.forEach(conn => {
+            if (conn.user1 === currentUser) friends.push(conn.user2);
+            else if (conn.user2 === currentUser) friends.push(conn.user1);
+          });
+
+          if (friends.length === 0) {
+            container.innerHTML = `<div style="padding:15px; text-align:center; color:#777; font-size:12px;">No connected friends yet.</div>`;
             return;
           }
-          container.innerHTML = users.map(u => `
-            <div class="chat-friend-item">
-              <div class="chat-friend-pfp-wrapper">
-                <img src="${u.avatar || 'https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png'}" class="chat-friend-pfp">
-                <div class="chat-online-dot"></div>
+
+          container.innerHTML = friends.map(friend => {
+            // Find last message between users
+            const friendMsgs = messages.filter(m => (m.from === friend && m.to === currentUser) || (m.from === currentUser && m.to === friend));
+            const lastMsg = friendMsgs.length ? friendMsgs[friendMsgs.length - 1] : { text: 'No messages yet', time: '' };
+
+            return `
+              <div class="chat-friend-item">
+                <div class="chat-friend-pfp-wrapper">
+                  <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" class="chat-friend-pfp">
+                  <div class="chat-online-dot"></div>
+                </div>
+                <div class="chat-friend-info">
+                  <div class="chat-friend-name">${friend}</div>
+                  <div class="chat-friend-status">${lastMsg.text}</div>
+                </div>
+                <div class="chat-friend-time">${lastMsg.time || ''}</div>
               </div>
-              <div class="chat-friend-info">
-                <div class="chat-friend-name">${u.username}</div>
-                <div class="chat-friend-status">Online</div>
-              </div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
         }
       } catch (e) {
-        container.innerHTML = `<div style="padding:15px; text-align:center; color:#777; font-size:12px;">Failed to load chat.</div>`;
+        container.innerHTML = `<div style="padding:15px; text-align:center; color:#777; font-size:12px;">Failed to load chat data.</div>`;
       }
     }
 
@@ -556,16 +588,10 @@
       if (!username) return;
       try {
         const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        let recordData = {};
-        if (res.ok) {
-          const json = await res.json();
-          recordData = json.record || {};
-        }
-
+        let recordData = res.ok ? (await res.json()).record || {} : {};
         let users = recordData.users || [];
-        const exists = users.some(u => u.username && u.username.toLowerCase() === username.toLowerCase());
 
-        if (!exists) {
+        if (!users.some(u => u.username && u.username.toLowerCase() === username.toLowerCase())) {
           users.push({
             username: username,
             avatar: "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png",
@@ -821,7 +847,7 @@
                 <div class="user-card-image-container"><img src="${u.avatar || DEFAULT_THUMBNAIL}" class="user-card-img"></div>
                 <h3 class="user-card-title">${u.username} ${isAdmin(u.username) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon">` : ''}</h3>
                 <div class="user-card-meta"><img src="${ROBUX_ICON_URL}" style="width:12px;"> ${getUserRobux(u.username)} R$</div>
-                ${isUserAdmin && currentUser.toLowerCase() !== u.username.toLowerCase() ? `<button class="ban-btn" onclick="banUser('${u.username}')">Ban</button>` : ''}
+                ${isUserAdmin && currentUser && currentUser.toLowerCase() !== u.username.toLowerCase() ? `<button class="ban-btn" onclick="banUser('${u.username}')">Ban</button>` : ''}
               </div>`).join('') : `<div class="empty-msg">No users found.</div>`;
           }
         } catch (e) {}
@@ -873,7 +899,6 @@
       await initUserSession();
       executeSearch();
       loadForumPosts();
-      loadChatFriends();
     };
   </script>
 </body>
