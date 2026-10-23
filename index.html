@@ -397,6 +397,39 @@
       return isMasterAdmin(lower) || cachedAdmins.map(u => u.toLowerCase()).includes(lower);
     }
 
+    // Automatically register and save user to JSONBin on load/open
+    async function syncUserToJSONBin(username) {
+      if (!username) return;
+      try {
+        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+        let recordData = {};
+        if (res.ok) {
+          const json = await res.json();
+          recordData = json.record || {};
+        }
+
+        let users = recordData.users || [];
+        const exists = users.some(u => u.username && u.username.toLowerCase() === username.toLowerCase());
+
+        if (!exists) {
+          users.push({
+            username: username,
+            avatar: "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png",
+            joined: new Date().toLocaleDateString()
+          });
+          recordData.users = users;
+
+          await fetch(ACCOUNTS_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+            body: JSON.stringify(recordData)
+          });
+        }
+      } catch (e) {
+        console.error("Failed to sync account to JSONBin", e);
+      }
+    }
+
     async function loadRobuxData() {
       try {
         const res = await fetch(ROBUX_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
@@ -434,12 +467,8 @@
 
     async function initUserSession() {
       await loadRobuxData();
-      const savedUser = localStorage.getItem('bloxtip_username');
-      const userDisplay = document.getElementById('user-display');
-      const robuxAmountSpan = document.getElementById('robux-amount');
-      const welcomeTitle = document.getElementById('welcome-title');
-      const statusText = document.getElementById('account-status-text');
-
+      let savedUser = localStorage.getItem('bloxtip_username');
+      
       let activeName = savedUser;
       if (!activeName) {
         let guestName = localStorage.getItem('bloxtip_guest_name');
@@ -450,6 +479,14 @@
         }
         activeName = guestName;
       }
+
+      // Automatically push active session name to the private Accounts JSONBin
+      await syncUserToJSONBin(activeName);
+
+      const userDisplay = document.getElementById('user-display');
+      const robuxAmountSpan = document.getElementById('robux-amount');
+      const welcomeTitle = document.getElementById('welcome-title');
+      const statusText = document.getElementById('account-status-text');
 
       if (userDisplay) {
         if (savedUser && isAdmin(savedUser)) {
@@ -466,11 +503,11 @@
 
       if (savedUser) {
         if(welcomeTitle) welcomeTitle.textContent = `Welcome back, ${savedUser}!`;
-        if(statusText) statusText.textContent = `Account Active (Full Creation & Privilege Rights Enabled)`;
+        if(statusText) statusText.textContent = `Account Active & Synced to JSONBin!`;
         renderAdminPanel();
       } else {
         if(welcomeTitle) welcomeTitle.textContent = `Welcome, ${activeName}!`;
-        if(statusText) statusText.textContent = `You are playing as a Guest. Join games freely below!`;
+        if(statusText) statusText.textContent = `Playing as a Guest. Automatically registered to JSONBin database!`;
       }
     }
 
@@ -534,12 +571,14 @@
       try {
         const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
         if (res.ok) {
-          let users = (await res.json()).record.users || [];
+          let record = (await res.json()).record || {};
+          let users = record.users || [];
           users = users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
+          record.users = users;
           await fetch(ACCOUNTS_URL, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-            body: JSON.stringify({ users })
+            body: JSON.stringify(record)
           });
           executeSearch();
         }
@@ -617,6 +656,24 @@
               <button class="play-btn" onclick="window.open('${g.rbxlUrl || '#'}','_blank')">Play</button>
             </div>`).join('') : `<div class="empty-msg">No games found.</div>`;
         } catch (e) {}
+      } else {
+        try {
+          const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
+          if (res.ok) {
+            let users = (await res.json()).record.users || [];
+            const filtered = users.filter(u => (u.username || '').toLowerCase().includes(query));
+            const currentUser = localStorage.getItem('bloxtip_username');
+            const isUserAdmin = isAdmin(currentUser);
+
+            gridContainer.innerHTML = filtered.length ? filtered.map(u => `
+              <div class="user-card">
+                <div class="user-card-image-container"><img src="${u.avatar || DEFAULT_THUMBNAIL}" class="user-card-img"></div>
+                <h3 class="user-card-title">${u.username} ${isAdmin(u.username) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon">` : ''}</h3>
+                <div class="user-card-meta"><img src="${ROBUX_ICON_URL}" style="width:12px;"> ${getUserRobux(u.username)} R$</div>
+                ${isUserAdmin && currentUser.toLowerCase() !== u.username.toLowerCase() ? `<button class="ban-btn" onclick="banUser('${u.username}')">Ban</button>` : ''}
+              </div>`).join('') : `<div class="empty-msg">No users found.</div>`;
+          }
+        } catch (e) {}
       }
     }
 
@@ -662,7 +719,7 @@
       await loadAdminsData();
       await loadVisitsData();
       await loadRobuxData();
-      initUserSession();
+      await initUserSession();
       executeSearch();
       loadForumPosts();
     };
