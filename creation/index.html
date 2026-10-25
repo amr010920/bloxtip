@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Create Game - Bloxtip</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Untitled-removebg-preview.png">
+  
+  <!-- Supabase JavaScript Library CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
       --theme-navbar-bg: #0074BD;
@@ -73,9 +77,10 @@
   </main>
 
   <script>
-    const GAMES_BIN_ID = "6ad78c3aac6210605a42bdca";
-    const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi";
-    const GAMES_URL = `https://api.jsonbin.io/v3/b/${GAMES_BIN_ID}`;
+    // --- SUPABASE CONFIGURATION ---
+    const SUPABASE_URL = 'https://hdpxjesfeawnntjzttwj.supabase.co/'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX'; 
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function publishGame(event) {
       event.preventDefault();
@@ -105,50 +110,31 @@
       btn.textContent = "Publishing Game...";
 
       try {
+        // Create local object URL for the uploaded .rbxl file
         const rbxlUrl = URL.createObjectURL(file);
 
         if (!thumbnail) {
           thumbnail = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
         }
 
-        const getRes = await fetch(GAMES_URL + "/latest", {
-          headers: { "X-Master-Key": JSONBIN_API_KEY }
-        });
+        // Insert new game record directly into Supabase 'games' table
+        const { error: insertError } = await supabaseClient
+          .from('games')
+          .insert([{
+            title: title,
+            creator: savedUser,
+            thumbnail_url: thumbnail,
+            visits: 0
+          }]);
 
-        let games = [];
-        if (getRes.ok) {
-          const data = await getRes.json();
-          games = data.record.games || [];
-        }
-
-        const newGame = {
-          id: Date.now(),
-          title: title,
-          author: savedUser,
-          thumbnail: thumbnail,
-          rbxlUrl: rbxlUrl,
-          createdAt: new Date().toLocaleDateString()
-        };
-
-        games.unshift(newGame);
-
-        const putRes = await fetch(GAMES_URL, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': JSONBIN_API_KEY
-          },
-          body: JSON.stringify({ games: games })
-        });
-
-        if (putRes.ok) {
-          alert(`Game '${title}' successfully published globally! Redirecting to home...`);
-          window.location.href = '../';
-        } else {
-          errorBox.textContent = "Failed to save game to global database.";
+        if (insertError) {
+          errorBox.textContent = "Failed to save game to Supabase: " + insertError.message;
           errorBox.classList.add('show');
           btn.disabled = false;
           btn.textContent = "Publish to Global Catalog";
+        } else {
+          alert(`Game '${title}' successfully published globally! Redirecting to home...`);
+          window.location.href = '../';
         }
       } catch (err) {
         errorBox.textContent = "An error occurred while publishing.";
