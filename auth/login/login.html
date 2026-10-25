@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>bloxtip log in or like sign in</title>
   <link rel="icon" type="image/vnd.microsoft.icon" href="/favicon.ico">
+  
+  <!-- Supabase JavaScript Library CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
       --theme-navbar-bg: #0074BD;
@@ -223,9 +227,10 @@
   </footer>
 
   <script>
-    const ACCOUNTS_BIN_ID = "6ad782eeac6210605a429ed7";
-    const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi";
-    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${ACCOUNTS_BIN_ID}`;
+    // --- SUPABASE CONFIGURATION ---
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE'; 
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE'; 
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function handleLogin(event) {
       event.preventDefault();
@@ -235,34 +240,25 @@
       const btn = document.getElementById('login-btn');
 
       error.classList.remove('show');
-
       btn.disabled = true;
       btn.textContent = "Authenticating...";
 
       try {
-        const response = await fetch(JSONBIN_URL + "/latest", {
-          headers: { "X-Master-Key": JSONBIN_API_KEY }
-        });
+        // Query Supabase for the username and password match
+        const { data: user, error: dbError } = await supabaseClient
+          .from('accounts')
+          .select('*')
+          .ilike('username', username)
+          .eq('password', password)
+          .single();
 
-        if (response.ok) {
-          const data = await response.json();
-          const accounts = data.record.accounts || [];
-
-          const user = accounts.find(a => 
-            a.username.toLowerCase() === username.toLowerCase() && a.password === password
-          );
-
-          if (user) {
-            localStorage.setItem('bloxtip_username', user.username);
-            localStorage.setItem('bloxtip_account', JSON.stringify(user));
-            window.location.href = '/';
-          } else {
-            error.textContent = 'Invalid username or password';
-            error.classList.add('show');
-          }
-        } else {
-          error.textContent = 'Unable to fetch account records from server.';
+        if (dbError || !user) {
+          error.textContent = 'Invalid username or password';
           error.classList.add('show');
+        } else {
+          localStorage.setItem('bloxtip_username', user.username);
+          localStorage.setItem('bloxtip_account', JSON.stringify(user));
+          window.location.href = '/';
         }
       } catch (err) {
         error.textContent = 'Unable to connect to authentication server.';
