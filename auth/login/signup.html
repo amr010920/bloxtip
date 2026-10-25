@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sign Up - Bloxtip</title>
   <link rel="icon" type="image/vnd.microsoft.icon" href="/favicon.ico">
+  
+  <!-- Supabase JavaScript Library CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
       --theme-navbar-bg: #0074BD;
@@ -47,7 +51,7 @@
       align-items: center;
       width: 100%;
       padding: 0 20px;
-      min-height: 0px;
+      min-height: 64px;
     }
 
     .logo-btn {
@@ -253,9 +257,10 @@
   </footer>
 
   <script>
-    const ACCOUNTS_BIN_ID = "6ad782eeac6210605a429ed7";
-    const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi";
-    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${ACCOUNTS_BIN_ID}`;
+    // --- SUPABASE CONFIGURATION ---
+    const SUPABASE_URL = 'https://hdpxjesfeawnntjzttwj.supabase.co/'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX'; 
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function handleSignup(event) {
       event.preventDefault();
@@ -294,17 +299,13 @@
       btn.textContent = "Creating Account...";
 
       try {
-        const getRes = await fetch(JSONBIN_URL + "/latest", {
-          headers: { "X-Master-Key": JSONBIN_API_KEY }
-        });
+        // Check if username already exists in Supabase
+        const { data: existingUser } = await supabaseClient
+          .from('accounts')
+          .select('username')
+          .ilike('username', username)
+          .maybeSingle();
 
-        let accounts = [];
-        if (getRes.ok) {
-          const data = await getRes.json();
-          accounts = data.record.accounts || [];
-        }
-
-        const existingUser = accounts.find(a => a.username.toLowerCase() === username.toLowerCase());
         if (existingUser) {
           error.textContent = "Username is already taken! Please choose another.";
           error.classList.add('show');
@@ -313,41 +314,29 @@
           return;
         }
 
-        let newUserId = 1;
-        if (accounts.length > 0) {
-          const maxId = Math.max(...accounts.map(a => Number(a.id) || 0));
-          newUserId = maxId + 1;
-        }
-
+        // Insert new account into Supabase accounts table
         const newAccount = {
-          id: newUserId,
           username: username,
           password: password,
-          discord: discord,
+          discord: discord || null,
           avatar: avatar,
-          createdAt: new Date().toLocaleDateString()
+          robux: 100 // starting balance
         };
 
-        accounts.push(newAccount);
+        const { data: insertedData, error: insertError } = await supabaseClient
+          .from('accounts')
+          .insert([newAccount])
+          .select()
+          .single();
 
-        const putRes = await fetch(JSONBIN_URL, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': JSONBIN_API_KEY
-          },
-          body: JSON.stringify({ accounts: accounts })
-        });
-
-        if (putRes.ok) {
-          localStorage.setItem('bloxtip_username', username);
-          localStorage.setItem('bloxtip_account_id', newUserId);
-          localStorage.setItem('bloxtip_account', JSON.stringify(newAccount));
-          alert(`Account successfully created as '${username}' with User ID #${newUserId}! Redirecting to home...`);
-          window.location.href = '/';
-        } else {
-          error.textContent = 'Failed to register account to global database.';
+        if (insertError) {
+          error.textContent = 'Failed to register account: ' + insertError.message;
           error.classList.add('show');
+        } else {
+          localStorage.setItem('bloxtip_username', username);
+          localStorage.setItem('bloxtip_account', JSON.stringify(insertedData));
+          alert(`Account successfully created as '${username}'! Redirecting to home...`);
+          window.location.href = '/';
         }
       } catch (err) {
         error.textContent = 'Unable to connect to registration server.';
