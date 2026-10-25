@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Home - Bloxtip</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Untitled-removebg-preview.png">
+  
+  <!-- Supabase JavaScript Library CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
       --theme-navbar-bg: #0074BD;
@@ -82,7 +86,6 @@
       align-items: center;
       padding-left: 8px;
     }
-    .search-select { display: none; }
     .search-input { 
       flex: 1; 
       border: none; 
@@ -125,7 +128,7 @@
     .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #333333; text-decoration: none; font-size: 14px; font-weight: bold; }
     .sidebar-item:hover { background: #eef5fc; color: #0074BD; }
 
-    /* CLASSIC BOTTOM-RIGHT CHAT DRAWER (#00a2ff) */
+    /* CHAT DRAWER (#00a2ff) */
     .chat-widget-container {
       position: fixed;
       bottom: 0;
@@ -260,7 +263,7 @@
       flex-shrink: 0;
     }
 
-    /* DIRECT MESSAGE CONVERSATION WINDOW */
+    /* CONVERSATION WINDOW */
     .dm-conversation-window {
       display: none;
       position: fixed;
@@ -288,17 +291,6 @@
       align-items: center;
       border-top-left-radius: 4px;
       border-top-right-radius: 4px;
-    }
-    .dm-conv-header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .dm-conv-icon {
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-      fill: white;
     }
     .dm-conv-close {
       background: none;
@@ -329,14 +321,6 @@
     }
     .dm-msg-row.received {
       align-self: flex-start;
-    }
-    .dm-msg-pfp {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      border: 1px solid #ccc;
-      object-fit: cover;
-      flex-shrink: 0;
     }
     .dm-msg-bubble {
       padding: 8px 12px;
@@ -383,21 +367,16 @@
     .page-header-text p { color: #666666; font-size: 16px; margin: 0; }
 
     .games-section h2 { font-size: 20px; font-weight: bold; margin: 0 0 12px; color: #333333; }
-    .games-grid, .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+    .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
 
     .empty-msg { grid-column: 1 / -1; text-align: center; padding: 30px 20px; background: #ffffff; border: 1px solid #cccccc; border-radius: 2px; color: #666666; }
 
-    .game-card, .user-card { background: white; border: 1px solid #cccccc; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; padding: 10px; text-align: center; position: relative; }
-    .game-card-image-container, .user-card-image-container { width: 100%; height: 100px; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; cursor: pointer; }
-    .game-card-img, .user-card-img { width: 100%; height: 100%; object-fit: cover; }
-    .game-card-title, .user-card-title { font-size: 13px; font-weight: bold; margin: 0 0 4px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
-    .game-card-title:hover, .user-card-title:hover { text-decoration: underline; color: #0074BD; }
-    .game-card-meta, .user-card-meta { font-size: 11px; color: #777777; display: flex; align-items: center; justify-content: center; gap: 2px; }
-
-    .badge-icon { width: 15px; height: 15px; object-fit: contain; vertical-align: middle; display: inline-block; margin-left: 3px; }
+    .game-card { background: white; border: 1px solid #cccccc; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; padding: 10px; text-align: center; position: relative; }
+    .game-card-image-container { width: 100%; height: 100px; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; cursor: pointer; }
+    .game-card-img { width: 100%; height: 100%; object-fit: cover; }
+    .game-card-title { font-size: 13px; font-weight: bold; margin: 0 0 4px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .game-card-meta { font-size: 11px; color: #777777; }
     .play-btn { width: 100%; padding: 5px 0; border: 1px solid #018a41; border-radius: 2px; background: linear-gradient(to bottom, #02b757 0%, #018a41 100%); color: white; cursor: pointer; font-weight: bold; font-size: 12px; text-align: center; text-decoration: none; margin-top: 8px; display: block; }
-    .ban-btn { background: #d9534f; border: 1px solid #b52b27; color: white; font-size: 11px; font-weight: bold; padding: 3px 6px; border-radius: 2px; cursor: pointer; margin-top: 6px; }
-    .delete-forum-btn { background: #d9534f; border: none; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 2px; cursor: pointer; }
 
     /* FORUM */
     .forum-section { margin-top: 35px; }
@@ -407,15 +386,8 @@
     .forum-input-body { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #cccccc; font-size: 13px; font-family: inherit; height: 60px; resize: vertical; }
     .forum-post-btn { background: #0074BD; border: 1px solid #00568c; color: white; padding: 6px 14px; font-size: 12px; font-weight: bold; border-radius: 2px; cursor: pointer; }
     .forum-post-item { padding: 12px 0; border-bottom: 1px dashed #dddddd; }
-    .forum-post-header { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: center; }
-    .forum-post-author { font-size: 11px; color: #777; display: flex; align-items: center; gap: 4px; }
-    .forum-post-content { font-size: 13px; color: #333; line-height: 1.4; word-break: break-word; overflow-wrap: anywhere; }
-
-    /* ADMIN PANEL */
-    .admin-badge-panel { background: #fff; border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
-    .admin-badge-panel h3 { font-size: 16px; margin-bottom: 10px; color: #333; }
-    .admin-badge-panel input { padding: 6px; font-size: 12px; border: 1px solid #ccc; border-radius: 2px; width: 180px; margin-right: 6px; margin-bottom: 6px; }
-    .admin-badge-panel button { padding: 6px 12px; background: #0074BD; color: white; border: none; font-weight: bold; border-radius: 2px; cursor: pointer; }
+    .forum-post-header { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: center; font-size: 11px; color: #777; }
+    .forum-post-content { font-size: 13px; color: #333; line-height: 1.4; word-break: break-word; }
 
     .footer { width: 100%; background: #ffffff; border-top: 1px solid #cccccc; margin-top: auto; padding: 15px 0; }
     .footer-container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
@@ -429,7 +401,7 @@
   <nav class="navbar">
     <div class="nav-container">
       <div class="left-section">
-        <button class="menu-toggle-btn" id="sidebar-toggle-btn" title="Menu">
+        <button class="menu-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Menu">
           <div class="hamburger-icon">
             <div class="hamburger-line"></div>
             <div class="hamburger-line"></div>
@@ -450,11 +422,7 @@
       <!-- SEARCH BAR -->
       <div class="search-container">
         <div class="search-wrapper">
-          <select id="search-type" class="search-select">
-            <option value="games">Games</option>
-            <option value="users">Users</option>
-          </select>
-          <input type="text" id="search-query" class="search-input" placeholder="Search" onkeyup="executeSearch()">
+          <input type="text" id="search-query" class="search-input" placeholder="Search games..." onkeyup="executeSearch()">
           <button class="search-button" type="button" onclick="executeSearch()">
             <svg class="search-icon-svg" viewBox="0 0 24 24">
               <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -474,45 +442,28 @@
           <span id="robux-amount">0</span>
         </div>
 
-        <button class="nav-icon-btn" title="Settings">
-          <svg class="nav-icon-svg" viewBox="0 0 24 24">
-            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
-          </svg>
-        </button>
-
         <button style="background:none; border:none; color:white; cursor:pointer; font-size:12px; opacity:0.8;" onclick="logout()">[Log Out]</button>
       </div>
     </div>
   </nav>
 
-  <!-- CLASSIC BOTTOM-RIGHT CHAT WIDGET (#00a2ff) -->
+  <!-- CHAT WIDGET -->
   <div class="chat-widget-container" id="chat-widget-container">
     <div class="chat-header-bar" onclick="toggleChatDrawer()">
       <span>Chat</span>
-      <div class="chat-header-actions" onclick="event.stopPropagation()">
-        <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/checkfriendsRequest.png" class="chat-action-icon" title="Friend Requests" onclick="viewFriendRequests()">
-        <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/2a93882c57e91218131044db8e593baea2a360de.png" class="chat-action-icon" title="Send Friend Request" onclick="sendFriendRequestPrompt()">
-      </div>
     </div>
     <div class="chat-body-drawer" id="chat-body-drawer">
-      <div class="chat-search-bar">
-        <svg style="width:13px;height:13px;fill:#888;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        <input type="text" id="chat-search-friends-input" class="chat-search-input" placeholder="Search for friends" onkeyup="filterChatFriends()">
-      </div>
       <div class="chat-friends-list" id="chat-friends-list-container">
         <!-- Friends list populated dynamically -->
       </div>
     </div>
   </div>
 
-  <!-- DIRECT MESSAGE CONVERSATION WINDOW (Styled like Screenshot) -->
+  <!-- DM CONVERSATION WINDOW -->
   <div class="dm-conversation-window" id="dm-conversation-window">
     <div class="dm-conv-header">
-      <span id="dm-target-username">imagine</span>
-      <div class="dm-conv-header-actions">
-        <svg class="dm-conv-icon" viewBox="0 0 24 24" title="Settings"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-        <button class="dm-conv-close" onclick="closeDmConversation()">×</button>
-      </div>
+      <span id="dm-target-username">Direct Message</span>
+      <button class="dm-conv-close" onclick="closeDmConversation()">×</button>
     </div>
     <div class="dm-conv-messages" id="dm-conv-messages">
       <!-- Conversation history -->
@@ -535,7 +486,6 @@
 
   <main class="main">
     <div class="container" id="app-container">
-      <div id="admin-panel-container"></div>
       
       <section class="page-header" id="page-header-section">
         <div class="profile-pic" id="profile-avatar">
@@ -562,7 +512,7 @@
             <button class="forum-post-btn" onclick="submitForumPost()">Post Thread</button>
           </div>
           <div id="forum-posts-list">
-            <p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">Loading global community posts...</p>
+            <p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">Loading posts...</p>
           </div>
         </div>
       </section>
@@ -575,38 +525,23 @@
         <a href="./about" class="footer-link">About Us</a>
         <a href="./privacy" class="footer-link">Privacy</a>
         <a href="./help" class="footer-link">Help</a>
-        <a href="./donate" class="footer-link">donate</a>
       </div>
       <p class="footer-text">Bloxtip is an independent platform and is not affiliated with Roblox Corporation.</p>
     </div>
   </footer>
 
   <script>
-    const GAMES_BIN_ID = "6ad78c3aac6210605a42bdca"; 
-    const ACCOUNTS_BIN_ID = "6ad782eeac6210605a429ed7";
-    const FORUM_BIN_ID = "6ad77eccffd5d160537c47d4"; 
-    const VOTES_BIN_ID = "6ad8edb9ffd5d16053802668";
+    // --- SUPABASE CONFIGURATION ---
+    const SUPABASE_URL = 'https://hdpxjesfeawnntjzttwj.supabase.co/'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX'; 
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // --- JSONBIN CONFIGURATION (for non-Supabase data) ---
     const VISITS_BIN_ID = "6ad8edfbffd5d16053802767";
-    const ROBUX_BIN_ID = "6ada423bac6210605a499e4e";
-    const MESSAGES_BIN_ID = "6ad8bfccac6210605a45d063";
+    const VOTES_BIN_ID = "6ad8edb9ffd5d16053802668";
+    const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi";
 
-    const JSONBIN_API_KEY = "$2a$10$bNwAOC5k1cJUHBKMRNfTOOMf88mvTl0feXXMT4xHxl4Gt/ORSwEmi"; 
-
-    const GAMES_URL = `https://api.jsonbin.io/v3/b/${GAMES_BIN_ID}`;
-    const ACCOUNTS_URL = `https://api.jsonbin.io/v3/b/${ACCOUNTS_BIN_ID}`;
-    const FORUM_URL = `https://api.jsonbin.io/v3/b/${FORUM_BIN_ID}`;
-    const VISITS_URL = `https://api.jsonbin.io/v3/b/${VISITS_BIN_ID}`;
-    const ROBUX_URL = `https://api.jsonbin.io/v3/b/${ROBUX_BIN_ID}`;
-    const MESSAGES_URL = `https://api.jsonbin.io/v3/b/${MESSAGES_BIN_ID}`;
-
-    const ADMIN_BADGE_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/adminicon.png";
-    const ROBUX_ICON_URL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/ROBUX_icon_3F19%2529.webp";
     const DEFAULT_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
-
-    let cachedGames = [];
-    let cachedVisits = {};
-    let cachedRobux = {};
-    let cachedAdmins = ["yepme2", "bloxtip"];
     let activeChatTarget = null;
 
     function toggleSidebar() {
@@ -617,68 +552,196 @@
     function toggleChatDrawer() {
       const container = document.getElementById('chat-widget-container');
       const drawer = document.getElementById('chat-body-drawer');
-      
       container.classList.toggle('open');
       drawer.classList.toggle('active');
-      
       if (drawer.classList.contains('active')) {
         loadChatFriends();
       }
     }
 
-    async function loadChatFriends() {
-      const container = document.getElementById('chat-friends-list-container');
-      const currentUser = localStorage.getItem('bloxtip_username') || 'yepme2';
+    // --- GAMES (SUPABASE) ---
+    async function loadGames() {
+      const container = document.getElementById('main-grid-container');
+      if (!container) return;
 
       try {
-        const res = await fetch(MESSAGES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (res.ok) {
-          const data = await res.json();
-          const rec = data.record || {};
-          const messages = rec.messages || [];
-          const connections = rec.connections || [];
+        const { data: games, error } = await supabaseClient
+          .from('games')
+          .select('*')
+          .order('id', { ascending: false });
 
-          let friends = [];
-          connections.forEach(conn => {
-            if (conn.user1 === currentUser) friends.push(conn.user2);
-            else if (conn.user2 === currentUser) friends.push(conn.user1);
-          });
+        if (error) throw error;
 
-          if (friends.length === 0) {
-            container.innerHTML = `<div style="padding:15px; text-align:center; color:#777; font-size:12px;">No connected friends yet.</div>`;
-            return;
-          }
-
-          container.innerHTML = friends.map(friend => {
-            const friendMsgs = messages.filter(m => (m.from === friend && m.to === currentUser) || (m.from === currentUser && m.to === friend));
-            const lastMsg = friendMsgs.length ? friendMsgs[friendMsgs.length - 1] : { text: 'No messages yet', time: '' };
-
-            return `
-              <div class="chat-friend-item" onclick="openDmConversation('${friend}')">
-                <div class="chat-friend-pfp-wrapper">
-                  <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" class="chat-friend-pfp">
-                  <div class="chat-online-dot"></div>
-                </div>
-                <div class="chat-friend-info">
-                  <div class="chat-friend-name">${friend}</div>
-                  <div class="chat-friend-status">${lastMsg.text}</div>
-                </div>
-                <div class="chat-friend-time">${lastMsg.time || ''}</div>
-              </div>
-            `;
-          }).join('');
+        if (!games || games.length === 0) {
+          container.innerHTML = `<div class="empty-msg">No games found in the catalog.</div>`;
+          return;
         }
+
+        container.innerHTML = games.map(game => `
+          <div class="game-card">
+            <div class="game-card-image-container" onclick="window.location.href='./game.html?id=${game.id}'">
+              <img src="${game.thumbnail_url || DEFAULT_THUMBNAIL}" class="game-card-img" alt="${game.title}">
+            </div>
+            <div class="game-card-title">${game.title}</div>
+            <div class="game-card-meta"><span>By ${game.creator}</span></div>
+            <a href="./game.html?id=${game.id}" class="play-btn">Play</a>
+          </div>
+        `).join('');
       } catch (e) {
-        container.innerHTML = `<div style="padding:15px; text-align:center; color:#777; font-size:12px;">Failed to load chat data.</div>`;
+        container.innerHTML = `<div class="empty-msg">Failed to load games database.</div>`;
       }
+    }
+
+    async function executeSearch() {
+      const query = document.getElementById('search-query').value.trim().toLowerCase();
+      const container = document.getElementById('main-grid-container');
+      const heading = document.getElementById('section-heading');
+
+      if (!query) {
+        heading.textContent = "Games";
+        loadGames();
+        return;
+      }
+
+      heading.textContent = `Search Results for "${query}"`;
+      try {
+        const { data: games, error } = await supabaseClient
+          .from('games')
+          .select('*')
+          .ilike('title', `%${query}%`);
+
+        if (error || !games || games.length === 0) {
+          container.innerHTML = `<div class="empty-msg">No results found for "${query}".</div>`;
+          return;
+        }
+
+        container.innerHTML = games.map(game => `
+          <div class="game-card">
+            <div class="game-card-image-container">
+              <img src="${game.thumbnail_url || DEFAULT_THUMBNAIL}" class="game-card-img">
+            </div>
+            <div class="game-card-title">${game.title}</div>
+            <div class="game-card-meta"><span>By ${game.creator}</span></div>
+            <a href="./game.html?id=${game.id}" class="play-btn">Play</a>
+          </div>
+        `).join('');
+      } catch (e) {}
+    }
+
+    // --- ACCOUNTS SESSION (SUPABASE) ---
+    async function checkUserSession() {
+      const currentUser = localStorage.getItem('bloxtip_username');
+      if (!currentUser) return;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('accounts')
+          .select('*')
+          .eq('username', currentUser)
+          .single();
+
+        if (!error && data) {
+          document.getElementById('user-display').textContent = data.username;
+          document.getElementById('robux-amount').textContent = data.robux || 0;
+          document.getElementById('welcome-title').textContent = `Welcome back, ${data.username}!`;
+          document.getElementById('account-status-text').textContent = `Logged in as a registered user.`;
+        }
+      } catch (e) {}
+    }
+
+    // --- FORUM (SUPABASE) ---
+    async function loadForumPosts() {
+      const container = document.getElementById('forum-posts-list');
+      try {
+        const { data: posts, error } = await supabaseClient
+          .from('forum_posts')
+          .select('*')
+          .order('id', { ascending: false });
+
+        if (error || !posts || posts.length === 0) {
+          container.innerHTML = `<p style="color:#777; font-size:13px; text-align:center; padding:15px 0;">No forum posts yet.</p>`;
+          return;
+        }
+
+        container.innerHTML = posts.map(post => `
+          <div class="forum-post-item">
+            <div class="forum-post-header">
+              <span><strong>${post.author}</strong></span>
+              <span>${new Date(post.created_at).toLocaleDateString()}</span>
+            </div>
+            <div class="forum-post-content">${post.content}</div>
+          </div>
+        `).join('');
+      } catch (e) {}
+    }
+
+    async function submitForumPost() {
+      const bodyInput = document.getElementById('forum-post-body-input');
+      const content = bodyInput.value.trim();
+      if (!content) return;
+
+      const currentUser = localStorage.getItem('bloxtip_username') || 'Guest';
+
+      try {
+        const { error } = await supabaseClient
+          .from('forum_posts')
+          .insert([{ author: currentUser, content: content }]);
+
+        if (!error) {
+          bodyInput.value = '';
+          loadForumPosts();
+        }
+      } catch(e) {}
+    }
+
+    // --- CHAT & MESSAGES (SUPABASE) ---
+    async function loadChatFriends() {
+      const container = document.getElementById('chat-friends-list-container');
+      const currentUser = localStorage.getItem('bloxtip_username') || 'Guest';
+
+      try {
+        const { data: connections } = await supabaseClient
+          .from('connections')
+          .select('*')
+          .or(`user1.eq.${currentUser},user2.eq.${currentUser}`);
+
+        const { data: messages } = await supabaseClient
+          .from('messages')
+          .select('*')
+          .or(`from.eq.${currentUser},to.eq.${currentUser}`);
+
+        let friends = [];
+        (connections || []).forEach(conn => {
+          if (conn.user1 === currentUser) friends.push(conn.user2);
+          else if (conn.user2 === currentUser) friends.push(conn.user1);
+        });
+
+        if (friends.length === 0) {
+          container.innerHTML = `<div style="padding:15px; text-align:center; color:#777; font-size:12px;">No friends connected.</div>`;
+          return;
+        }
+
+        container.innerHTML = friends.map(friend => {
+          const friendMsgs = (messages || []).filter(m => (m.from === friend && m.to === currentUser) || (m.from === currentUser && m.to === friend));
+          const lastMsg = friendMsgs.length ? friendMsgs[friendMsgs.length - 1] : { text: 'No messages', time: '' };
+
+          return `
+            <div class="chat-friend-item" onclick="openDmConversation('${friend}')">
+              <div class="chat-friend-info">
+                <div class="chat-friend-name">${friend}</div>
+                <div class="chat-friend-status">${lastMsg.text}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (e) {}
     }
 
     async function openDmConversation(username) {
       activeChatTarget = username;
       document.getElementById('dm-target-username').textContent = username;
-      const convWin = document.getElementById('dm-conversation-window');
-      convWin.classList.add('active');
-      await renderDmConversationMessages();
+      document.getElementById('dm-conversation-window').classList.add('active');
+      renderDmConversationMessages();
     }
 
     function closeDmConversation() {
@@ -689,30 +752,20 @@
     async function renderDmConversationMessages() {
       if (!activeChatTarget) return;
       const container = document.getElementById('dm-conv-messages');
-      const currentUser = localStorage.getItem('bloxtip_username') || 'yepme2';
+      const currentUser = localStorage.getItem('bloxtip_username') || 'Guest';
 
       try {
-        const res = await fetch(MESSAGES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (res.ok) {
-          const messages = (await res.json()).record.messages || [];
-          const conversation = messages.filter(m => (m.from === currentUser && m.to === activeChatTarget) || (m.from === activeChatTarget && m.to === currentUser));
+        const { data: conversation } = await supabaseClient
+          .from('messages')
+          .select('*')
+          .or(`and(from.eq.${currentUser},to.eq.${activeChatTarget}),and(from.eq.${activeChatTarget},to.eq.${currentUser})`)
+          .order('id', { ascending: true });
 
-          if (conversation.length === 0) {
-            container.innerHTML = `<div style="color:#777; font-size:12px; text-align:center; margin-top:20px;">No messages yet. Say hello!</div>`;
-            return;
-          }
-
-          container.innerHTML = conversation.map(m => {
-            const isSent = m.from === currentUser;
-            return `
-              <div class="dm-msg-row ${isSent ? 'sent' : 'received'}">
-                ${!isSent ? `<img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" class="dm-msg-pfp">` : ''}
-                <div class="dm-msg-bubble">${m.text}</div>
-              </div>
-            `;
-          }).join('');
-          container.scrollTop = container.scrollHeight;
-        }
+        container.innerHTML = (conversation || []).map(m => `
+          <div class="dm-msg-row ${m.from === currentUser ? 'sent' : 'received'}">
+            <div class="dm-msg-bubble">${m.text}</div>
+          </div>
+        `).join('');
       } catch (e) {}
     }
 
@@ -721,385 +774,31 @@
       const text = input.value.trim();
       if (!text || !activeChatTarget) return;
 
-      const currentUser = localStorage.getItem('bloxtip_username') || 'yepme2';
+      const currentUser = localStorage.getItem('bloxtip_username') || 'Guest';
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       try {
-        const res = await fetch(MESSAGES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (res.ok) {
-          const rec = (await res.json()).record || {};
-          let messages = rec.messages || [];
-          messages.push({
-            from: currentUser,
-            to: activeChatTarget,
-            text: text,
-            time: timeStr
-          });
-          rec.messages = messages;
+        const { error } = await supabaseClient
+          .from('messages')
+          .insert([{ from: currentUser, to: activeChatTarget, text: text, time: timeStr }]);
 
-          await fetch(MESSAGES_URL, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-            body: JSON.stringify(rec)
-          });
-
+        if (!error) {
           input.value = '';
           renderDmConversationMessages();
-          loadChatFriends();
         }
       } catch (e) {}
-    }
-
-    function filterChatFriends() {
-      const query = document.getElementById('chat-search-friends-input').value.toLowerCase();
-      const items = document.querySelectorAll('.chat-friend-item');
-      items.forEach(item => {
-        const name = item.querySelector('.chat-friend-name').textContent.toLowerCase();
-        item.style.display = name.includes(query) ? 'flex' : 'none';
-      });
-    }
-
-    function sendFriendRequestPrompt() {
-      const target = prompt("Enter username to send friend request:");
-      if (target) {
-        alert(`Friend request sent to ${target}!`);
-      }
-    }
-
-    function viewFriendRequests() {
-      alert("You have no pending friend requests.");
-    }
-
-    document.getElementById('sidebar-toggle-btn').addEventListener('click', toggleSidebar);
-
-    function isMasterAdmin(username) {
-      if (!username) return false;
-      const lower = username.trim().toLowerCase();
-      return lower === 'yepme2' || lower === 'bloxtip';
-    }
-
-    function isAdmin(username) {
-      if (!username) return false;
-      const lower = username.trim().toLowerCase();
-      return isMasterAdmin(lower) || cachedAdmins.map(u => u.toLowerCase()).includes(lower);
-    }
-
-    async function syncUserToJSONBin(username) {
-      if (!username) return;
-      try {
-        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        let recordData = res.ok ? (await res.json()).record || {} : {};
-        let users = recordData.users || [];
-
-        if (!users.some(u => u.username && u.username.toLowerCase() === username.toLowerCase())) {
-          users.push({
-            username: username,
-            avatar: "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png",
-            joined: new Date().toLocaleDateString()
-          });
-          recordData.users = users;
-
-          await fetch(ACCOUNTS_URL, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-            body: JSON.stringify(recordData)
-          });
-        }
-      } catch (e) {}
-    }
-
-    async function loadRobuxData() {
-      try {
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${ROBUX_BIN_ID}/latest`, { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (res.ok) {
-          const data = await res.json();
-          const recordData = data.record || {};
-          cachedRobux = recordData.robux || (Object.keys(recordData).length > 0 ? recordData : {});
-        }
-      } catch (e) {
-        cachedRobux = {};
-      }
-    }
-
-    function getUserRobux(username) {
-      if (!username) return 0;
-      const lower = username.toLowerCase();
-      if (cachedRobux[lower] === undefined) {
-        cachedRobux[lower] = 0;
-        setUserRobux(username, 0);
-      }
-      return cachedRobux[lower];
-    }
-
-    async function setUserRobux(username, amount) {
-      if (!username) return;
-      cachedRobux[username.toLowerCase()] = parseInt(amount, 10) || 0;
-      try {
-        await fetch(`https://api.jsonbin.io/v3/b/${ROBUX_BIN_ID}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify({ robux: cachedRobux })
-        });
-      } catch (e) {}
-    }
-
-    async function initUserSession() {
-      await loadRobuxData();
-      let savedUser = localStorage.getItem('bloxtip_username');
-      
-      let activeName = savedUser;
-      if (!activeName) {
-        let guestName = localStorage.getItem('bloxtip_guest_name');
-        if (!guestName) {
-          const randomGuestId = Math.floor(1000 + Math.random() * 9000);
-          guestName = `Guest ${randomGuestId}`;
-          localStorage.setItem('bloxtip_guest_name', guestName);
-        }
-        activeName = guestName;
-      }
-
-      await syncUserToJSONBin(activeName);
-
-      const userDisplay = document.getElementById('user-display');
-      const robuxAmountSpan = document.getElementById('robux-amount');
-      const welcomeTitle = document.getElementById('welcome-title');
-      const statusText = document.getElementById('account-status-text');
-
-      if (userDisplay) {
-        if (savedUser && isAdmin(savedUser)) {
-          const badgeImg = `<img src="${ADMIN_BADGE_URL}" class="badge-icon" title="Admin">`;
-          userDisplay.innerHTML = `${savedUser}${badgeImg}`;
-        } else {
-          userDisplay.textContent = activeName;
-        }
-      }
-
-      if (robuxAmountSpan) {
-        robuxAmountSpan.textContent = getUserRobux(activeName);
-      }
-
-      if (savedUser) {
-        if(welcomeTitle) welcomeTitle.textContent = `Welcome back, ${savedUser}!`;
-        if(statusText) statusText.textContent = `Account Active`;
-        renderAdminPanel();
-      } else {
-        if(welcomeTitle) welcomeTitle.textContent = `Welcome, ${activeName}!`;
-        if(statusText) statusText.textContent = `Playing as a Guest. Join games freely below!`;
-      }
-    }
-
-    async function loadAdminsData() {
-      try {
-        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.record && Array.isArray(data.record.admins)) {
-            cachedAdmins = Array.from(new Set(["yepme2", "bloxtip", ...data.record.admins]));
-          }
-        }
-      } catch (e) {}
-    }
-
-    async function assignAdminBadge() {
-      const currentUser = localStorage.getItem('bloxtip_username');
-      if (!isMasterAdmin(currentUser)) {
-        alert("Only master accounts can assign admin badges.");
-        return;
-      }
-      const targetUser = document.getElementById('admin-target-username').value.trim();
-      if (!targetUser) return;
-      if (!cachedAdmins.map(u => u.toLowerCase()).includes(targetUser.toLowerCase())) {
-        cachedAdmins.push(targetUser);
-      }
-      try {
-        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        let recordData = res.ok ? (await res.json()).record || {} : {};
-        recordData.admins = cachedAdmins;
-        await fetch(ACCOUNTS_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify(recordData)
-        });
-        alert(`Successfully granted Admin badge to ${targetUser}!`);
-        initUserSession();
-        executeSearch();
-      } catch (e) {}
-    }
-
-    async function grantUserRobux() {
-      const currentUser = localStorage.getItem('bloxtip_username');
-      if (!isMasterAdmin(currentUser)) {
-        alert("Only master accounts can manage Robux balances.");
-        return;
-      }
-      const targetUser = document.getElementById('robux-target-username').value.trim();
-      const amount = parseInt(document.getElementById('robux-target-amount').value, 10);
-      if (!targetUser || isNaN(amount)) return;
-
-      const newBalance = getUserRobux(targetUser) + amount;
-      await setUserRobux(targetUser, newBalance);
-      alert(`Added ${amount} Robux to ${targetUser}! New balance: ${newBalance}`);
-      initUserSession();
-    }
-
-    async function banUser(username) {
-      if (!isAdmin(localStorage.getItem('bloxtip_username'))) return;
-      if (!confirm(`Ban ${username}?`)) return;
-      try {
-        const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (res.ok) {
-          let record = (await res.json()).record || {};
-          let users = record.users || [];
-          users = users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
-          record.users = users;
-          await fetch(ACCOUNTS_URL, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-            body: JSON.stringify(record)
-          });
-          executeSearch();
-        }
-      } catch (e) {}
-    }
-
-    async function deleteForumPost(index) {
-      if (!isAdmin(localStorage.getItem('bloxtip_username'))) return;
-      try {
-        const res = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (res.ok) {
-          let posts = (await res.json()).record.posts || [];
-          posts.splice(index, 1);
-          await fetch(FORUM_URL, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-            body: JSON.stringify({ posts })
-          });
-          loadForumPosts();
-        }
-      } catch (e) {}
-    }
-
-    function renderAdminPanel() {
-      const currentUser = localStorage.getItem('bloxtip_username');
-      const container = document.getElementById('admin-panel-container');
-      if (!container) return;
-
-      if (isMasterAdmin(currentUser)) {
-        container.innerHTML = `
-          <div class="admin-badge-panel">
-            <h3>🛡️ Master Admin Panel</h3>
-            <div style="margin-bottom: 8px;">
-              <input type="text" id="admin-target-username" placeholder="Username...">
-              <button onclick="assignAdminBadge()">Grant Admin</button>
-            </div>
-            <div>
-              <input type="text" id="robux-target-username" placeholder="Username...">
-              <input type="number" id="robux-target-amount" placeholder="Robux..." style="width:100px;">
-              <button onclick="grantUserRobux()">Give Robux</button>
-            </div>
-          </div>`;
-      }
     }
 
     function logout() {
-      localStorage.clear();
-      location.reload();
+      localStorage.removeItem('bloxtip_username');
+      window.location.reload();
     }
 
-    async function loadVisitsData() {
-      try {
-        const res = await fetch(VISITS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (res.ok) cachedVisits = (await res.json()).record.visits || {};
-      } catch (e) {}
-    }
-
-    async function executeSearch() {
-      const queryType = document.getElementById('search-type').value;
-      const query = document.getElementById('search-query').value.trim().toLowerCase();
-      const gridContainer = document.getElementById('main-grid-container');
-
-      if (queryType === 'games') {
-        try {
-          if (cachedGames.length === 0) {
-            const res = await fetch(GAMES_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-            if (res.ok) cachedGames = (await res.json()).record.games || [];
-          }
-          const filtered = cachedGames.filter(g => (g.title || '').toLowerCase().includes(query));
-          gridContainer.innerHTML = filtered.length ? filtered.map((g, i) => `
-            <div class="game-card">
-              <div class="game-card-image-container"><img src="${g.thumbnail || DEFAULT_THUMBNAIL}" class="game-card-img"></div>
-              <h3 class="game-card-title">${g.title}</h3>
-              <div class="game-card-meta">By ${g.creator || 'Bloxtip'}</div>
-              <button class="play-btn" onclick="window.open('${g.rbxlUrl || '#'}','_blank')">Play</button>
-            </div>`).join('') : `<div class="empty-msg">No games found.</div>`;
-        } catch (e) {}
-      } else {
-        try {
-          const res = await fetch(ACCOUNTS_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-          if (res.ok) {
-            let users = (await res.json()).record.users || [];
-            const filtered = users.filter(u => (u.username || '').toLowerCase().includes(query));
-            const currentUser = localStorage.getItem('bloxtip_username');
-            const isUserAdmin = isAdmin(currentUser);
-
-            gridContainer.innerHTML = filtered.length ? filtered.map(u => `
-              <div class="user-card">
-                <div class="user-card-image-container"><img src="${u.avatar || DEFAULT_THUMBNAIL}" class="user-card-img"></div>
-                <h3 class="user-card-title">${u.username} ${isAdmin(u.username) ? `<img src="${ADMIN_BADGE_URL}" class="badge-icon">` : ''}</h3>
-                <div class="user-card-meta"><img src="${ROBUX_ICON_URL}" style="width:12px;"> ${getUserRobux(u.username)} R$</div>
-                ${isUserAdmin && currentUser && currentUser.toLowerCase() !== u.username.toLowerCase() ? `<button class="ban-btn" onclick="banUser('${u.username}')">Ban</button>` : ''}
-              </div>`).join('') : `<div class="empty-msg">No users found.</div>`;
-          }
-        } catch (e) {}
-      }
-    }
-
-    async function loadForumPosts() {
-      const list = document.getElementById('forum-posts-list');
-      if (!list) return;
-      try {
-        const res = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        if (res.ok) {
-          const posts = (await res.json()).record.posts || [];
-          const isUserAdmin = isAdmin(localStorage.getItem('bloxtip_username'));
-          list.innerHTML = posts.length ? posts.map((p, idx) => `
-            <div class="forum-post-item">
-              <div class="forum-post-header">
-                <span class="forum-post-author">By ${p.author}</span>
-                ${isUserAdmin ? `<button class="delete-forum-btn" onclick="deleteForumPost(${idx})">Delete</button>` : ''}
-              </div>
-              <div class="forum-post-content">${p.body}</div>
-            </div>`).reverse().join('') : `<p style="text-align:center; color:#777;">No threads.</p>`;
-        }
-      } catch (e) {}
-    }
-
-    async function submitForumPost() {
-      const input = document.getElementById('forum-post-body-input');
-      if (!input || !input.value.trim()) return;
-      const author = localStorage.getItem('bloxtip_username') || localStorage.getItem('bloxtip_guest_name') || 'Guest';
-      try {
-        const res = await fetch(FORUM_URL + "/latest", { headers: { "X-Master-Key": JSONBIN_API_KEY } });
-        let posts = res.ok ? (await res.json()).record.posts || [] : [];
-        posts.push({ author, body: input.value.trim(), date: new Date().toLocaleDateString() });
-        await fetch(FORUM_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify({ posts })
-        });
-        input.value = '';
-        loadForumPosts();
-      } catch (e) {}
-    }
-
-    window.onload = async () => {
-      await loadAdminsData();
-      await loadVisitsData();
-      await loadRobuxData();
-      await initUserSession();
-      executeSearch();
+    window.addEventListener('DOMContentLoaded', () => {
+      loadGames();
+      checkUserSession();
       loadForumPosts();
-    };
+    });
   </script>
 </body>
 </html>
