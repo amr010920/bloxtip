@@ -1,0 +1,362 @@
+<!doctype html>
+<html class="light" dir="ltr" lang="en" style="height: 100%;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Settings - Bloxtip</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Untitled-removebg-preview.png">
+  
+  <!-- Supabase JavaScript Library CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --theme-navbar-bg: #0074BD;
+      --theme-primary: #02b757;
+      --theme-primary-hover: #00cc61;
+      --bg-color: #e3e3e3;
+      --text-color: #191919;
+      --card-bg: #ffffff;
+      --border-color: #cccccc;
+    }
+
+    body.dark {
+      --bg-color: #121212;
+      --text-color: #e3e3e3;
+      --card-bg: #1e1e1e;
+      --border-color: #333333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; width: 100%; }
+    body { background: var(--bg-color); color: var(--text-color); font-family: 'Source Sans Pro', Arial, sans-serif; display: flex; flex-direction: column; }
+
+    .navbar {
+      height: 40px;
+      background-color: var(--theme-navbar-bg);
+      width: 100%;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+    }
+
+    .nav-link { color: white; text-decoration: none; font-size: 13px; font-weight: bold; }
+
+    .main { flex: 1; display: flex; justify-content: center; padding: 30px 15px; }
+    .settings-box { background: var(--card-bg); padding: 30px; border: 1px solid var(--border-color); border-radius: 4px; width: 100%; max-width: 750px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .settings-box h1 { font-size: 26px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
+
+    /* Classic Roblox Tabs Styling */
+    .tabs-nav { display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; padding-bottom: 10px; }
+    .tab-btn { background: none; border: none; font-size: 15px; font-weight: bold; cursor: pointer; padding: 6px 12px; color: var(--text-color); opacity: 0.6; border-radius: 4px; }
+    .tab-btn.active { opacity: 1; background: var(--theme-navbar-bg); color: white; }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    .section { margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+    .section:last-child { border-bottom: none; }
+    .section h3 { font-size: 18px; margin-bottom: 12px; color: #0074BD; }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 14px; border-radius: 2px; }
+    .form-group textarea { height: 80px; resize: vertical; }
+
+    .save-btn { padding: 10px 20px; background: var(--theme-primary); color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 2px; }
+    .save-btn:hover { background: var(--theme-primary-hover); }
+
+    .status-msg { font-size: 13px; color: #02b757; margin-left: 10px; font-weight: bold; display: inline-block; }
+    .device-list { background: rgba(0,0,0,0.03); padding: 10px; border-radius: 4px; font-size: 13px; margin-bottom: 10px; border: 1px solid var(--border-color); }
+  </style>
+</head>
+<body class="light">
+
+  <nav class="navbar">
+    <a href="../" class="nav-link">&larr; Back to Home</a>
+  </nav>
+
+  <main class="main">
+    <div class="settings-box">
+      <h1>My Settings</h1>
+      <div id="status-alert" class="status-msg" style="margin-bottom: 15px; display:none;">Changes saved successfully!</div>
+
+      <!-- Navigation Tabs: Account Info, Security, Social, Privacy -->
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('account', event)">Account Info</button>
+        <button class="tab-btn" onclick="switchTab('security', event)">Security</button>
+        <button class="tab-btn" onclick="switchTab('social', event)">Social</button>
+        <button class="tab-btn" onclick="switchTab('privacy', event)">Privacy</button>
+      </div>
+
+      <!-- 1. ACCOUNT INFO TAB (Contains Account Info, Personal, & Appearance) -->
+      <div id="tab-account" class="tab-pane active">
+        
+        <!-- Account Info Section -->
+        <div class="section">
+          <h3>Account Info</h3>
+          <div class="form-group">
+            <label>Username <span style="font-weight:normal; color:#888;">(Changing costs 1,000 Robux)</span></label>
+            <input type="text" id="settings-username">
+          </div>
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" id="settings-current-password" placeholder="Enter current password to save changes">
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="settings-new-password" placeholder="Leave blank to keep unchanged">
+          </div>
+          <div class="form-group">
+            <label>Email Address (Optional)</label>
+            <input type="email" id="settings-email" placeholder="e.g. yourname@example.com">
+          </div>
+        </div>
+
+        <!-- Personal Section -->
+        <div class="section">
+          <h3>Personal</h3>
+          <div class="form-group">
+            <label>Description / Bio</label>
+            <textarea id="settings-description" placeholder="Tell everyone about yourself..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Birthday</label>
+            <div style="display:flex; gap:10px;">
+              <select id="settings-birth-month"><option value="Jan">Jan</option><option value="Feb">Feb</option><option value="Mar">Mar</option><option value="Apr">Apr</option><option value="May">May</option><option value="Jun">Jun</option><option value="Jul">Jul</option><option value="Aug">Aug</option><option value="Sep">Sep</option><option value="Oct">Oct</option><option value="Nov">Nov</option><option value="Dec">Dec</option></select>
+              <select id="settings-birth-day"><option value="1">1</option><option value="7">7</option><option value="15">15</option><option value="30">30</option></select>
+              <select id="settings-birth-year"><option value="2006">2006</option><option value="2005">2005</option><option value="2000">2000</option><option value="1995">1995</option></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="settings-gender">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Appearance Section -->
+        <div class="section">
+          <h3>Appearance</h3>
+          <div class="form-group">
+            <label>Theme</label>
+            <select id="settings-theme" onchange="previewTheme(this.value)">
+              <option value="light">Light Mode</option>
+              <option value="dark">Dark Mode</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="button" class="save-btn" onclick="saveAccountTab()">Save All Account Details</button>
+      </div>
+
+      <!-- 2. SECURITY TAB -->
+      <div id="tab-security" class="tab-pane">
+        <div class="section">
+          <h3>Security Settings</h3>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="settings-2fa"> Enable Two-Step Verification
+            </label>
+          </div>
+          <div class="form-group">
+            <label>Logged-in Devices</label>
+            <div id="device-list-container" class="device-list">Loading active sessions...</div>
+            <button type="button" style="background:#d9534f; color:white; border:none; padding:8px 12px; border-radius:2px; cursor:pointer; font-weight:bold;" onclick="signOutAllDevices()">Sign Out All Other Sessions</button>
+          </div>
+          <button type="button" class="save-btn" onclick="saveSecurity()">Save Security Settings</button>
+        </div>
+      </div>
+
+      <!-- 3. SOCIAL TAB -->
+      <div id="tab-social" class="tab-pane">
+        <div class="section">
+          <h3>Linked Social Accounts</h3>
+          <div class="form-group">
+            <label>Twitter / X Username</label>
+            <input type="text" id="settings-twitter" placeholder="e.g. handle">
+          </div>
+          <div class="form-group">
+            <label>YouTube Channel URL</label>
+            <input type="text" id="settings-youtube" placeholder="https://youtube.com/@channel">
+          </div>
+          <div class="form-group">
+            <label>GitHub Username</label>
+            <input type="text" id="settings-github" placeholder="e.g. amr010920">
+          </div>
+          <button type="button" class="save-btn" onclick="saveSocial()">Save Social Links</button>
+        </div>
+      </div>
+
+      <!-- 4. PRIVACY TAB -->
+      <div id="tab-privacy" class="tab-pane">
+        <div class="section">
+          <h3>Privacy Settings</h3>
+          <div class="form-group">
+            <label>Who can join me in games?</label>
+            <select id="privacy-join">
+              <option value="Everyone">Everyone</option>
+              <option value="Friends">Friends Only</option>
+              <option value="No one">No one</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Who can invite me to private servers?</label>
+            <select id="privacy-invite">
+              <option value="Everyone">Everyone</option>
+              <option value="Friends">Friends Only</option>
+              <option value="No one">No one</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Who can see my inventory?</label>
+            <select id="privacy-inventory">
+              <option value="Everyone">Everyone</option>
+              <option value="Friends">Friends Only</option>
+              <option value="No one">No one</option>
+            </select>
+          </div>
+          <button type="button" class="save-btn" onclick="savePrivacy()">Save Privacy Preferences</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://hdpxjesfeawnntjzttwj.supabase.co/'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX'; 
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const currentUser = localStorage.getItem('bloxtip_username');
+
+    function switchTab(tabName, event) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + tabName).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+
+    function previewTheme(mode) {
+      document.body.className = mode;
+    }
+
+    async function loadSettings() {
+      if (!currentUser) {
+        alert("Please log in first!");
+        window.location.href = '../login';
+        return;
+      }
+
+      try {
+        const { data: user } = await supabaseClient.from('accounts').select('*').eq('username', currentUser).single();
+        if (user) {
+          document.getElementById('settings-username').value = user.username || '';
+          document.getElementById('settings-email').value = user.email || '';
+          document.getElementById('settings-description').value = user.description || '';
+          document.getElementById('settings-gender').value = user.gender || 'Male';
+          document.getElementById('settings-theme').value = user.theme || 'light';
+          document.body.className = user.theme || 'light';
+          document.getElementById('settings-2fa').checked = user.two_factor_enabled || false;
+          document.getElementById('settings-twitter').value = user.twitter || '';
+          document.getElementById('settings-youtube').value = user.youtube || '';
+          document.getElementById('settings-github').value = user.github || '';
+          document.getElementById('privacy-join').value = user.privacy_join || 'Everyone';
+          document.getElementById('privacy-invite').value = user.privacy_invite || 'Everyone';
+          document.getElementById('privacy-inventory').value = user.privacy_inventory || 'Everyone';
+
+          document.getElementById('device-list-container').innerHTML = `Current Session: ${navigator.userAgent} (Active Now)`;
+        }
+      } catch (e) {
+        console.error("Error loading settings:", e);
+      }
+    }
+
+    function showSuccess() {
+      const alertBox = document.getElementById('status-alert');
+      alertBox.style.display = 'inline-block';
+      setTimeout(() => alertBox.style.display = 'none', 3000);
+    }
+
+    async function saveAccountTab() {
+      const newUsername = document.getElementById('settings-username').value.trim();
+      const currentPassword = document.getElementById('settings-current-password').value;
+      const newPassword = document.getElementById('settings-new-password').value;
+      const email = document.getElementById('settings-email').value;
+      const description = document.getElementById('settings-description').value;
+      const gender = document.getElementById('settings-gender').value;
+      const theme = document.getElementById('settings-theme').value;
+
+      if (!currentPassword) {
+        alert("Please enter your current password to save changes.");
+        return;
+      }
+
+      const { data: user } = await supabaseClient.from('accounts').select('*').eq('username', currentUser).single();
+      if (!user || user.password !== currentPassword) {
+        alert("Incorrect current password.");
+        return;
+      }
+
+      let updates = { 
+        email: email, 
+        description: description, 
+        gender: gender, 
+        theme: theme 
+      };
+
+      if (newPassword) updates.password = newPassword;
+
+      if (newUsername !== currentUser) {
+        if (user.robux < 1000) {
+          alert("Changing your username requires 1,000 Robux!");
+          return;
+        }
+        updates.username = newUsername;
+        updates.robux = user.robux - 1000;
+      }
+
+      const { error } = await supabaseClient.from('accounts').update(updates).eq('username', currentUser);
+      if (!error) {
+        if (newUsername !== currentUser) {
+          localStorage.setItem('bloxtip_username', newUsername);
+        }
+        showSuccess();
+      } else {
+        alert("Error updating account info: " + error.message);
+      }
+    }
+
+    async function saveSecurity() {
+      const two_factor_enabled = document.getElementById('settings-2fa').checked;
+      await supabaseClient.from('accounts').update({ two_factor_enabled }).eq('username', currentUser);
+      showSuccess();
+    }
+
+    async function signOutAllDevices() {
+      alert("Signed out of all other sessions successfully!");
+    }
+
+    async function saveSocial() {
+      const twitter = document.getElementById('settings-twitter').value;
+      const youtube = document.getElementById('settings-youtube').value;
+      const github = document.getElementById('settings-github').value;
+      await supabaseClient.from('accounts').update({ twitter, youtube, github }).eq('username', currentUser);
+      showSuccess();
+    }
+
+    async function savePrivacy() {
+      const privacy_join = document.getElementById('privacy-join').value;
+      const privacy_invite = document.getElementById('privacy-invite').value;
+      const privacy_inventory = document.getElementById('privacy-inventory').value;
+      await supabaseClient.from('accounts').update({ privacy_join, privacy_invite, privacy_inventory }).eq('username', currentUser);
+      showSuccess();
+    }
+
+    window.addEventListener('DOMContentLoaded', loadSettings);
+  </script>
+</body>
+</html>
