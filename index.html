@@ -108,17 +108,45 @@
     .search-icon-svg { width: 15px; height: 15px; fill: #191919; }
 
     /* RIGHT SECTION */
-    .right-section { display: flex; align-items: center; gap: 12px; flex-shrink: 0; color: white; font-size: 13px; font-weight: bold; }
+    .right-section { display: flex; align-items: center; gap: 12px; flex-shrink: 0; color: white; font-size: 13px; font-weight: bold; position: relative; }
     .user-info-text { display: flex; align-items: center; gap: 4px; color: white; }
-
-    .nav-icon-btn {
-      background: none; border: none; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; position: relative;
-    }
-    .nav-icon-btn:hover { opacity: 0.8; }
-    .nav-icon-svg { width: 18px; height: 18px; fill: white; }
 
     .robux-display { display: inline-flex; align-items: center; gap: 5px; font-weight: bold; font-size: 13px; color: white; }
     .robux-icon { width: 18px; height: 18px; object-fit: contain; vertical-align: middle; }
+
+    /* SETTINGS DROPDOWN MENU */
+    .settings-dropdown-wrapper { position: relative; display: flex; align-items: center; }
+    .settings-icon-btn {
+      background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; justify-content: center;
+    }
+    .settings-gear-img { width: 22px; height: 22px; object-fit: contain; display: block; }
+    
+    .settings-menu-dropdown {
+      display: none;
+      position: absolute;
+      top: 35px;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      border-radius: 4px;
+      width: 140px;
+      z-index: 1090;
+      padding: 5px 0;
+    }
+    .settings-menu-dropdown.active { display: block; }
+    .settings-menu-dropdown a {
+      display: block;
+      padding: 8px 15px;
+      color: #333;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: normal;
+    }
+    .settings-menu-dropdown a:hover {
+      background: #f0f0f0;
+      color: #0074BD;
+    }
 
     /* SIDEBAR */
     .sidebar-overlay { display: none; position: fixed; top: 40px; left: 0; width: 100vw; height: calc(100vh - 40px); background: rgba(0, 0, 0, 0.3); z-index: 1040; }
@@ -431,7 +459,7 @@
         </div>
       </div>
 
-      <!-- USER INFO, ROBUX -->
+      <!-- USER INFO, ROBUX, & SETTINGS ICON -->
       <div class="right-section" id="auth-actions">
         <div class="user-info-text">
           <span id="user-display">Guest</span>: 13+
@@ -442,7 +470,22 @@
           <span id="robux-amount">0</span>
         </div>
 
-        <button style="background:none; border:none; color:white; cursor:pointer; font-size:12px; opacity:0.8;" onclick="logout()">[Log Out]</button>
+        <!-- SETTINGS GEAR ICON WITH DROPDOWN -->
+        <div class="settings-dropdown-wrapper">
+          <button class="settings-icon-btn" id="settings-toggle-btn" onclick="toggleSettingsDropdown(event)" title="Settings">
+            <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot%202026-10-27%20111306.png" 
+                 id="settings-gear-img" 
+                 class="settings-gear-img" 
+                 alt="Settings"
+                 onmouseover="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot%202026-10-27%20111358.png'" 
+                 onmouseout="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot%202026-10-27%20111306.png'">
+          </button>
+          <div class="settings-menu-dropdown" id="settings-menu-dropdown">
+            <a href="./settings">Settings</a>
+            <a href="./help">Help</a>
+            <a href="#" onclick="logout()">Logout</a>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -548,6 +591,20 @@
       document.getElementById('sidebar').classList.toggle('active');
       document.getElementById('sidebar-overlay').classList.toggle('active');
     }
+
+    function toggleSettingsDropdown(event) {
+      event.stopPropagation();
+      const dropdown = document.getElementById('settings-menu-dropdown');
+      dropdown.classList.toggle('active');
+    }
+
+    // Close settings dropdown when clicking outside
+    window.addEventListener('click', () => {
+      const dropdown = document.getElementById('settings-menu-dropdown');
+      if (dropdown && dropdown.classList.contains('active')) {
+        dropdown.classList.remove('active');
+      }
+    });
 
     function toggleChatDrawer() {
       const container = document.getElementById('chat-widget-container');
