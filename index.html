@@ -616,6 +616,12 @@
       }
     }
 
+    // --- PROTOCOL LAUNCHER TRIGGER (bloxtip:placeId=X) ---
+    function launchGame(gameId) {
+      const protocolUri = `bloxtip:placeId=${gameId}`;
+      window.location.href = protocolUri;
+    }
+
     // --- GAMES (SUPABASE) ---
     async function loadGames() {
       const container = document.getElementById('main-grid-container');
@@ -636,12 +642,12 @@
 
         container.innerHTML = games.map(game => `
           <div class="game-card">
-            <div class="game-card-image-container" onclick="window.location.href='./game.html?id=${game.id}'">
+            <div class="game-card-image-container" onclick="launchGame(${game.id})">
               <img src="${game.thumbnail_url || DEFAULT_THUMBNAIL}" class="game-card-img" alt="${game.title}">
             </div>
             <div class="game-card-title">${game.title}</div>
             <div class="game-card-meta"><span>By ${game.creator}</span></div>
-            <a href="./game.html?id=${game.id}" class="play-btn">Play</a>
+            <button class="play-btn" onclick="launchGame(${game.id})">Play</button>
           </div>
         `).join('');
       } catch (e) {
@@ -674,12 +680,12 @@
 
         container.innerHTML = games.map(game => `
           <div class="game-card">
-            <div class="game-card-image-container">
+            <div class="game-card-image-container" onclick="launchGame(${game.id})">
               <img src="${game.thumbnail_url || DEFAULT_THUMBNAIL}" class="game-card-img">
             </div>
             <div class="game-card-title">${game.title}</div>
             <div class="game-card-meta"><span>By ${game.creator}</span></div>
-            <a href="./game.html?id=${game.id}" class="play-btn">Play</a>
+            <button class="play-btn" onclick="launchGame(${game.id})">Play</button>
           </div>
         `).join('');
       } catch (e) {}
