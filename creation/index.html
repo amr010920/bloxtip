@@ -1,12 +1,9 @@
-<!doctype html>
-<html class="light" dir="ltr" lang="en" style="height: 100%;">
-<head>
+<html class="light" dir="ltr" lang="en" style="height: 100%;"><head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Create Game - Bloxtip</title>
+  <title>Create & Publish - Bloxtip</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Untitled-removebg-preview.png">
   
-  <!-- Supabase JavaScript Library CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -32,12 +29,16 @@
     .nav-link { color: white; text-decoration: none; font-size: 13px; font-weight: bold; }
 
     .main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
-    .create-box { background: white; padding: 30px; border: 1px solid #ccc; border-radius: 4px; width: 100%; max-width: 450px; }
-    .create-box h1 { font-size: 24px; margin-bottom: 20px; color: #0074BD; }
+    .create-box { background: white; padding: 30px; border: 1px solid #ccc; border-radius: 4px; width: 100%; max-width: 480px; }
+    .create-box h1 { font-size: 22px; margin-bottom: 15px; color: #0074BD; }
+
+    .tab-selector { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+    .tab-btn { background: none; border: none; font-size: 14px; font-weight: bold; color: #666; cursor: pointer; padding: 4px 8px; }
+    .tab-btn.active { color: #0074BD; border-bottom: 2px solid #0074BD; }
 
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
-    .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; font-size: 14px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; font-size: 14px; }
 
     .publish-btn { width: 100%; padding: 10px; background: var(--theme-primary); color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 2px; }
     .publish-btn:hover { background: var(--theme-primary-hover); }
@@ -45,20 +46,28 @@
 
     .error { background: #fee; color: #c00; padding: 8px; margin-bottom: 15px; display: none; font-size: 13px; }
     .error.show { display: block; }
+    .section-form { display: none; }
+    .section-form.active { display: block; }
   </style>
 </head>
 <body>
 
   <nav class="navbar">
-    <a href="../" class="nav-link">&larr; Back to Home</a>
+    <a href="../" class="nav-link">← Back to Home</a>
   </nav>
 
   <main class="main">
     <div class="create-box">
-      <h1>Publish a Game (.rbxl)</h1>
+      <h1>Creator Studio</h1>
       <div class="error" id="error-box"></div>
 
-      <form onsubmit="publishGame(event)">
+      <div class="tab-selector">
+        <button class="tab-btn active" onclick="switchTab('game', event)">Publish Game</button>
+        <button class="tab-btn" onclick="switchTab('item', event)">Publish Catalog Item</button>
+      </div>
+
+      <!-- PUBLISH GAME FORM yes it is google devtools user-->
+      <form id="form-game" class="section-form active" onsubmit="publishGame(event)">
         <div class="form-group">
           <label for="game-title">Game Title</label>
           <input type="text" id="game-title" required placeholder="My Awesome 2013 Place">
@@ -71,26 +80,58 @@
           <label for="game-thumb">Thumbnail Image URL <span style="font-weight:normal; color:#777;">(Optional)</span></label>
           <input type="text" id="game-thumb" placeholder="https://raw.githubusercontent.com/...">
         </div>
-        <button type="submit" class="publish-btn" id="pub-btn">Publish to Global Catalog</button>
+        <button type="submit" class="publish-btn" id="pub-game-btn">Publish Game to Catalog</button>
+      </form>
+
+      <!-- shit form for i forgot tbh -->
+      <form id="form-item" class="section-form" onsubmit="publishCatalogItem(event)">
+        <div class="form-group">
+          <label for="item-name">Item Name</label>
+          <input type="text" id="item-name" required placeholder="Cool Red Hoodie">
+        </div>
+        <div class="form-group">
+          <label for="item-category">Category</label>
+          <select id="item-category">
+            <option value="Shirt">Shirt</option>
+            <option value="Pants">Pants</option>
+            <option value="Face">Face</option>
+            <option value="Hair">Hair</option>
+            <option value="Hat">Hat</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="item-img">Item Image / Decal URL</label>
+          <input type="text" id="item-img" required placeholder="https://raw.githubusercontent.com/...">
+        </div>
+        <div class="form-group">
+          <label for="item-price">Price (Robux)</label>
+          <input type="number" id="item-price" value="0" min="0">
+        </div>
+        <button type="submit" class="publish-btn" id="pub-item-btn">Publish Item & Add to Inventory</button>
       </form>
     </div>
   </main>
 
   <script>
-    // --- SUPABASE CONFIGURATION ---
     const SUPABASE_URL = 'https://hdpxjesfeawnntjzttwj.supabase.co/'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX'; 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    function switchTab(tab, event) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.section-form').forEach(f => f.classList.remove('active'));
+
+      event.target.classList.add('active');
+      document.getElementById(`form-${tab}`).classList.add('active');
+      document.getElementById('error-box').classList.remove('show');
+    }
+
     async function publishGame(event) {
       event.preventDefault();
       const title = document.getElementById('game-title').value.trim();
-      const fileInput = document.getElementById('game-file');
       let thumbnail = document.getElementById('game-thumb').value.trim();
       const errorBox = document.getElementById('error-box');
-      const btn = document.getElementById('pub-btn');
-
-      errorBox.classList.remove('show');
+      const btn = document.getElementById('pub-game-btn');
 
       const savedUser = localStorage.getItem('bloxtip_username');
       if (!savedUser) {
@@ -99,50 +140,79 @@
         return;
       }
 
-      if (fileInput.files.length === 0) {
-        errorBox.textContent = "Please select an .rbxl file to publish.";
-        errorBox.classList.add('show');
-        return;
-      }
-
-      const file = fileInput.files[0];
       btn.disabled = true;
       btn.textContent = "Publishing Game...";
 
-      try {
-        // Create local object URL for the uploaded .rbxl file
-        const rbxlUrl = URL.createObjectURL(file);
+      if (!thumbnail) {
+        thumbnail = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
+      }
 
-        if (!thumbnail) {
-          thumbnail = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
-        }
+      const { error } = await supabaseClient.from('games').insert([{
+        title: title,
+        creator: savedUser,
+        thumbnail_url: thumbnail,
+        visits: 0
+      }]);
 
-        // Insert new game record directly into Supabase 'games' table
-        const { error: insertError } = await supabaseClient
-          .from('games')
-          .insert([{
-            title: title,
-            creator: savedUser,
-            thumbnail_url: thumbnail,
-            visits: 0
-          }]);
-
-        if (insertError) {
-          errorBox.textContent = "Failed to save game to Supabase: " + insertError.message;
-          errorBox.classList.add('show');
-          btn.disabled = false;
-          btn.textContent = "Publish to Global Catalog";
-        } else {
-          alert(`Game '${title}' successfully published globally! Redirecting to home...`);
-          window.location.href = '../';
-        }
-      } catch (err) {
-        errorBox.textContent = "An error occurred while publishing.";
+      if (error) {
+        errorBox.textContent = "Failed to publish game: " + error.message;
         errorBox.classList.add('show');
         btn.disabled = false;
-        btn.textContent = "Publish to Global Catalog";
+        btn.textContent = "Publish Game to Catalog";
+      } else {
+        alert(`Game '${title}' successfully published!`);
+        window.location.href = '../';
       }
     }
+
+    async function publishCatalogItem(event) {
+      event.preventDefault();
+      const name = document.getElementById('item-name').value.trim();
+      const category = document.getElementById('item-category').value;
+      const imageUrl = document.getElementById('item-img').value.trim();
+      const price = parseInt(document.getElementById('item-price').value) || 0;
+      const errorBox = document.getElementById('error-box');
+      const btn = document.getElementById('pub-item-btn');
+
+      const savedUser = localStorage.getItem('bloxtip_username');
+      if (!savedUser) {
+        alert("You must be logged in to create items!");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Publishing Item...";
+
+      // 1. insert plzity plz insert
+      const { error: catalogError } = await supabaseClient.from('catalog_items').insert([{
+        name: name,
+        creator: savedUser,
+        category: category,
+        image_url: imageUrl,
+        price: price
+      }]);
+
+      if (catalogError) {
+        errorBox.textContent = "Failed to publish to catalog_items: " + catalogError.message;
+        errorBox.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = "Publish Item & Add to Inventory";
+        return;
+      }
+
+      // 2. Automatically grant the creator ownership in their inventory or not idc tbh BUT SHOULD WORK AKA IDK
+      await supabaseClient.from('inventory').insert([{
+        user_id: savedUser,
+        item_name: name,
+        category: category,
+        image_url: imageUrl,
+        is_equipped: false
+      }]);
+
+      alert(`Item '${name}' successfully published to the catalog and added to your inventory!`);
+      window.location.href = '../avatar';
+    }
   </script>
+
 </body>
 </html>
