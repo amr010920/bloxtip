@@ -4,8 +4,10 @@
   <title>Avatar Editor - Bloxtip</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Untitled-removebg-preview.png">
   
-  <!-- Supabase JavaScript Library CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Three.js & OBJLoader for External 3D Models -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
 
   <style>
     :root {
@@ -40,86 +42,20 @@
       padding: 0 15px;
     }
 
-    .nav-container { 
-      width: 100%; 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      gap: 15px;
-    }
-    
+    .nav-container { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 15px; }
     .left-section { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-
-    .menu-toggle-btn {
-      background: none; border: none; cursor: pointer; padding: 2px;
-      display: flex; align-items: center; justify-content: center;
-      width: 26px; height: 26px; border-radius: 3px;
-    }
-    .menu-toggle-btn:hover { background: rgba(255, 255, 255, 0.15); }
-
-    .hamburger-icon { width: 18px; height: 14px; display: flex; flex-direction: column; justify-content: space-between; }
-    .hamburger-line { width: 100%; height: 2px; background-color: #ffffff; border-radius: 1px; }
-
     .logo-btn { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; }
     .logo-img { height: 26px; width: auto; object-fit: contain; }
-
     .header-nav { display: flex; gap: 16px; margin-left: 5px; }
     .header-nav a { color: white; text-decoration: none; font-size: 14px; font-weight: bold; padding: 4px 2px; }
-    .header-nav a:hover { opacity: 0.85; }
 
-    /* RIGHT SECTION */
     .right-section { display: flex; align-items: center; gap: 12px; flex-shrink: 0; color: white; font-size: 13px; font-weight: bold; position: relative; }
-    .user-info-text { display: flex; align-items: center; gap: 4px; color: white; }
-
     .robux-display { display: inline-flex; align-items: center; gap: 5px; font-weight: bold; font-size: 13px; color: white; }
-    .robux-icon { width: 18px; height: 18px; object-fit: contain; vertical-align: middle; }
-
-    /* SETTINGS DROPDOWN MENU */
-    .settings-dropdown-wrapper { position: relative; display: flex; align-items: center; }
-    .settings-icon-btn {
-      background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; justify-content: center;
-    }
-    .settings-gear-img { width: 22px; height: 22px; object-fit: contain; display: block; }
-    
-    .settings-menu-dropdown {
-      display: none;
-      position: absolute;
-      top: 35px;
-      right: 0;
-      background: white;
-      border: 1px solid #ccc;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      border-radius: 4px;
-      width: 140px;
-      z-index: 1090;
-      padding: 5px 0;
-    }
-    .settings-menu-dropdown.active { display: block; }
-    .settings-menu-dropdown a {
-      display: block;
-      padding: 8px 15px;
-      color: #333;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: normal;
-    }
-    .settings-menu-dropdown a:hover {
-      background: #f0f0f0;
-      color: #0074BD;
-    }
-
-    /* SIDEBAR */
-    .sidebar-overlay { display: none; position: fixed; top: 40px; left: 0; width: 100vw; height: calc(100vh - 40px); background: rgba(0, 0, 0, 0.3); z-index: 1040; }
-    .sidebar-overlay.active { display: block; }
-    .sidebar { position: fixed; top: 40px; left: -220px; width: 220px; height: calc(100vh - 40px); background: #ffffff; border-right: 1px solid #cccccc; z-index: 1045; transition: left 0.2s ease; padding: 10px 0; }
-    .sidebar.active { left: 0; }
-    .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #333333; text-decoration: none; font-size: 14px; font-weight: bold; }
-    .sidebar-item:hover { background: #eef5fc; color: #0074BD; }
+    .robux-icon { width: 18px; height: 18px; object-fit: contain; }
 
     .main { flex: 1; width: 100%; display: flex; flex-direction: column; padding-top: 20px; padding-bottom: 40px; }
     .container { max-width: 1100px; margin: 0 auto; width: 100%; padding: 0 15px; flex: 1; }
 
-    /* AVATAR EDITOR SPECIFIC LAYOUT */
     .page-box { background: white; border: 1px solid #cccccc; border-radius: 2px; padding: 20px; }
     .avatar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .avatar-header h1 { font-size: 24px; font-weight: normal; color: #191919; }
@@ -128,19 +64,30 @@
     .editor-body { display: flex; gap: 20px; flex-wrap: wrap; }
     .preview-column { width: 260px; background: #f5f5f5; border: 1px solid #cccccc; border-radius: 2px; padding: 15px; display: flex; flex-direction: column; align-items: center; }
     
-    /* AVATAR PREVIEW CONTAINER WITH MULTI-ITEM OVERLAY LAYERING */
-    .avatar-thumb-container { position: relative; width: 200px; height: 200px; background: white; border: 1px solid #dddddd; border-radius: 2px; display: flex; justify-content: center; align-items: center; overflow: hidden; margin-bottom: 15px; }
+    .avatar-thumb-container { position: relative; width: 220px; height: 260px; background: white; border: 1px solid #dddddd; border-radius: 2px; display: flex; justify-content: center; align-items: center; overflow: hidden; margin-bottom: 12px; }
     
+    /* 2D RIG STYLING */
+    #avatar-2d-rig { width: 100%; height: 100%; position: relative; background: #e0e0e0; display: flex; justify-content: center; align-items: center; }
+    .rig-head { position: absolute; top: 20px; width: 50px; height: 50px; background: #f5cd27; border: 1px solid #c4a118; border-radius: 3px; z-index: 2; }
+    .rig-face { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: contain; background-repeat: no-repeat; z-index: 3; }
+    .rig-torso { position: absolute; top: 72px; width: 60px; height: 65px; background: #00a2ff; border: 1px solid #0077bc; z-index: 2; }
+    .rig-left-arm { position: absolute; top: 72px; left: 45px; width: 28px; height: 65px; background: #f5cd27; border: 1px solid #c4a118; z-index: 1; }
+    .rig-right-arm { position: absolute; top: 72px; right: 45px; width: 28px; height: 65px; background: #f5cd27; border: 1px solid #c4a118; z-index: 1; }
+    .rig-left-leg { position: absolute; top: 139px; left: 79px; width: 29px; height: 65px; background: #a25b15; border: 1px solid #75400d; z-index: 2; }
+    .rig-right-leg { position: absolute; top: 139px; right: 79px; width: 29px; height: 65px; background: #a25b15; border: 1px solid #75400d; z-index: 2; }
+    .rig-overlay-item { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+
+    .view-toggle-btn { width: 100%; padding: 6px 0; background: #ffffff; border: 1px solid #0074BD; color: #0074BD; font-weight: bold; font-size: 13px; border-radius: 2px; cursor: pointer; margin-bottom: 10px; }
+    .view-toggle-btn:hover { background: #eef5fc; }
+
     .inventory-column { flex: 1; background: #f5f5f5; border: 1px solid #cccccc; border-radius: 2px; padding: 15px; min-width: 300px; }
-    
     .tabs-container { display: flex; gap: 6px; border-bottom: 1px solid #cccccc; padding-bottom: 8px; margin-bottom: 15px; }
     .v-tab-label { cursor: pointer; color: #0074BD; font-size: 13px; font-weight: bold; padding: 4px 10px; border: 1px solid transparent; border-radius: 2px; }
     .v-tab-label:hover { background: #eef5fc; }
     .v-tab-label.active { background: white; border-color: #cccccc; border-bottom-color: white; color: #191919; }
 
-    .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 450px; overflow-y: auto; padding-right: 5px; }
+    .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
     
-    /* ITEM CARDS - CLICK ENTIRE CARD TO TOGGLE EQUIPPED STATE */
     .avatar-card { background: white; border: 1px solid #cccccc; border-radius: 2px; padding: 8px; text-align: center; cursor: pointer; position: relative; display: flex; flex-direction: column; justify-content: space-between; transition: border-color 0.15s ease, background 0.15s ease; }
     .avatar-card:hover { border-color: #0074BD; }
     .avatar-card.equipped { border-color: #02b757; background: #eafbf1; }
@@ -148,6 +95,11 @@
     .avatar-card-img-wrap { width: 100%; height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; }
     .avatar-card-img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .avatar-card-title { font-size: 11px; font-weight: bold; color: #191919; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; width: 100%; }
+
+    /* OUTFIT SAVE BAR */
+    .outfit-save-box { display: flex; gap: 8px; margin-bottom: 15px; }
+    .outfit-input { flex: 1; padding: 6px; font-size: 13px; border: 1px solid #ccc; border-radius: 2px; }
+    .save-outfit-btn { background: #02b757; color: white; border: none; font-weight: bold; padding: 6px 12px; border-radius: 2px; cursor: pointer; font-size: 12px; }
 
     .footer { width: 100%; background: #ffffff; border-top: 1px solid #cccccc; margin-top: auto; padding: 15px 0; }
     .footer-container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
@@ -158,61 +110,23 @@
 </head>
 <body>
 
-  <!-- TOP NAVBAR -->
   <nav class="navbar">
     <div class="nav-container">
       <div class="left-section">
-        <button class="menu-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Menu">
-          <div class="hamburger-icon">
-            <div class="hamburger-line"></div>
-            <div class="hamburger-line"></div>
-            <div class="hamburger-line"></div>
-          </div>
-        </button>
-        <button class="logo-btn" onclick="window.location.href='./index.html'" title="Bloxtip">
+        <button class="logo-btn" onclick="window.location.href='./index.html'">
           <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Bloxtip" class="logo-img">
         </button>
         <div class="header-nav">
           <a href="./index">Games</a>
           <a href="./catalog">Catalog</a>
           <a href="./creation">Create</a>
-          <a href="./download">Download</a>
         </div>
       </div>
-
-      <!-- USER INFO & SETTINGS -->
-      <div class="right-section" id="auth-actions">
-        <div class="user-info-text">
-          <span id="user-display">yepme2</span>: 13+
-        </div>
-
-        <div class="robux-display" id="user-robux-badge" title="Robux Balance">
-          <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/ROBUX_icon_3F19%2529.webp" class="robux-icon" alt="Robux">
-          <span id="robux-amount">0</span>
-        </div>
-
-        <div class="settings-dropdown-wrapper">
-          <button class="settings-icon-btn" id="settings-toggle-btn" onclick="toggleSettingsDropdown(event)" title="Settings">
-            <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot%202026-10-27%20111306.png" id="settings-gear-img" class="settings-gear-img" alt="Settings" onmouseover="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot%202026-10-27%20111358.png'" onmouseout="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot%202026-10-27%20111306.png'">
-          </button>
-          <div class="settings-menu-dropdown" id="settings-menu-dropdown">
-            <a href="./settings">Settings</a>
-            <a href="./help">Help</a>
-            <a href="#" onclick="logout()">Logout</a>
-          </div>
-        </div>
+      <div class="right-section">
+        <span id="user-display">yepme2</span>
       </div>
     </div>
   </nav>
-
-  <!-- SIDEBAR -->
-  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-  <div class="sidebar" id="sidebar">
-    <a href="./index" class="sidebar-item">Games</a>
-    <a href="./catalog" class="sidebar-item">Catalog</a>
-    <a href="./creation" class="sidebar-item">Develop / Create</a>
-    <a href="./avatar" class="sidebar-item" style="color:#0074BD;">Avatar Editor</a>
-  </div>
 
   <main class="main">
     <div class="container">
@@ -223,29 +137,46 @@
         </div>
 
         <div class="editor-body">
-          <!-- Left Column: Avatar Preview Container -->
           <div class="preview-column">
-            <div class="avatar-thumb-container" id="avatar-preview-box">
-              <img id="base-avatar-img" src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" alt="Avatar Base" style="position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+            <button class="view-toggle-btn" id="mode-toggle-btn" onclick="toggleViewMode()">Switch to 3D View</button>
+
+            <div class="avatar-thumb-container">
+              <!-- 2D Rig -->
+              <div id="avatar-2d-rig">
+                <div class="rig-head" id="rig-head">
+                  <div class="rig-face" id="rig-face"></div>
+                </div>
+                <div class="rig-torso" id="rig-torso"></div>
+                <div class="rig-left-arm"></div>
+                <div class="rig-right-arm"></div>
+                <div class="rig-left-leg"></div>
+                <div class="rig-right-leg"></div>
+                <div id="rig-overlay-container"></div>
+              </div>
+
+              <!-- 3D Model Viewport (External Roblox Character OBJ) -->
+              <div id="avatar-3d-container" style="width:100%; height:100%; display:none;"></div>
             </div>
-            <div style="font-size: 12px; color: #666; text-align: center;">Click inventory items to equip or unequip them instantly.</div>
           </div>
 
-          <!-- Right Column: Filterable Inventory Grid -->
           <div class="inventory-column">
             <div class="tabs-container" id="category-tabs">
               <div class="v-tab-label active" data-category="Recent">Recent</div>
               <div class="v-tab-label" data-category="Clothing">Clothing</div>
               <div class="v-tab-label" data-category="Body">Body</div>
-              <div class="v-tab-label" data-category="Accessories">Accessories</div>
-              <div class="v-tab-label" data-category="Hats">Hats</div>
+              <div class="v-tab-label" data-category="Animations">Animations</div>
+              <div class="v-tab-label" data-category="Outfits">Outfits</div>
+            </div>
+
+            <!-- Save Outfit Controls (Shown when Outfits tab is selected or dynamically) -->
+            <div class="outfit-save-box" id="outfit-save-box">
+              <input type="text" id="outfit-name-input" class="outfit-input" placeholder="Outfit Name (e.g., Cool Outfit)">
+              <button class="save-outfit-btn" onclick="saveCurrentOutfit()">Save Outfit</button>
             </div>
 
             <div>
               <div id="category-title" style="padding-bottom: 8px; color: #666; font-size: 13px; font-weight: bold;">Recent &gt; All Items</div>
-              <div id="inventory-grid" class="inventory-grid">
-                <p style="color: #777; font-size: 13px; grid-column: 1 / -1; text-align: center; padding: 20px;">Loading your inventory from Supabase...</p>
-              </div>
+              <div id="inventory-grid" class="inventory-grid"></div>
             </div>
           </div>
         </div>
@@ -253,148 +184,214 @@
     </div>
   </main>
 
-  <footer class="footer">
-    <div class="footer-container">
-      <div class="footer-links">
-        <a href="./about" class="footer-link">About Us</a>
-        <a href="./privacy" class="footer-link">Privacy</a>
-        <a href="./help" class="footer-link">Help</a>
-      </div>
-      <p class="footer-text">Bloxtip is an independent platform and is not affiliated with Roblox Corporation.</p>
-    </div>
-  </footer>
-
   <script>
-    // --- SUPABASE CONFIGURATION ---
     const SUPABASE_URL = 'https://hdpxjesfeawnntjzttwj.supabase.co/'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX'; 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let allInventoryItems = [];
+    let userOutfits = [];
     let activeCategory = 'Recent';
+    let is3DMode = false;
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('active');
-      document.getElementById('sidebar-overlay').classList.toggle('active');
-    }
+    // Three.js 3D External Model Loader (Loads Roblox Character Mesh)
+    let scene, camera, renderer, loadedCharacterMesh;
 
-    function toggleSettingsDropdown(event) {
-      event.stopPropagation();
-      const dropdown = document.getElementById('settings-menu-dropdown');
-      dropdown.classList.toggle('active');
-    }
+    function init3DExternalModel() {
+      const container = document.getElementById('avatar-3d-container');
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xe0e0e0);
 
-    window.addEventListener('click', () => {
-      const dropdown = document.getElementById('settings-menu-dropdown');
-      if (dropdown && dropdown.classList.contains('active')) {
-        dropdown.classList.remove('active');
+      camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+      camera.position.set(0, 1, 8);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(renderer.domElement);
+
+      const light = new THREE.DirectionalLight(0xffffff, 1.2);
+      light.position.set(5, 10, 7);
+      scene.add(light);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+      // Load External Roblox Noob Character OBJ Model File
+      const objLoader = new THREE.OBJLoader();
+      const characterObjUrl = 'https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/roblox_noob.obj'; // External Roblox Model
+
+      objLoader.load(characterObjUrl, (object) => {
+        loadedCharacterMesh = object;
+        loadedCharacterMesh.scale.set(0.1, 0.1, 0.1);
+        loadedCharacterMesh.position.set(0, -2, 0);
+        scene.add(loadedCharacterMesh);
+      }, undefined, (error) => {
+        console.log('Error loading external 3D model, fallback scene enabled.');
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        if (loadedCharacterMesh) loadedCharacterMesh.rotation.y += 0.01;
+        renderer.render(scene, camera);
       }
-    });
+      animate();
+    }
 
-    // --- FETCH USER INVENTORY FROM SUPABASE ---
-    async function loadUserInventory() {
-      const grid = document.getElementById('inventory-grid');
+    function toggleViewMode() {
+      is3DMode = !is3DMode;
+      document.getElementById('mode-toggle-btn').textContent = is3DMode ? "Switch to 2D View" : "Switch to 3D View";
+      document.getElementById('avatar-2d-rig').style.display = is3DMode ? "none" : "flex";
+      document.getElementById('avatar-3d-container').style.display = is3DMode ? "block" : "none";
+
+      if (is3DMode && !renderer) {
+        init3DExternalModel();
+      }
+    }
+
+    async function loadUserData() {
       const currentUser = localStorage.getItem('bloxtip_username') || 'yepme2';
 
-      try {
-        let { data: inventoryItems, error } = await supabaseClient
-          .from('inventory')
-          .select('*')
-          .eq('user_id', currentUser);
+      // Load user inventory items
+      const { data: inv } = await supabaseClient.from('inventory').select('*').eq('user_id', currentUser);
+      allInventoryItems = inv || [];
 
-        if (error) throw error;
+      // Load user saved outfits
+      const { data: outfits } = await supabaseClient.from('outfits').select('*').eq('user_id', currentUser);
+      userOutfits = outfits || [];
 
-        allInventoryItems = inventoryItems || [];
-        renderInventory();
-        renderAvatarPreview();
-      } catch (err) {
-        grid.innerHTML = `<p style="color: #cc0000; font-size: 13px; grid-column: 1 / -1; text-align: center; padding: 20px;">Failed to load inventory from Supabase.</p>`;
-      }
+      renderInventory();
+      render2DRig();
     }
 
-    // --- RENDER OVERLAYS ON AVATAR PREVIEW ---
-    function renderAvatarPreview() {
-      const previewBox = document.getElementById('avatar-preview-box');
-      
-      // Preserve base avatar image and clear previous accessory overlays
-      const baseHtml = '<img id="base-avatar-img" src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" alt="Avatar Base" style="position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1;">';
-      previewBox.innerHTML = baseHtml;
+    function render2DRig() {
+      const faceElement = document.getElementById('rig-face');
+      const torsoElement = document.getElementById('rig-torso');
+      const overlayContainer = document.getElementById('rig-overlay-container');
 
-      // Layer equipped items on top
+      faceElement.style.backgroundImage = '';
+      torsoElement.style.backgroundImage = '';
+      overlayContainer.innerHTML = '';
+
       allInventoryItems.forEach(item => {
         if (item.is_equipped) {
-          const overlay = document.createElement('img');
-          overlay.src = item.image_url;
-          overlay.alt = item.item_name;
-          overlay.style.position = 'absolute';
-          overlay.style.width = '100%';
-          overlay.style.height = '100%';
-          overlay.style.objectFit = 'contain';
-          overlay.style.zIndex = '2';
-          previewBox.appendChild(overlay);
+          const cat = (item.category || '').toLowerCase();
+          if (cat === 'face') faceElement.style.backgroundImage = `url('${item.image_url}')`;
+          else if (cat === 'shirt') torsoElement.style.backgroundImage = `url('${item.image_url}')`;
+          else {
+            const overlay = document.createElement('img');
+            overlay.src = item.image_url;
+            overlay.className = 'rig-overlay-item';
+            overlayContainer.appendChild(overlay);
+          }
         }
       });
     }
 
-    // --- RENDER INVENTORY GRID WITH TABS ---
     function renderInventory() {
       const grid = document.getElementById('inventory-grid');
       grid.innerHTML = '';
 
-      const filteredItems = allInventoryItems.filter(item => {
-        if (activeCategory === 'Recent') return true;
-        return item.category && item.category.toLowerCase() === activeCategory.toLowerCase();
-      });
+      if (activeCategory === 'Outfits') {
+        if (userOutfits.length === 0) {
+          grid.innerHTML = `<p style="color: #777; font-size: 13px; grid-column: 1 / -1; text-align: center; padding: 20px;">No saved outfits yet.</p>`;
+          return;
+        }
 
-      if (filteredItems.length === 0) {
-        grid.innerHTML = `<p style="color: #777; font-size: 13px; grid-column: 1 / -1; text-align: center; padding: 20px;">No items found in this category.</p>`;
+        userOutfits.forEach(outfit => {
+          const card = document.createElement('div');
+          card.className = 'avatar-card';
+          card.innerHTML = `
+            <div class="avatar-card-img-wrap">
+              <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" class="avatar-card-img">
+            </div>
+            <span class="avatar-card-title">${outfit.outfit_name}</span>
+          `;
+          card.addEventListener('click', () => equipOutfit(outfit));
+          grid.appendChild(card);
+        });
         return;
       }
+
+      const filteredItems = allInventoryItems.filter(item => {
+        if (activeCategory === 'Recent') return true;
+        const cat = (item.category || '').toLowerCase();
+        if (activeCategory === 'Clothing') return ['clothing', 'shirt', 'pants', 'face', 'hat', 'hair'].includes(cat);
+        if (activeCategory === 'Body') return ['body', 'left arm', 'right arm', 'torso'].includes(cat);
+        if (activeCategory === 'Animations') return cat.includes('anim');
+        return cat === activeCategory.toLowerCase();
+      });
 
       filteredItems.forEach(item => {
         const card = document.createElement('div');
         card.className = `avatar-card ${item.is_equipped ? 'equipped' : ''}`;
-
         card.innerHTML = `
-          <div class="avatar-card-img-wrap">
-            <img src="${item.image_url}" class="avatar-card-img" alt="${item.item_name}">
-          </div>
+          <div class="avatar-card-img-wrap"><img src="${item.image_url}" class="avatar-card-img"></div>
           <span class="avatar-card-title">${item.item_name}</span>
         `;
 
-        // Click anywhere on card to toggle equipment state
         card.addEventListener('click', async () => {
-          const newEquippedState = !item.is_equipped;
-          item.is_equipped = newEquippedState;
-
-          // Re-render UI instantly
+          item.is_equipped = !item.is_equipped;
           renderInventory();
-          renderAvatarPreview();
-
-          // Save update to Supabase
-          await supabaseClient
-            .from('inventory')
-            .update({ is_equipped: newEquippedState })
-            .eq('id', item.id);
+          render2DRig();
+          await supabaseClient.from('inventory').update({ is_equipped: item.is_equipped }).eq('id', item.id);
         });
 
         grid.appendChild(card);
       });
     }
 
-    // Tab Filtering Listeners
+    // SAVE OUTFIT FUNCTIONALITY
+    async function saveCurrentOutfit() {
+      const nameInput = document.getElementById('outfit-name-input');
+      const outfitName = nameInput.value.trim();
+      const currentUser = localStorage.getItem('bloxtip_username') || 'yepme2';
+
+      if (!outfitName) return alert('Please enter an outfit name.');
+
+      const equippedIds = allInventoryItems.filter(i => i.is_equipped).map(i => i.id);
+
+      const { error } = await supabaseClient.from('outfits').insert([{
+        user_id: currentUser,
+        outfit_name: outfitName,
+        equipped_item_ids: JSON.stringify(equippedIds)
+      }]);
+
+      if (error) {
+        alert('Failed to save outfit: ' + error.message);
+      } else {
+        alert(`Outfit '${outfitName}' saved successfully!`);
+        nameInput.value = '';
+        loadUserData();
+      }
+    }
+
+    // EQUIP ENTIRE OUTFIT AT ONCE
+    async function equipOutfit(outfit) {
+      const currentUser = localStorage.getItem('bloxtip_username') || 'yepme2';
+      const equippedIds = new Set(JSON.parse(outfit.equipped_item_ids || '[]'));
+
+      allInventoryItems.forEach(item => {
+        item.is_equipped = equippedIds.has(item.id);
+      });
+
+      renderInventory();
+      render2DRig();
+
+      // Batch update inventory equipped statuses in Supabase
+      for (const item of allInventoryItems) {
+        await supabaseClient.from('inventory').update({ is_equipped: item.is_equipped }).eq('id', item.id);
+      }
+    }
+
+    // Tab Listeners
     document.querySelectorAll('#category-tabs .v-tab-label').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('#category-tabs .v-tab-label').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-
         activeCategory = tab.getAttribute('data-category');
-        document.getElementById('category-title').textContent = `${activeCategory} > All Items`;
         renderInventory();
       });
     });
 
-    window.addEventListener('DOMContentLoaded', loadUserInventory);
+    window.addEventListener('DOMContentLoaded', loadUserData);
   </script>
 
 </body>
