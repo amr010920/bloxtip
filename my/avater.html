@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatar Editor - Filterable Inventory</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Untitled-removebg-preview.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #18191c; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .flex { display: flex; }
+        .flex-column { flex-direction: column; }
+        .justify-content-between { justify-content: space-between; }
+        .align-items-center { align-items: center; }
+        .row { display: flex; width: 100%; }
+        .col-12 { width: 100%; }
+        .pb-4 { padding-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        
+        .page-0-2-419 { background: #23252a; padding: 20px; border-radius: 8px; }
+        .avatarHeader-0-2-428 { margin-bottom: 20px; }
+        .avatarHeaderText-0-2-429 { font-size: 24px; font-weight: bold; }
+        .moreBut-0-2-439 { background: #3498db; border: none; color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        .content-0-2-450 { gap: 20px; flex-wrap: wrap; }
+        .idekbuh-0-2-449 { width: 300px; background: #1e1f22; padding: 15px; border-radius: 6px; }
+        .avatarThumbContainer-0-2-430 { position: relative; width: 100%; height: 250px; background: #2b2d31; border-radius: 6px; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        
+        .itemContainer-0-2-438 { flex: 1; background: #1e1f22; padding: 15px; border-radius: 6px; min-width: 300px; }
+        .tabsContainer-0-2-491 { display: flex; gap: 10px; border-bottom: 2px solid #2b2d31; padding-bottom: 10px; margin-bottom: 15px; }
+        .vTabLabel-0-2-482 { cursor: pointer; color: #b8b8b8; font-weight: bold; padding: 5px 10px; border-radius: 4px; transition: background 0.2s; }
+        .vTabLabel-0-2-482:hover { background: #2b2d31; color: #fff; }
+        .vTagSelected-0-2-484 { color: #3498db; border-bottom: 2px solid #3498db; }
+        
+        .avatarListContainer-0-2-499 { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; max-height: 500px; overflow-y: auto; padding-right: 5px; }
+        
+        /* Card Styling with Highlight when Equipped */
+        .avatarCardWrapper-0-2-503 { background: #2b2d31; border-radius: 6px; padding: 8px; text-align: center; position: relative; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform 0.1s ease, background 0.2s ease, border 0.2s ease; border: 2px solid transparent; }
+        .avatarCardWrapper-0-2-503:hover { background: #35383e; transform: translateY(-2px); }
+        .avatarCardWrapper-0-2-503.equipped { border-color: #2ecc71; background: rgba(46, 204, 113, 0.1); }
+        
+        .avatarCardImage-0-2-505 img { width: 80px; height: 80px; object-fit: contain; }
+        .avatarCardItemLink-0-2-507 { color: #fff; text-decoration: none; font-size: 12px; margin-top: 8px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
+        .text-overflow { overflow: hidden; text-overflow: ellipsis; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container flex flex-column ssp pb-4 mb-4">
+    <div class="page-0-2-419">
+        <div class="avatarHeader-0-2-428 flex justify-content-between align-items-center">
+            <h1 class="avatarHeaderText-0-2-429">Avatar Editor</h1>
+            <div><button class="moreBut-0-2-439" onclick="location.href='/catalog'">Get More</button></div>
+        </div>
+
+        <div class="flex content-0-2-450">
+            <!-- Left: Avatar Preview Container layering equipped items -->
+            <div class="idekbuh-0-2-449">
+                <div class="avatarThumbContainer-0-2-430" id="avatar-preview-box">
+                    <img id="base-avatar-img" src="/images/thumbnails/default_avatar.png" alt="Player Avatar" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 1;">
+                </div>
+            </div>
+
+            <!-- Right: Filterable Inventory Grid -->
+            <div class="itemContainer-0-2-438">
+                <div class="tabsContainer-0-2-491" id="category-tabs">
+                    <div class="vTabLabel-0-2-482 vTagSelected-0-2-484" data-category="Recent"><span>Recent</span></div>
+                    <div class="vTabLabel-0-2-482" data-category="Clothing"><span>Clothing</span></div>
+                    <div class="vTabLabel-0-2-482" data-category="Body"><span>Body</span></div>
+                    <div class="vTabLabel-0-2-482" data-category="Animations"><span>Animations</span></div>
+                    <div class="vTabLabel-0-2-482" data-category="Outfits"><span>Outfits</span></div>
+                </div>
+                <div>
+                    <div id="category-title" style="padding-top: 9px; padding-bottom: 4px; color: #898989; font-size: 14px;">Recent &gt; All</div>
+                    <div id="inventory-grid" class="avatarListContainer-0-2-499">
+                        <p style="color: #898989;">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://hdpxjesfeawnntjzttwj.supabase.co/';
+    const SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const currentUsername = 'yepme2'; 
+    let allInventoryItems = [];
+    let activeCategory = 'Recent';
+
+    async function fetchInventoryFromSupabase() {
+        const grid = document.getElementById('inventory-grid');
+        try {
+            let { data: inventoryItems, error } = await supabaseClient
+                .from('inventory')
+                .select('*')
+                .eq('user_id', currentUsername);
+
+            if (error) {
+                grid.innerHTML = `<p style="color: #e74c3c;">Failed to load items.</p>`;
+                return;
+            }
+
+            allInventoryItems = inventoryItems || [];
+            renderInventory();
+            renderAvatarPreview();
+        } catch (err) {
+            console.error('Error:', err);
+            grid.innerHTML = `<p style="color: #e74c3c;">An error occurred connecting to Supabase.</p>`;
+        }
+    }
+
+    function renderAvatarPreview() {
+        const previewBox = document.getElementById('avatar-preview-box');
+        
+        // Keep base avatar, remove old overlays
+        const baseImgHtml = '<img id="base-avatar-img" src="/images/thumbnails/default_avatar.png" alt="Player Avatar" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 1;">';
+        previewBox.innerHTML = baseImgHtml;
+
+        // Overlay equipped items
+        allInventoryItems.forEach(item => {
+            if (item.is_equipped) {
+                const overlayImg = document.createElement('img');
+                overlayImg.src = item.image_url;
+                overlayImg.alt = item.item_name;
+                overlayImg.style.position = 'absolute';
+                overlayImg.style.width = '100%';
+                overlayImg.style.height = '100%';
+                overlayImg.style.objectFit = 'contain';
+                overlayImg.style.zIndex = '2';
+                previewBox.appendChild(overlayImg);
+            }
+        });
+    }
+
+    function renderInventory() {
+        const grid = document.getElementById('inventory-grid');
+        grid.innerHTML = '';
+
+        // Filter items based on active tab category (assuming your Supabase table has a `category` column matching tab names, or showing all for Recent)
+        const filteredItems = allInventoryItems.filter(item => {
+            if (activeCategory === 'Recent') return true;
+            return item.category && item.category.toLowerCase() === activeCategory.toLowerCase();
+        });
+
+        if (filteredItems.length === 0) {
+            grid.innerHTML = `<p style="color: #b8b8b8;">No items found in this category.</p>`;
+            return;
+        }
+
+        filteredItems.forEach(item => {
+            const cardWrapper = document.createElement('div');
+            cardWrapper.className = `avatarCardWrapper-0-2-503 ${item.is_equipped ? 'equipped' : ''}`;
+
+            cardWrapper.innerHTML = `
+                <div class="avatarCardContainer-0-2-504">
+                    <div class="avatarCardImage-0-2-505">
+                        <img class="avatarCardThumb-0-2-506" src="${item.image_url}" alt="${item.item_name}">
+                    </div>
+                    <span class="avatarCardItemLink-0-2-507 text-overflow">${item.item_name}</span>
+                </div>
+            `;
+
+            // Click anywhere on card to toggle equip/unequip state
+            cardWrapper.addEventListener('click', async () => {
+                const newEquippedState = !item.is_equipped;
+                item.is_equipped = newEquippedState;
+
+                // Re-render UI instantly
+                renderInventory();
+                renderAvatarPreview();
+
+                // Update Supabase
+                await supabaseClient
+                    .from('inventory')
+                    .update({ is_equipped: newEquippedState })
+                    .eq('id', item.id);
+            });
+
+            grid.appendChild(cardWrapper);
+        });
+    }
+
+    // Tab click listeners
+    document.querySelectorAll('#category-tabs .vTabLabel-0-2-482').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            document.querySelectorAll('#category-tabs .vTabLabel-0-2-482').forEach(t => t.classList.remove('vTagSelected-0-2-484'));
+            tab.classList.add('vTagSelected-0-2-484');
+            
+            activeCategory = tab.getAttribute('data-category');
+            document.getElementById('category-title').innerText = `${activeCategory} > All`;
+            renderInventory();
+        });
+    });
+
+    window.addEventListener('DOMContentLoaded', fetchInventoryFromSupabase);
+</script>
+
+</body>
+</html>
