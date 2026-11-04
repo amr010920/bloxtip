@@ -1,59 +1,211 @@
-<p>&lt;!doctype html&gt;</p>
-<p>TOS - Bloxtip</p>
-<!-- Supabase JavaScript Library CDN --><nav class="navbar">
-<div class="nav-container">
-<div class="left-section">
-<div class="hamburger-icon">&nbsp;</div>
-<button class="logo-btn" title="Bloxtip"> <img class="logo-img" src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Bloxtip" /> </button>
-<div class="header-nav"><a class="active" href="./index">Games</a> <a href="./catalog">Catalog</a> <a href="./creation">Create</a> <a href="./download">Download</a></div>
-</div>
-<!-- SEARCH BAR -->
-<div class="search-container">
-<div class="search-wrapper"><input id="search-query" class="search-input" type="text" placeholder="Search games..." /> <button class="search-button" type="button"> </button></div>
-</div>
-<!-- USER INFO, ROBUX, & SETTINGS ICON -->
-<div id="auth-actions" class="right-section">
-<div class="user-info-text"><span id="user-display">Guest</span>: 13+</div>
-<div id="user-robux-badge" class="robux-display" title="Robux Balance"><img class="robux-icon" src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/ROBUX_icon_3F19%2529.webp" alt="Robux" /> <span id="robux-amount">0</span></div>
-<!-- SETTINGS GEAR ICON WITH DROPDOWN -->
-<div class="settings-dropdown-wrapper"><button id="settings-toggle-btn" class="settings-icon-btn" title="Settings"> <img id="settings-gear-img" class="settings-gear-img" src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot%202026-10-27%20111306.png" alt="Settings" /> </button>
-<div id="settings-menu-dropdown" class="settings-menu-dropdown"><a href="./settings">Settings</a> <a href="./help">Help</a> <a href="#">Logout</a></div>
-</div>
-</div>
-</div>
-</nav><!-- CHAT WIDGET -->
-<div id="chat-widget-container" class="chat-widget-container">
-<div class="chat-header-bar">Chat</div>
-<div id="chat-body-drawer" class="chat-body-drawer">
-<div id="chat-friends-list-container" class="chat-friends-list"><!-- Friends list populated dynamically --></div>
-</div>
-</div>
-<!-- DM CONVERSATION WINDOW -->
-<div id="dm-conversation-window" class="dm-conversation-window">
-<div class="dm-conv-header"><span id="dm-target-username">Direct Message</span> <button class="dm-conv-close">&times;</button></div>
-<div id="dm-conv-messages" class="dm-conv-messages"><!-- Conversation history --></div>
-<div class="dm-conv-footer"><input id="dm-conv-input-text" class="dm-conv-input" type="text" placeholder="Send a message" /></div>
-</div>
-<div id="sidebar-overlay" class="sidebar-overlay">&nbsp;</div>
-<div id="sidebar" class="sidebar"><a class="sidebar-item" href="./index">Games</a> <a class="sidebar-item" href="./catalog">Catalog</a> <a class="sidebar-item" href="./creation">Develop / Create</a></div>
-<div id="app-container" class="container">
-<section id="content-display-section" class="games-section">
-<div id="main-grid-container" class="games-grid">
-<p style="grid-column: 1 / -1; text-align: center; color: #666;">Terms of Service</p>
-<p style="grid-column: 1 / -1; text-align: center; color: #666;">promoting sucide or self-harm</p>
-<p style="grid-column: 1 / -1; text-align: center; color: #666;">we take anyone saying kill yourself self-harm urself dawg very seriously as it is not a great thing to say etc etc.</p>
-<p style="grid-column: 1 / -1; text-align: center; color: #666;">&nbsp;</p>
-<p style="grid-column: 1 / -1; text-align: center; color: #666;">no slurs</p>
-<p style="grid-column: 1 / -1; text-align: center; color: #666;">saying slurs such as racist one (n word etc) should not be allowed and will be banned forever</p>
-<p style="grid-column: 1 / -1; text-align: center; color: #666;">&nbsp;</p>
-<p style="grid-column: 1 / -1; text-align: center; color: #666;">nsfw</p>
-<p style="grid-column: 1 / -1; text-align: center; color: #666;">nsfw is for 18+ content while this is a 13+ plaftroom meaning if you share nsfw you will get banned</p>
-</div>
-</section>
-</div>
-<footer class="footer">
-<div class="footer-container">
-<div class="footer-links"><a class="footer-link" href="./about">About Us</a> <a class="footer-link" href="./privacy">Privacy</a> <a class="footer-link" href="./help">Help</a></div>
-<p class="footer-text">Bloxtip is an independent platform and is not affiliated with Roblox Corporation.</p>
-</div>
-</footer>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloxtip - Terms of Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Untitled-removebg-preview.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #e3e3e3;
+      font-family: 'Source Sans Pro', Arial, sans-serif;
+      color: #343434;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .roblox-header {
+      background-color: #0074BD;
+      border-bottom: 2px solid #005a96;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .roblox-logo {
+      height: 26px;
+      width: auto;
+      display: block;
+    }
+
+    .main-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 15px;
+    }
+
+    .error-card {
+      background-color: #ffffff;
+      border: 1px solid #cccccc;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      max-width: 650px;
+      width: 100%;
+      padding: 35px 30px;
+      text-align: center;
+    }
+
+    .builderman-img {
+      max-width: 160px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    .error-title {
+      color: #0074BD;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .error-message {
+      font-size: 16px;
+      color: #555555;
+      line-height: 1.5;
+      margin-bottom: 25px;
+    }
+
+    .error-code {
+      font-size: 13px;
+      color: #888888;
+      margin-bottom: 25px;
+      font-style: italic;
+    }
+
+    .redirect-btn {
+      display: inline-block;
+      background: linear-gradient(to bottom, #02b757 0%, #009647 100%);
+      border: 1px solid #00803c;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      padding: 10px 30px;
+      border-radius: 4px;
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: background 0.15s ease-in-out;
+    }
+
+    .redirect-btn:hover {
+      background: linear-gradient(to bottom, #00cc61 0%, #00ab51 100%);
+    }
+
+    .redirect-btn:active {
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .bloxtip-footer {
+      background-color: #f2f2f2;
+      border-top: 1px solid #dcdcdc;
+      padding: 15px 0;
+      text-align: center;
+      font-size: 13px;
+      color: #777777;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 8px;
+    }
+
+    .footer-links a {
+      color: #0074BD;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<header class="roblox-header">
+    <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Bloxtip" class="roblox-logo">
+    <b></header>
+  </header>
+
+   <p style="grid-column: 1 / -1; text-align: center; color: #000000;">Terms of Service</p>
+   <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+   <p style="grid-column: 1 / -1; text-align: center; color: #000000;">promoting sucide or self harm</p>
+   <p style="grid-column: 1 / -1; text-align: center; color: #000000;">saying someone to self-harm themselve or worse kill themselve will get you banned for atleast 3 days</p>
+      <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+         <p style="grid-column: 1 / -1; text-align: center; color: #000000;">staff</p>
+            <p style="grid-column: 1 / -1; text-align: center; color: #000000;">you must listen to staff not matter what unless they want you to do something in real life</p>
+               <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                  <p style="grid-column: 1 / -1; text-align: center; color: #000000;">slurs</p>
+                     <p style="grid-column: 1 / -1; text-align: center; color: #000000;">saying slurs especially racist ones will get you ip banned for atleast 1 year or more</p>
+                                    <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                   <p style="grid-column: 1 / -1; text-align: center; color: #000000;">nsfw</p>
+                                                                  <p style="grid-column: 1 / -1; text-align: center; color: #000000;">sharing or uploading nsfw will get you banned for 1 month or longer as bloxtip is a 13+ plaftroom</p>
+                                                                                 <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                <p style="grid-column: 1 / -1; text-align: center; color: #000000;">underage</p>
+                                                                                                               <p style="grid-column: 1 / -1; text-align: center; color: #000000;">bloxtip is a 13+ plaftroom and all users are expected to be 13+ if your not 13 or older then you will get banned depending on your age</p>
+                                                                                                                              <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                                                             <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                                                                            <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                                                                                           <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                                                                                                          <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                                                                                                                         <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                                                                                                                                        <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                                                                                                                                                       <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                                                                                                                                                                      <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                                                                                                                                                                                     <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+
+                                                                                                                                                                                                                                                                                                   <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                                                                                                                                                                                                                                  <p style="grid-column: 1 / -1; text-align: center; color: #000000;">ㅤ</p>
+                                                                                                                                                                                                                                                                                                                                 <p style="grid-column: 1 / -1; text-align: center; color: #000000;">that all thxs for reading if you even can</p>
+  <main class="main-container">
+
+                
+
+    </div>
+  </main>
+
+  <footer class="roblox-footer">
+    <div class="footer-links">
+      <a href="../">Home</a>
+      <a href="../games">Games</a>
+      <a href="../my/catalog">Catalog</a>
+      <a href="../help">Help</a>
+    </div>
+    <p>Bloxtip is an independent platform and is not affiliated with Roblox Corporation.</p>
+  </footer>
+
+  <!-- play da music dawg -->
+<button onclick="toggleMusic()">Play/Pause Music</button>
+
+<audio id="myMusic" src="https://google.com&id=1RCJDphtNH8iRP5ReMjItOXJYJ-8jgFkZ"></audio>
+
+<script>
+  const music = document.getElementById('myMusic');
+
+  function toggleMusic() {
+    if (music.paused) {
+      music.play();
+    } else {
+      music.pause();
+    }
+  }
+</script>
+
+
+</body>
+</html>
