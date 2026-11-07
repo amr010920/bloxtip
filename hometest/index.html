@@ -182,73 +182,6 @@
     }
     .chat-body-drawer.active { display: flex; }
     .chat-friends-list { flex: 1; overflow-y: auto; background: white; }
-    .chat-friend-item {
-      display: flex;
-      align-items: center;
-      padding: 8px 12px;
-      gap: 10px;
-      border-bottom: 1px solid #f0f0f0;
-      cursor: pointer;
-    }
-    .chat-friend-item:hover { background: #f5f5f5; }
-    .chat-friend-info { flex: 1; overflow: hidden; }
-    .chat-friend-name { font-size: 13px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .chat-friend-status { font-size: 11px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .dm-conversation-window {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      right: 310px;
-      width: 290px;
-      height: 380px;
-      background: white;
-      border: 1px solid #ccc;
-      border-top-left-radius: 4px;
-      border-top-right-radius: 4px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
-      z-index: 1075;
-      flex-direction: column;
-    }
-    .dm-conversation-window.active { display: flex; }
-    .dm-conv-header {
-      background: var(--theme-chat-blue);
-      color: white;
-      padding: 10px 14px;
-      font-size: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top-left-radius: 4px;
-      border-top-right-radius: 4px;
-    }
-    .dm-conv-close { background: none; border: none; color: white; cursor: pointer; font-size: 16px; }
-    .dm-conv-messages {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      background: #f5f5f5;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .dm-msg-row { display: flex; gap: 8px; align-items: flex-end; max-width: 85%; }
-    .dm-msg-row.sent { align-self: flex-end; flex-direction: row-reverse; }
-    .dm-msg-row.received { align-self: flex-start; }
-    .dm-msg-bubble {
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      line-height: 1.3;
-      word-break: break-word;
-      background: white;
-      color: #333;
-      border: 1px solid #e0e0e0;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-    .dm-msg-row.sent .dm-msg-bubble { background: var(--theme-chat-blue); color: white; border: none; }
-    .dm-conv-footer { padding: 8px; border-top: 1px solid #ddd; display: flex; background: white; }
-    .dm-conv-input { width: 100%; padding: 8px; font-size: 13px; border: none; background: transparent; }
 
     .alert-wrapper { background: #F68802; padding: 8px 15px; text-align: center; color: white; font-size: 14px; z-index: 1030; width: 100vw; margin-left: calc(-50vw + 50%); }
     .alert-link { color: white; text-decoration: underline; cursor: pointer; }
@@ -262,7 +195,7 @@
     .page-header-text h1 { font-size: 28px; font-weight: normal; margin: 0 0 4px; color: #191919; }
     .page-header-text p { color: #666666; font-size: 16px; margin: 0; }
 
-    .friends-section { margin-bottom: 25px; display: none; } /* Hidden by default until friends exist */
+    .friends-section { margin-bottom: 25px; display: none; }
     .friends-section h2 { font-size: 20px; margin: 0 0 12px; color: #333333; font-weight: normal; }
     .friends-grid { display: flex; gap: 12px; flex-wrap: wrap; background: white; padding: 15px; border: 1px solid #cccccc; }
     .friend-card { width: 100px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; }
@@ -272,8 +205,7 @@
     .games-section h2 { font-size: 20px; margin: 0 0 12px; color: #333333; }
     .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
     .empty-msg { grid-column: 1 / -1; text-align: center; padding: 30px 20px; background: #ffffff; border: 1px solid #cccccc; border-radius: 2px; color: #666666; }
-    #section-heading { font-weight: normal; }
-
+    
     .game-card { background: white; border: 1px solid #cccccc; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; padding: 10px; text-align: center; position: relative; }
     .game-card-image-container { width: 100%; height: 100px; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; cursor: pointer; }
     .game-card-img { width: 100%; height: 100%; object-fit: cover; }
@@ -358,7 +290,6 @@
       margin-top: 10px;
     }
     .user-result-btn:hover { background: #f0f0f0; }
-    .user-result-btn.requested { background: #e9e9e9; color: #777; cursor: default; }
 
     .profile-view-section { display: none; background: white; border: 1px solid #ccc; padding: 25px; border-radius: 2px; }
     .profile-view-section.active { display: block; }
@@ -450,17 +381,6 @@
     </div>
   </div>
 
-  <div class="dm-conversation-window" id="dm-conversation-window">
-    <div class="dm-conv-header">
-      <span id="dm-target-username">Direct Message</span>
-      <button class="dm-conv-close" onclick="closeDmConversation()">×</button>
-    </div>
-    <div class="dm-conv-messages" id="dm-conv-messages"></div>
-    <div class="dm-conv-footer">
-      <input type="text" id="dm-conv-input-text" class="dm-conv-input" placeholder="Send a message" onkeypress="if(event.key==='Enter') sendDirectMessage()">
-    </div>
-  </div>
-
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
   <div class="sidebar" id="sidebar">
     <a href="./index" class="sidebar-item">Games</a>
@@ -476,7 +396,6 @@
   <main class="main">
     <div class="container" id="app-container">
       
-      <!-- DEFAULT HOME VIEW -->
       <div id="home-view-wrapper">
         <section class="page-header" id="page-header-section">
           <div class="profile-pic" id="profile-avatar">
@@ -488,7 +407,6 @@
           </div>
         </section>
 
-        <!-- Friends List Section (Disappears completely when no friends) -->
         <section class="friends-section" id="friends-section-container">
           <h2>Friends</h2>
           <div class="friends-grid" id="main-friends-grid"></div>
@@ -515,7 +433,6 @@
         </section>
       </div>
 
-      <!-- USER SEARCH RESULTS VIEW -->
       <section class="user-search-results-section" id="user-search-results-section">
         <div class="user-search-bar-box">
           <input type="text" id="results-page-query-input" placeholder="Search users...">
@@ -525,7 +442,6 @@
         <div class="results-grid" id="user-search-grid"></div>
       </section>
 
-      <!-- INDIVIDUAL USER PROFILE VIEW -->
       <section class="profile-view-section" id="profile-view-section">
         <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
           <img id="profile-view-pfp" src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc;">
@@ -534,7 +450,7 @@
             <p id="profile-view-status" style="color: #777; font-size: 13px;">Offline</p>
           </div>
         </div>
-        <button id="profile-view-friend-btn" class="forum-post-btn" style="width: 200px;" onclick="sendFriendRequestFromProfile()">Add Friend</button>
+        <button id="profile-view-friend-btn" class="forum-post-btn" style="width: 200px;" onclick="handleFriendActionFromProfile()">Add Friend</button>
       </section>
 
     </div>
@@ -559,8 +475,8 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const DEFAULT_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
-    let activeChatTarget = null;
     let viewedProfileUsername = null;
+    let currentRelationshipState = 'none'; // 'none', 'pending_sent', 'pending_received', 'friends'
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
@@ -581,9 +497,7 @@
     });
 
     function toggleChatDrawer() {
-      const container = document.getElementById('chat-widget-container');
       const drawer = document.getElementById('chat-body-drawer');
-      container.classList.toggle('open');
       drawer.classList.toggle('active');
       if (drawer.classList.contains('active')) {
         loadChatFriends();
@@ -663,7 +577,8 @@
         const { data: connections } = await supabaseClient
           .from('connections')
           .select('*')
-          .or(`user1.eq.${currentUser},user2.eq.${currentUser}`);
+          .or(`user1.eq.${currentUser},user2.eq.${currentUser}`)
+          .eq('status', 'accepted');
 
         let friends = [];
         (connections || []).forEach(conn => {
@@ -672,11 +587,11 @@
         });
 
         if (friends.length === 0) {
-          sectionContainer.style.display = 'none'; // Completely hides the section when no friends exist
+          sectionContainer.style.display = 'none';
           return;
         }
 
-        sectionContainer.style.display = 'block'; // Shows section if friends exist
+        sectionContainer.style.display = 'block';
         gridContainer.innerHTML = friends.map(friend => `
           <div class="friend-card" onclick="openProfile('${friend}')">
             <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" class="friend-avatar" alt="${friend}">
@@ -747,10 +662,25 @@
           .or(`user1.eq.${currentUser},user2.eq.${currentUser}`);
 
         container.innerHTML = accounts.map(acc => {
-          let isConnected = false;
+          if (acc.username === currentUser) return '';
+          
+          let btnText = 'Add Friend';
+          let btnAction = `sendFriendRequestToUser('${acc.username}')`;
+          
           (connections || []).forEach(c => {
             if ((c.user1 === currentUser && c.user2 === acc.username) || (c.user2 === currentUser && c.user1 === acc.username)) {
-              isConnected = true;
+              if (c.status === 'accepted') {
+                btnText = 'Friends';
+                btnAction = `openProfile('${acc.username}')`;
+              } else if (c.status === 'pending') {
+                if (c.user1 === currentUser) {
+                  btnText = 'Pending Request';
+                  btnAction = '';
+                } else {
+                  btnText = 'Accept Request';
+                  btnAction = `acceptFriendRequestFromUser('${acc.username}')`;
+                }
+              }
             }
           });
 
@@ -763,9 +693,7 @@
                   <p>Online</p>
                 </div>
               </div>
-              <button class="user-result-btn ${isConnected ? 'requested' : ''}" onclick="handleFriendAction('${acc.username}', this)">
-                ${isConnected ? 'Request Sent' : 'Add Friend'}
-              </button>
+              <button class="user-result-btn" onclick="${btnAction}">${btnText}</button>
             </div>
           `;
         }).join('');
@@ -774,44 +702,63 @@
       }
     }
 
-    async function handleFriendAction(targetUser, btnElement) {
-      const currentUser = localStorage.getItem('bloxtip_username');
-      if (!currentUser || currentUser === 'Guest') {
-        alert('Please log in to add friends.');
-        return;
-      }
-      if (currentUser === targetUser) return;
-
-      try {
-        const { error } = await supabaseClient
-          .from('connections')
-          .insert([{ user1: currentUser, user2: targetUser }]);
-
-        if (!error) {
-          btnElement.textContent = 'Request Sent';
-          btnElement.classList.add('requested');
-        }
-      } catch (e) {}
-    }
-
     async function loadUserProfileData(username) {
       viewedProfileUsername = username;
       document.getElementById('profile-view-username').textContent = username;
-      try {
-        const { data } = await supabaseClient
-          .from('accounts')
-          .select('*')
-          .eq('username', username)
-          .single();
+      const currentUser = localStorage.getItem('bloxtip_username') || 'Guest';
+      const btn = document.getElementById('profile-view-friend-btn');
 
-        if (data) {
-          document.getElementById('profile-view-status').textContent = 'Online';
+      if (currentUser === username) {
+        btn.style.display = 'none';
+        return;
+      }
+
+      try {
+        const { data: connections } = await supabaseClient
+          .from('connections')
+          .select('*')
+          .or(`and(user1.eq.${currentUser},user2.eq.${username}),and(user1.eq.${username},user2.eq.${currentUser})`);
+
+        if (connections && connections.length > 0) {
+          const conn = connections[0];
+          if (conn.status === 'accepted') {
+            currentRelationshipState = 'friends';
+            btn.textContent = 'Friends';
+            btn.style.background = '#02b757';
+          } else if (conn.status === 'pending') {
+            if (conn.user1 === currentUser) {
+              currentRelationshipState = 'pending_sent';
+              btn.textContent = 'Pending Request';
+              btn.style.background = '#e9e9e9';
+            } else {
+              currentRelationshipState = 'pending_received';
+              btn.textContent = 'Accept Request';
+              btn.style.background = '#02b757';
+            }
+          }
+        } else {
+          currentRelationshipState = 'none';
+          btn.textContent = 'Add Friend';
+          btn.style.background = '#02B757';
         }
       } catch (e) {}
     }
 
-    async function sendFriendRequestFromProfile() {
-      if (!viewedProfileUsername) return;
+    async function handleFriendActionFromProfile() {
+      const currentUser = localStorage.getItem('bloxtip_username');
+      if (!currentUser || currentUser === 'Guest') {
+        alert('Please log in first.');
+        return;
+      }
+
+      if (currentRelationshipState === 'none') {
+        await sendFriendRequestToUser(viewedProfileUsername);
+      } else if (currentRelationshipState === 'pending_received') {
+        await acceptFriendRequestFromUser(viewedProfileUsername);
+      }
+    }
+
+    async function sendFriendRequestToUser(targetUser) {
       const currentUser = localStorage.getItem('bloxtip_username');
       if (!currentUser || currentUser === 'Guest') {
         alert('Please log in first.');
@@ -821,15 +768,70 @@
       try {
         const { error } = await supabaseClient
           .from('connections')
-          .insert([{ user1: currentUser, user2: viewedProfileUsername }]);
+          .insert([{ user1: currentUser, user2: targetUser, status: 'pending' }]);
 
         if (!error) {
-          const btn = document.getElementById('profile-view-friend-btn');
-          btn.textContent = 'Request Sent';
-          btn.style.background = '#e9e9e9';
-          btn.style.color = '#777';
+          alert('Friend request sent!');
+          window.location.reload();
         }
-      } catch (e) {}
+      } catch (e) {
+        alert('Failed to send request.');
+      }
+    }
+
+    async function acceptFriendRequestFromUser(targetUser) {
+      const currentUser = localStorage.getItem('bloxtip_username');
+      if (!currentUser) return;
+
+      try {
+        const { error } = await supabaseClient
+          .from('connections')
+          .update({ status: 'accepted' })
+          .or(`and(user1.eq.${targetUser},user2.eq.${currentUser}),and(user1.eq.${currentUser},user2.eq.${targetUser})`);
+
+        if (!error) {
+          alert('Friend request accepted!');
+          window.location.reload();
+        }
+      } catch (e) {
+        alert('Failed to accept request.');
+      }
+    }
+
+    async function loadChatFriends() {
+      const container = document.getElementById('chat-friends-list-container');
+      const currentUser = localStorage.getItem('bloxtip_username') || 'Guest';
+
+      try {
+        const { data: connections } = await supabaseClient
+          .from('connections')
+          .select('*')
+          .or(`user1.eq.${currentUser},user2.eq.${currentUser}`)
+          .eq('status', 'accepted');
+
+        let friends = [];
+        (connections || []).forEach(conn => {
+          if (conn.user1 === currentUser) friends.push(conn.user2);
+          else if (conn.user2 === currentUser) friends.push(conn.user1);
+        });
+
+        if (friends.length === 0) {
+          container.innerHTML = `<div style="padding:15px; text-align:center; color:#777; font-size:12px;">No friends connected.</div>`;
+          return;
+        }
+
+        container.innerHTML = friends.map(friend => `
+          <div class="chat-friend-item" onclick="openProfile('${friend}')">
+            <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" class="friend-avatar" alt="${friend}" style="width:34px;height:34px;">
+            <div class="chat-friend-info">
+              <div class="chat-friend-name">${friend}</div>
+              <div class="chat-friend-status">Online</div>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        container.innerHTML = `<div style="padding:15px; text-align:center; color:#777; font-size:12px;">Error loading chat.</div>`;
+      }
     }
 
     async function loadForumPosts() {
@@ -874,48 +876,6 @@
           loadForumPosts();
         }
       } catch(e) {}
-    }
-
-    async function loadChatFriends() {
-      const container = document.getElementById('chat-friends-list-container');
-      const currentUser = localStorage.getItem('bloxtip_username') || 'Guest';
-
-      try {
-        const { data: connections } = await supabaseClient
-          .from('connections')
-          .select('*')
-          .or(`user1.eq.${currentUser},user2.eq.${currentUser}`);
-
-        const { data: messages } = await supabaseClient
-          .from('messages')
-          .select('*')
-          .or(`from.eq.${currentUser},to.eq.${currentUser}`);
-
-        let friends = [];
-        (connections || []).forEach(conn => {
-          if (conn.user1 === currentUser) friends.push(conn.user2);
-          else if (conn.user2 === currentUser) friends.push(conn.user1);
-        });
-
-        if (friends.length === 0) {
-          container.innerHTML = `<div style="padding:15px; text-align:center; color:#777; font-size:12px;">No friends connected.</div>`;
-          return;
-        }
-
-        container.innerHTML = friends.map(friend => {
-          const friendMsgs = (messages || []).filter(m => (m.from === friend && m.to === currentUser) || (m.from === currentUser && m.to === friend));
-          const lastMsg = friendMsgs.length ? friendMsgs[friendMsgs.length - 1] : { text: 'No messages', time: '' };
-
-          return `
-            <div class="chat-friend-item" onclick="openDmConversation('${friend}')">
-              <div class="chat-friend-info">
-                <div class="chat-friend-name">${friend}</div>
-                <div class="chat-friend-status">${lastMsg.text}</div>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } catch (e) {}
     }
 
     function logout() {
