@@ -256,7 +256,6 @@
     .main { flex: 1; width: 100%; display: flex; flex-direction: column; padding-top: 20px; padding-bottom: 40px; }
     .container { max-width: 1100px; margin: 0 auto; width: 100%; padding: 0 15px; flex: 1; }
 
-    /* Home View Header */
     .page-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; background: white; padding: 20px; border-radius: 2px; border: 1px solid #cccccc; }
     .profile-pic { width: 150px; height: 150px; border-radius: 100%; background: #f0f0f0; border: 1px solid #dddddd; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
@@ -297,7 +296,7 @@
     .user-result-btn { width: 100%; background: #f8f8f8; border: 1px solid #ccc; color: #333; padding: 8px 0; font-size: 13px; text-align: center; cursor: pointer; border-radius: 2px; font-weight: 500; margin-top: 10px; }
     .user-result-btn:hover { background: #f0f0f0; }
 
-    /* EXACT BLOXIA/ROBLOX PROFILE VIEW STYLES */
+    /* PROFILE VIEW STYLES */
     .profile-view-section { display: none; }
     .profile-view-section.active { display: block; }
 
@@ -618,7 +617,7 @@
         <div class="results-grid" id="user-search-grid"></div>
       </section>
 
-      <!-- INDIVIDUAL USER PROFILE VIEW (EXACT SCREENSHOT LAYOUT) -->
+      <!-- INDIVIDUAL USER PROFILE VIEW -->
       <section class="profile-view-section" id="profile-view-section">
         <div class="profile-top-card">
           <div class="profile-top-left">
@@ -633,18 +632,18 @@
                 </div>
                 <div class="profile-stat-col">
                   <span class="profile-stat-label">Followers</span>
-                  <span class="profile-stat-val">7</span>
+                  <span class="profile-stat-val" id="profile-followers-count">0</span>
                 </div>
                 <div class="profile-stat-col">
                   <span class="profile-stat-label">Following</span>
-                  <span class="profile-stat-val">4</span>
+                  <span class="profile-stat-val" id="profile-following-count">0</span>
                 </div>
               </div>
             </div>
           </div>
           <div class="profile-top-right">
             <div class="profile-action-buttons" id="profile-action-buttons-container">
-              <!-- Dynamically populated buttons: Chat, Message, Add/Accept/Unfriend -->
+              <!-- Dynamically populated buttons -->
             </div>
           </div>
         </div>
@@ -696,7 +695,7 @@
     const DEFAULT_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
     let viewedProfileUsername = null;
     let activeChatTarget = null;
-    let currentRelationshipState = 'none'; // 'none', 'pending_sent', 'pending_received', 'friends'
+    let currentRelationshipState = 'none';
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
@@ -933,16 +932,22 @@
 
       if (currentUser === username) {
         actionContainer.innerHTML = `<button class="profile-btn" onclick="window.location.href='./settings'">Edit Profile</button>`;
-        return;
       }
 
       try {
-        const { data: connections } = await supabaseClient
-          .from('connections')
+        // Fetch account data to get real followers and following counts
+        const { data: accountData } = await supabaseClient
+          .from('accounts')
           .select('*')
-          .or(`and(user1.eq.${currentUser},user2.eq.${username}),and(user1.eq.${username},user2.eq.${currentUser})`);
+          .eq('username', username)
+          .single();
 
-        // Load friends count for this profile
+        if (accountData) {
+          document.getElementById('profile-followers-count').textContent = accountData.followers || 0;
+          document.getElementById('profile-following-count').textContent = accountData.following || 0;
+        }
+
+        // Load real friend count from connections
         const { data: profileConns } = await supabaseClient
           .from('connections')
           .select('*')
@@ -951,32 +956,41 @@
         
         document.getElementById('profile-friends-count').textContent = profileConns ? profileConns.length : 0;
 
-        let btnHtml = '';
-        if (connections && connections.length > 0) {
-          const conn = connections[0];
-          if (conn.status === 'accepted') {
-            currentRelationshipState = 'friends';
-            btnHtml = `
-              <button class="profile-btn" onclick="openDmWindow('${username}')">Chat</button>
-              <button class="profile-btn" onclick="openDmWindow('${username}')">Message</button>
-              <button class="profile-btn" onclick="removeFriend('${username}')">Unfriend</button>
-            `;
-          } else if (conn.status === 'pending') {
-            if (conn.user1 === currentUser) {
-              currentRelationshipState = 'pending_sent';
-              btnHtml = `<button class="profile-btn" style="background: #e9e9e9; cursor: default;">Pending Request</button>`;
-            } else {
-              currentRelationshipState = 'pending_received';
-              btnHtml = `<button class="profile-btn primary" onclick="acceptFriendRequestFromUser('${username}')">Accept Request</button>`;
+        if (currentUser !== username) {
+          const { data: connections } = await supabaseClient
+            .from('connections')
+            .select('*')
+            .or(`and(user1.eq.${currentUser},user2.eq.${username}),and(user1.eq.${username},user2.eq.${currentUser})`);
+
+          let btnHtml = '';
+          if (connections && connections.length > 0) {
+            const conn = connections[0];
+            if (conn.status === 'accepted') {
+              currentRelationshipState = 'friends';
+              btnHtml = `
+                <button class="profile-btn" onclick="openDmWindow('${username}')">Chat</button>
+                <button class="profile-btn" onclick="openDmWindow('${username}')">Message</button>
+                <button class="profile-btn" onclick="removeFriend('${username}')">Unfriend</button>
+              `;
+            } else if (conn.status === 'pending') {
+              if (conn.user1 === currentUser) {
+                currentRelationshipState = 'pending_sent';
+                btnHtml = `<button class="profile-btn" style="background: #e9e9e9; cursor: default;">Pending Request</button>`;
+              } else {
+                currentRelationshipState = 'pending_received';
+                btnHtml = `<button class="profile-btn primary" onclick="acceptFriendRequestFromUser('${username}')">Accept Request</button>`;
+              }
             }
+          } else {
+            currentRelationshipState = 'none';
+            btnHtml = `<button class="profile-btn primary" onclick="sendFriendRequestToUser('${username}')">Add Friend</button>`;
           }
-        } else {
-          currentRelationshipState = 'none';
-          btnHtml = `<button class="profile-btn primary" onclick="sendFriendRequestToUser('${username}')">Add Friend</button>`;
+          actionContainer.innerHTML = btnHtml;
         }
-        actionContainer.innerHTML = btnHtml;
       } catch (e) {
-        actionContainer.innerHTML = `<button class="profile-btn primary" onclick="sendFriendRequestToUser('${username}')">Add Friend</button>`;
+        if (currentUser !== username) {
+          actionContainer.innerHTML = `<button class="profile-btn primary" onclick="sendFriendRequestToUser('${username}')">Add Friend</button>`;
+        }
       }
     }
 
