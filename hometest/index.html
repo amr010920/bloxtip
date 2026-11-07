@@ -182,6 +182,73 @@
     }
     .chat-body-drawer.active { display: flex; }
     .chat-friends-list { flex: 1; overflow-y: auto; background: white; }
+    .chat-friend-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      gap: 10px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+    }
+    .chat-friend-item:hover { background: #f5f5f5; }
+    .chat-friend-info { flex: 1; overflow: hidden; }
+    .chat-friend-name { font-size: 13px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-friend-status { font-size: 11px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .dm-conversation-window {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      right: 310px;
+      width: 290px;
+      height: 380px;
+      background: white;
+      border: 1px solid #ccc;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
+      z-index: 1075;
+      flex-direction: column;
+    }
+    .dm-conversation-window.active { display: flex; }
+    .dm-conv-header {
+      background: var(--theme-chat-blue);
+      color: white;
+      padding: 10px 14px;
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+    }
+    .dm-conv-close { background: none; border: none; color: white; cursor: pointer; font-size: 16px; }
+    .dm-conv-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .dm-msg-row { display: flex; gap: 8px; align-items: flex-end; max-width: 85%; }
+    .dm-msg-row.sent { align-self: flex-end; flex-direction: row-reverse; }
+    .dm-msg-row.received { align-self: flex-start; }
+    .dm-msg-bubble {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.3;
+      word-break: break-word;
+      background: white;
+      color: #333;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .dm-msg-row.sent .dm-msg-bubble { background: var(--theme-chat-blue); color: white; border: none; }
+    .dm-conv-footer { padding: 8px; border-top: 1px solid #ddd; display: flex; background: white; }
+    .dm-conv-input { width: 100%; padding: 8px; font-size: 13px; border: none; background: transparent; outline: none; }
 
     .alert-wrapper { background: #F68802; padding: 8px 15px; text-align: center; color: white; font-size: 14px; z-index: 1030; width: 100vw; margin-left: calc(-50vw + 50%); }
     .alert-link { color: white; text-decoration: underline; cursor: pointer; }
@@ -189,6 +256,7 @@
     .main { flex: 1; width: 100%; display: flex; flex-direction: column; padding-top: 20px; padding-bottom: 40px; }
     .container { max-width: 1100px; margin: 0 auto; width: 100%; padding: 0 15px; flex: 1; }
 
+    /* Home View Header */
     .page-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; background: white; padding: 20px; border-radius: 2px; border: 1px solid #cccccc; }
     .profile-pic { width: 150px; height: 150px; border-radius: 100%; background: #f0f0f0; border: 1px solid #dddddd; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
@@ -205,7 +273,7 @@
     .games-section h2 { font-size: 20px; margin: 0 0 12px; color: #333333; }
     .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
     .empty-msg { grid-column: 1 / -1; text-align: center; padding: 30px 20px; background: #ffffff; border: 1px solid #cccccc; border-radius: 2px; color: #666666; }
-    
+
     .game-card { background: white; border: 1px solid #cccccc; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; padding: 10px; text-align: center; position: relative; }
     .game-card-image-container { width: 100%; height: 100px; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; cursor: pointer; }
     .game-card-img { width: 100%; height: 100%; object-fit: cover; }
@@ -216,83 +284,178 @@
     .user-search-results-section { display: none; }
     .user-search-results-section.active { display: block; }
     .user-search-bar-box {
-      background: white;
-      border: 1px solid #ccc;
-      padding: 15px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      background: white; border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
     }
-    .user-search-bar-box input {
-      flex: 1;
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      border-radius: 2px;
-    }
-    .user-search-bar-box button {
-      background: #f0f0f0;
-      border: 1px solid #ccc;
-      padding: 8px 16px;
-      cursor: pointer;
-      border-radius: 2px;
-    }
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 15px;
-    }
-    .user-result-card {
-      background: white;
-      border: 1px solid #ccc;
-      padding: 15px;
-      border-radius: 2px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 170px;
-    }
-    .user-result-top {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      cursor: pointer;
-    }
-    .user-result-avatar {
-      width: 55px;
-      height: 55px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 1px solid #ccc;
-    }
-    .user-result-info h3 {
-      font-size: 15px;
-      color: #191919;
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-    .user-result-info p {
-      font-size: 12px;
-      color: #777;
-    }
-    .user-result-btn {
-      width: 100%;
-      background: #f8f8f8;
-      border: 1px solid #ccc;
-      color: #333;
-      padding: 8px 0;
-      font-size: 13px;
-      text-align: center;
-      cursor: pointer;
-      border-radius: 2px;
-      font-weight: 500;
-      margin-top: 10px;
-    }
+    .user-search-bar-box input { flex: 1; padding: 8px 12px; border: 1px solid #ccc; font-size: 14px; border-radius: 2px; }
+    .user-search-bar-box button { background: #f0f0f0; border: 1px solid #ccc; padding: 8px 16px; cursor: pointer; border-radius: 2px; }
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+    .user-result-card { background: white; border: 1px solid #ccc; padding: 15px; border-radius: 2px; display: flex; flex-direction: column; justify-content: space-between; height: 170px; }
+    .user-result-top { display: flex; gap: 12px; align-items: center; cursor: pointer; }
+    .user-result-avatar { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc; }
+    .user-result-info h3 { font-size: 15px; color: #191919; font-weight: 600; margin-bottom: 2px; }
+    .user-result-info p { font-size: 12px; color: #777; }
+    .user-result-btn { width: 100%; background: #f8f8f8; border: 1px solid #ccc; color: #333; padding: 8px 0; font-size: 13px; text-align: center; cursor: pointer; border-radius: 2px; font-weight: 500; margin-top: 10px; }
     .user-result-btn:hover { background: #f0f0f0; }
 
-    .profile-view-section { display: none; background: white; border: 1px solid #ccc; padding: 25px; border-radius: 2px; }
+    /* EXACT BLOXIA/ROBLOX PROFILE VIEW STYLES */
+    .profile-view-section { display: none; }
     .profile-view-section.active { display: block; }
+
+    .profile-top-card {
+      background: white;
+      border: 1px solid #cccccc;
+      border-radius: 2px;
+      padding: 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .profile-top-left {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .profile-big-avatar {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #dddddd;
+      background: #f0f0f0;
+    }
+    .profile-user-details h1 {
+      font-size: 26px;
+      font-weight: 400;
+      color: #191919;
+      margin: 0 0 4px;
+    }
+    .profile-user-bio {
+      font-size: 14px;
+      color: #777777;
+      margin-bottom: 20px;
+    }
+    .profile-stats-row {
+      display: flex;
+      gap: 40px;
+    }
+    .profile-stat-col {
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .profile-stat-label {
+      font-size: 13px;
+      color: #777777;
+      margin-bottom: 2px;
+    }
+    .profile-stat-val {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0074BD;
+    }
+
+    .profile-top-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+    .profile-action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .profile-btn {
+      background: white;
+      border: 1px solid #cccccc;
+      color: #333333;
+      padding: 6px 14px;
+      font-size: 13px;
+      border-radius: 2px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .profile-btn:hover { background: #f5f5f5; }
+    .profile-btn.primary { background: #02b757; color: white; border-color: #018a41; }
+    .profile-btn.primary:hover { background: #00cc61; }
+
+    .profile-tabs-bar {
+      background: white;
+      border: 1px solid #cccccc;
+      border-radius: 2px;
+      display: flex;
+      margin-bottom: 15px;
+      padding: 0 20px;
+    }
+    .profile-tab {
+      padding: 12px 24px;
+      font-size: 14px;
+      color: #555555;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .profile-tab.active {
+      color: #0074BD;
+      border-bottom-color: #0074BD;
+    }
+
+    .profile-section-box {
+      background: white;
+      border: 1px solid #cccccc;
+      border-radius: 2px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .profile-section-box h2 {
+      font-size: 18px;
+      font-weight: 400;
+      color: #333333;
+      margin-bottom: 15px;
+    }
+    .about-bio-box {
+      border: 1px solid #e0e0e0;
+      padding: 15px;
+      font-size: 14px;
+      color: #333333;
+      background: #fafafa;
+      border-radius: 2px;
+      min-height: 80px;
+      margin-bottom: 10px;
+    }
+    .report-abuse-link {
+      font-size: 12px;
+      color: #d9534f;
+      text-align: right;
+      display: block;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .report-abuse-link:hover { text-decoration: underline; }
+
+    .wearing-grid {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .wearing-item {
+      width: 90px;
+      height: 90px;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .wearing-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
     .forum-section { margin-top: 35px; }
     .forum-section h2 { font-size: 20px; margin: 0 0 12px; color: #333333; }
@@ -381,6 +544,17 @@
     </div>
   </div>
 
+  <div class="dm-conversation-window" id="dm-conversation-window">
+    <div class="dm-conv-header">
+      <span id="dm-target-username">Direct Message</span>
+      <button class="dm-conv-close" onclick="closeDmConversation()">×</button>
+    </div>
+    <div class="dm-conv-messages" id="dm-conv-messages"></div>
+    <div class="dm-conv-footer">
+      <input type="text" id="dm-conv-input-text" class="dm-conv-input" placeholder="Send a message" onkeypress="if(event.key==='Enter') sendDirectMessage()">
+    </div>
+  </div>
+
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
   <div class="sidebar" id="sidebar">
     <a href="./index" class="sidebar-item">Games</a>
@@ -396,6 +570,7 @@
   <main class="main">
     <div class="container" id="app-container">
       
+      <!-- DEFAULT HOME VIEW -->
       <div id="home-view-wrapper">
         <section class="page-header" id="page-header-section">
           <div class="profile-pic" id="profile-avatar">
@@ -433,6 +608,7 @@
         </section>
       </div>
 
+      <!-- USER SEARCH RESULTS VIEW -->
       <section class="user-search-results-section" id="user-search-results-section">
         <div class="user-search-bar-box">
           <input type="text" id="results-page-query-input" placeholder="Search users...">
@@ -442,15 +618,58 @@
         <div class="results-grid" id="user-search-grid"></div>
       </section>
 
+      <!-- INDIVIDUAL USER PROFILE VIEW (EXACT SCREENSHOT LAYOUT) -->
       <section class="profile-view-section" id="profile-view-section">
-        <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
-          <img id="profile-view-pfp" src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 1px solid #ccc;">
-          <div>
-            <h1 id="profile-view-username" style="font-size: 24px; font-weight: normal; margin-bottom: 5px;">Username</h1>
-            <p id="profile-view-status" style="color: #777; font-size: 13px;">Offline</p>
+        <div class="profile-top-card">
+          <div class="profile-top-left">
+            <img id="profile-view-pfp" src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" class="profile-big-avatar" alt="Avatar">
+            <div class="profile-user-details">
+              <h1 id="profile-view-username">Username</h1>
+              <p class="profile-user-bio" id="profile-user-bio-quote">"hello"</p>
+              <div class="profile-stats-row">
+                <div class="profile-stat-col">
+                  <span class="profile-stat-label">Friends</span>
+                  <span class="profile-stat-val" id="profile-friends-count">0</span>
+                </div>
+                <div class="profile-stat-col">
+                  <span class="profile-stat-label">Followers</span>
+                  <span class="profile-stat-val">7</span>
+                </div>
+                <div class="profile-stat-col">
+                  <span class="profile-stat-label">Following</span>
+                  <span class="profile-stat-val">4</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="profile-top-right">
+            <div class="profile-action-buttons" id="profile-action-buttons-container">
+              <!-- Dynamically populated buttons: Chat, Message, Add/Accept/Unfriend -->
+            </div>
           </div>
         </div>
-        <button id="profile-view-friend-btn" class="forum-post-btn" style="width: 200px;" onclick="handleFriendActionFromProfile()">Add Friend</button>
+
+        <div class="profile-tabs-bar">
+          <a href="#" class="profile-tab active">About</a>
+          <a href="#" class="profile-tab" onclick="alert('Creations tab coming soon!')">Creations</a>
+        </div>
+
+        <div class="profile-section-box">
+          <h2>About</h2>
+          <div class="about-bio-box" id="profile-about-bio-text">
+            I am a member of Bloxtip.
+          </div>
+          <a class="report-abuse-link" onclick="alert('Report submitted.')">Report Abuse</a>
+        </div>
+
+        <div class="profile-section-box">
+          <h2>Currently Wearing</h2>
+          <div class="wearing-grid">
+            <div class="wearing-item"><img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png" alt="Item"></div>
+            <div class="wearing-item"><img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png" alt="Item"></div>
+            <div class="wearing-item"><img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png" alt="Item"></div>
+          </div>
+        </div>
       </section>
 
     </div>
@@ -476,6 +695,7 @@
 
     const DEFAULT_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
     let viewedProfileUsername = null;
+    let activeChatTarget = null;
     let currentRelationshipState = 'none'; // 'none', 'pending_sent', 'pending_received', 'friends'
 
     function toggleSidebar() {
@@ -705,11 +925,14 @@
     async function loadUserProfileData(username) {
       viewedProfileUsername = username;
       document.getElementById('profile-view-username').textContent = username;
+      document.getElementById('profile-user-bio-quote').textContent = `"${username}'s profile"`;
+      document.getElementById('profile-about-bio-text').textContent = `I am ${username}, welcome to my Bloxtip profile.`;
+
       const currentUser = localStorage.getItem('bloxtip_username') || 'Guest';
-      const btn = document.getElementById('profile-view-friend-btn');
+      const actionContainer = document.getElementById('profile-action-buttons-container');
 
       if (currentUser === username) {
-        btn.style.display = 'none';
+        actionContainer.innerHTML = `<button class="profile-btn" onclick="window.location.href='./settings'">Edit Profile</button>`;
         return;
       }
 
@@ -719,42 +942,41 @@
           .select('*')
           .or(`and(user1.eq.${currentUser},user2.eq.${username}),and(user1.eq.${username},user2.eq.${currentUser})`);
 
+        // Load friends count for this profile
+        const { data: profileConns } = await supabaseClient
+          .from('connections')
+          .select('*')
+          .or(`user1.eq.${username},user2.eq.${username}`)
+          .eq('status', 'accepted');
+        
+        document.getElementById('profile-friends-count').textContent = profileConns ? profileConns.length : 0;
+
+        let btnHtml = '';
         if (connections && connections.length > 0) {
           const conn = connections[0];
           if (conn.status === 'accepted') {
             currentRelationshipState = 'friends';
-            btn.textContent = 'Friends';
-            btn.style.background = '#02b757';
+            btnHtml = `
+              <button class="profile-btn" onclick="openDmWindow('${username}')">Chat</button>
+              <button class="profile-btn" onclick="openDmWindow('${username}')">Message</button>
+              <button class="profile-btn" onclick="removeFriend('${username}')">Unfriend</button>
+            `;
           } else if (conn.status === 'pending') {
             if (conn.user1 === currentUser) {
               currentRelationshipState = 'pending_sent';
-              btn.textContent = 'Pending Request';
-              btn.style.background = '#e9e9e9';
+              btnHtml = `<button class="profile-btn" style="background: #e9e9e9; cursor: default;">Pending Request</button>`;
             } else {
               currentRelationshipState = 'pending_received';
-              btn.textContent = 'Accept Request';
-              btn.style.background = '#02b757';
+              btnHtml = `<button class="profile-btn primary" onclick="acceptFriendRequestFromUser('${username}')">Accept Request</button>`;
             }
           }
         } else {
           currentRelationshipState = 'none';
-          btn.textContent = 'Add Friend';
-          btn.style.background = '#02B757';
+          btnHtml = `<button class="profile-btn primary" onclick="sendFriendRequestToUser('${username}')">Add Friend</button>`;
         }
-      } catch (e) {}
-    }
-
-    async function handleFriendActionFromProfile() {
-      const currentUser = localStorage.getItem('bloxtip_username');
-      if (!currentUser || currentUser === 'Guest') {
-        alert('Please log in first.');
-        return;
-      }
-
-      if (currentRelationshipState === 'none') {
-        await sendFriendRequestToUser(viewedProfileUsername);
-      } else if (currentRelationshipState === 'pending_received') {
-        await acceptFriendRequestFromUser(viewedProfileUsername);
+        actionContainer.innerHTML = btnHtml;
+      } catch (e) {
+        actionContainer.innerHTML = `<button class="profile-btn primary" onclick="sendFriendRequestToUser('${username}')">Add Friend</button>`;
       }
     }
 
@@ -796,6 +1018,35 @@
       } catch (e) {
         alert('Failed to accept request.');
       }
+    }
+
+    async function removeFriend(targetUser) {
+      const currentUser = localStorage.getItem('bloxtip_username');
+      if (!currentUser) return;
+      if (!confirm(`Are you sure you want to unfriend ${targetUser}?`)) return;
+
+      try {
+        const { error } = await supabaseClient
+          .from('connections')
+          .delete()
+          .or(`and(user1.eq.${currentUser},user2.eq.${targetUser}),and(user1.eq.${targetUser},user2.eq.${currentUser})`);
+
+        if (!error) {
+          alert('Removed friend.');
+          window.location.reload();
+        }
+      } catch (e) {}
+    }
+
+    function openDmWindow(username) {
+      activeChatTarget = username;
+      document.getElementById('dm-target-username').textContent = username;
+      document.getElementById('dm-conversation-window').classList.add('active');
+    }
+
+    function closeDmConversation() {
+      document.getElementById('dm-conversation-window').classList.remove('active');
+      activeChatTarget = null;
     }
 
     async function loadChatFriends() {
