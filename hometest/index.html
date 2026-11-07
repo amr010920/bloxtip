@@ -65,7 +65,7 @@
     .logo-img { height: 26px; width: auto; object-fit: contain; }
 
     .header-nav { display: flex; gap: 16px; margin-left: 5px; }
-    .header-nav a { color: white; text-decoration: none; font-size: 14px; font-weight: bold; padding: 4px 2px; }
+    .header-nav a { color: white; text-decoration: none; font-size: 14px;  padding: 4px 2px; }
     .header-nav a:hover { opacity: 0.85; }
 
     .search-container { 
@@ -105,10 +105,10 @@
     }
     .search-icon-svg { width: 15px; height: 15px; fill: #191919; }
 
-    .right-section { display: flex; align-items: center; gap: 12px; flex-shrink: 0; color: white; font-size: 13px; font-weight: bold; position: relative; }
+    .right-section { display: flex; align-items: center; gap: 12px; flex-shrink: 0; color: white; font-size: 13px; position: relative; }
     .user-info-text { display: flex; align-items: center; gap: 4px; color: white; }
 
-    .robux-display { display: inline-flex; align-items: center; gap: 5px; font-weight: bold; font-size: 13px; color: white; }
+    .robux-display { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: white; }
     .robux-icon { width: 18px; height: 18px; object-fit: contain; vertical-align: middle; }
 
     .settings-dropdown-wrapper { position: relative; display: flex; align-items: center; }
@@ -149,7 +149,7 @@
     .sidebar-overlay.active { display: block; }
     .sidebar { position: fixed; top: 40px; left: -220px; width: 220px; height: calc(100vh - 40px); background: #ffffff; border-right: 1px solid #cccccc; z-index: 1045; transition: left 0.2s ease; padding: 10px 0; }
     .sidebar.active { left: 0; }
-    .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #333333; text-decoration: none; font-size: 14px; font-weight: bold; }
+    .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #333333; text-decoration: none; font-size: 14px; }
     .sidebar-item:hover { background: #eef5fc; color: #0074BD; }
 
 
@@ -166,7 +166,6 @@
       color: white;
       padding: 10px 14px;
       font-size: 15px;
-      font-weight: bold;
       border-top-left-radius: 4px;
       border-top-right-radius: 4px;
       display: flex;
@@ -266,7 +265,6 @@
     }
     .chat-friend-name {
       font-size: 13px;
-      font-weight: bold;
       color: #191919;
       white-space: nowrap;
       overflow: hidden;
@@ -308,7 +306,6 @@
       color: white;
       padding: 10px 14px;
       font-size: 15px;
-      font-weight: bold;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -319,7 +316,6 @@
       background: none;
       border: none;
       color: white;
-      font-weight: bold;
       cursor: pointer;
       font-size: 16px;
     }
@@ -376,7 +372,7 @@
       background: transparent;
     }
 
-    .alert-wrapper { background: #F68802; padding: 8px 15px; text-align: center; color: white; font-size: 14px; font-weight: bold; z-index: 1030; width: 100vw; margin-left: calc(-50vw + 50%); }
+    .alert-wrapper { background: #F68802; padding: 8px 15px; text-align: center; color: white; font-size: 14px; z-index: 1030; width: 100vw; margin-left: calc(-50vw + 50%); }
     .alert-link { color: white; text-decoration: underline; cursor: pointer; }
 
     .main { flex: 1; width: 100%; display: flex; flex-direction: column; padding-top: 20px; padding-bottom: 40px; }
@@ -389,30 +385,41 @@
     .page-header-text h1 { font-size: 28px; font-weight: normal; margin: 0 0 4px; color: #191919; }
     .page-header-text p { color: #666666; font-size: 16px; margin: 0; }
 
-    .games-section h2 { font-size: 20px; font-weight: bold; margin: 0 0 12px; color: #333333; }
+    .games-section h2 { font-size: 20px; margin: 0 0 12px; color: #333333; }
     .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
 
     .empty-msg { grid-column: 1 / -1; text-align: center; padding: 30px 20px; background: #ffffff; border: 1px solid #cccccc; border-radius: 2px; color: #666666; }
+    .forum-box h2 {
+  font-weight: normal;
+    }
+#section-heading {
+  font-weight: normal;
+}
+
+
 
     .game-card { background: white; border: 1px solid #cccccc; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; padding: 10px; text-align: center; position: relative; }
     .game-card-image-container { width: 100%; height: 100px; background: #f5f5f5; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; cursor: pointer; }
     .game-card-img { width: 100%; height: 100%; object-fit: cover; }
-    .game-card-title { font-size: 13px; font-weight: bold; margin: 0 0 4px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .game-card-title { font-size: 13px; margin: 0 0 4px; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .game-card-meta { font-size: 11px; color: #777777; }
-    .play-btn { width: 100%; padding: 5px 0; border: 1px solid #018a41; border-radius: 2px; background: linear-gradient(to bottom, #02b757 0%, #018a41 100%); color: white; cursor: pointer; font-weight: bold; font-size: 12px; text-align: center; text-decoration: none; margin-top: 8px; display: block; }
+    .play-btn { width: 100%; padding: 5px 0; border: 1px solid #018a41; border-radius: 2px; background: linear-gradient(to bottom, #02b757 0%, #018a41 100%); color: white; cursor: pointer; font-size: 12px; text-align: center; text-decoration: none; margin-top: 8px; display: block; }
 
 
     .forum-section { margin-top: 35px; }
-    .forum-section h2 { font-size: 20px; font-weight: bold; margin: 0 0 12px; color: #333333; }
-    .forum-box { background: rgb(255, 255, 255); border: x solid #cccccc; border-radius: 1%; padding: 15px}
-    .forum-box {width: 60%;}
+    .forum-section h2 { font-size: 20px; margin: 0 0 12px; color: #333333; }
+    .forum-box { background: rgb(255, 255, 255); border: x solid #cccccc; border-radius: 0%; padding: 15px}
+    .forum-box {width: 35%;}
     .forum-new-post { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
     .forum-input-body { width: 75%; padding: 8px; margin-bottom: 8px; border: 1px solid #cccccc; font-size: 13px; font-family: inherit; height: 40px; resize: vertical; }
-    .forum-post-btn { background: #02B757;x solid #00568c; color: white; padding: 6px 14px; font-size: 12px; font-weight: bold; border-radius: 2px; cursor: pointer; }
+    .forum-post-btn { background: #02B757;x solid #00568c; color: white; padding: 6px 14px; font-size: 12px; border-radius: 2px; cursor: pointer; }
     .forum-post-btn {height: 40px}
+    .forum-post-btn {width: px;}
     .forum-post-item { padding: 12px 0; border-bottom: 1px dashed #dddddd; }
     .forum-post-header { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: center; font-size: 11px; color: #777; }
     .forum-post-content { font-size: 13px; color: #333; line-height: 1.4; word-break: break-word; }
+
+
 
     .footer { width: 100%; background: #ffffff; border-top: 1px solid #cccccc; margin-top: auto; padding: 15px 0; }
     .footer-container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
@@ -449,7 +456,19 @@
         <div class="search-wrapper">
           <input type="text" id="search-query" class="search-input" placeholder="Search games..." onkeyup="executeSearch()">
           <button class="search-button" type="button" onclick="executeSearch()">
-            <svg class="search-icon-svg" viewBox="0 0 24 24">
+          <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot_2026-11-07_081226-removebg-preview.png" class="search-icon" alt="Search" width="100" height="100" id="search-icon-img">
+<script>
+  const myImage = document.getElementById('search-icon-img');
+
+  myImage.addEventListener('mouseenter', () => {
+    myImage.src = 'https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/searchicoimage.png';
+  });
+
+  myImage.addEventListener('mouseleave', () => {
+    myImage.src = 'https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot_2026-11-07_081226-removebg-preview.png';
+  });
+</script>
+
               <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
             </svg>
           </button>
@@ -539,8 +558,8 @@
       </section>
 
       <section class="forum-section" id="forum-section-container">
-        <h2>My Feed
-        <div class="forum-box">
+          
+        <div class="forum-box"><h2>my feed</h2>
           <div class="forum-new-post">
             <textarea id="forum-post-body-input" class="forum-input-body" placeholder="What are you up to?"></textarea>
             <button class="forum-post-btn" onclick="submitForumPost()">Share
