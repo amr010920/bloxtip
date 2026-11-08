@@ -228,8 +228,8 @@
 
       <form onsubmit="handleSignup(event)">
         <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" name="username" required placeholder="Choose a username">
+          <label for="username">Username (3-50 characters, no spaces)</label>
+          <input type="text" id="username" name="username" required minlength="3" maxlength="50" pattern="^\S+$" placeholder="Choose a username">
         </div>
         <div class="form-group">
           <label for="password">Password</label>
@@ -279,8 +279,14 @@
         return;
       }
 
-      if (username.length < 3) {
-        error.textContent = 'Username must be at least 3 characters long';
+      if (username.length < 3 || username.length > 50) {
+        error.textContent = 'Username must be between 3 and 50 characters long';
+        error.classList.add('show');
+        return;
+      }
+
+      if (/\s/.test(username)) {
+        error.textContent = 'Username cannot contain any spaces';
         error.classList.add('show');
         return;
       }
