@@ -66,15 +66,15 @@
         <button class="tab-btn" onclick="switchTab('item', event)">Publish Catalog Item</button>
       </div>
 
-      <!-- PUBLISH GAME FORM yes it is google devtools user-->
+      <!-- PUBLISH GAME FORM -->
       <form id="form-game" class="section-form active" onsubmit="publishGame(event)">
         <div class="form-group">
           <label for="game-title">Game Title</label>
           <input type="text" id="game-title" required placeholder="My Awesome 2013 Place">
         </div>
         <div class="form-group">
-          <label for="game-file">Upload .rbxl File</label>
-          <input type="file" id="game-file" accept=".rbxl" required>
+          <label for="game-file">Upload .rbxl File <span style="font-weight:normal; color:#777;">(Max 5 MB)</span></label>
+          <input type="file" id="game-file" accept=".rbxl,.rbxlx" required>
         </div>
         <div class="form-group">
           <label for="game-thumb">Thumbnail Image URL <span style="font-weight:normal; color:#777;">(Optional)</span></label>
@@ -83,7 +83,7 @@
         <button type="submit" class="publish-btn" id="pub-game-btn">Publish Game to Catalog</button>
       </form>
 
-      <!-- shit form for i forgot tbh -->
+      <!-- PUBLISH ITEM FORM -->
       <form id="form-item" class="section-form" onsubmit="publishCatalogItem(event)">
         <div class="form-group">
           <label for="item-name">Item Name</label>
@@ -117,6 +117,9 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX'; 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    const MAX_FILE_SIZE_MB = 5;
+    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
     function switchTab(tab, event) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.section-form').forEach(f => f.classList.remove('active'));
@@ -126,9 +129,57 @@
       document.getElementById('error-box').classList.remove('show');
     }
 
+    // Helper with 5 MB validation and multi-bucket fallback
+    async function uploadFileWithBucketFallback(file, filePath) {
+      // Enforce 5 MB limit on the client side
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        throw new Error(`File is too large (${(file.size / (1024 * 1024)).toFixed(2)} MB). Maximum allowed size is ${MAX_FILE_SIZE_MB} MB.`);
+      }
+
+      let bucketIndex = 1;
+      let bucketName = 'games';
+      
+      while (true) {
+        // 1. Check/Create Bucket
+        const { data: buckets, error: listError } = await supabaseClient.storage.listBuckets();
+        
+        if (!listError) {
+          const bucketExists = buckets.some(b => b.name === bucketName);
+          if (!bucketExists) {
+            const { error: createError } = await supabaseClient.storage.createBucket(bucketName, { public: true });
+            if (createError) {
+              console.warn(`Could not create bucket ${bucketName}:`, createError.message);
+            }
+          }
+        }
+
+        // 2. Upload File
+        const { data, error } = await supabaseClient.storage
+          .from(bucketName)
+          .upload(filePath, file, { upsert: true });
+
+        if (!error) {
+          const { data: publicUrlData } = supabaseClient.storage
+            .from(bucketName)
+            .getPublicUrl(filePath);
+          return publicUrlData.publicUrl;
+        }
+
+        // 3. Fallback to next bucket if quota/size limits hit
+        console.warn(`Bucket '${bucketName}' upload failed. Attempting fallback...`, error.message);
+        bucketIndex++;
+        bucketName = `games-${bucketIndex}`;
+
+        if (bucketIndex > 50) {
+          throw new Error("All storage buckets are full or unavailable.");
+        }
+      }
+    }
+
     async function publishGame(event) {
       event.preventDefault();
       const title = document.getElementById('game-title').value.trim();
+      const fileInput = document.getElementById('game-file');
       let thumbnail = document.getElementById('game-thumb').value.trim();
       const errorBox = document.getElementById('error-box');
       const btn = document.getElementById('pub-game-btn');
@@ -140,28 +191,54 @@
         return;
       }
 
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert("Please select an .rbxl file to upload.");
+        return;
+      }
+
+      const file = fileInput.files[0];
+
+      // Quick pre-check before disabling button
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        errorBox.textContent = `File size exceeds the ${MAX_FILE_SIZE_MB} MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)} MB.`;
+        errorBox.classList.add('show');
+        return;
+      }
+
       btn.disabled = true;
-      btn.textContent = "Publishing Game...";
+      btn.textContent = "Uploading .rbxl File...";
 
       if (!thumbnail) {
         thumbnail = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
       }
 
-      const { error } = await supabaseClient.from('games').insert([{
-        title: title,
-        creator: savedUser,
-        thumbnail_url: thumbnail,
-        visits: 0
-      }]);
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        
+        const filePublicUrl = await uploadFileWithBucketFallback(file, fileName);
 
-      if (error) {
-        errorBox.textContent = "Failed to publish game: " + error.message;
+        btn.textContent = "Publishing Game...";
+
+        const { error } = await supabaseClient.from('games').insert([{
+          title: title,
+          creator: savedUser,
+          thumbnail_url: thumbnail,
+          file_url: filePublicUrl, 
+          visits: 0
+        }]);
+
+        if (error) {
+          throw error;
+        }
+
+        alert(`Game '${title}' successfully published!`);
+        window.location.href = '../';
+      } catch (err) {
+        errorBox.textContent = "Failed to publish game: " + err.message;
         errorBox.classList.add('show');
         btn.disabled = false;
         btn.textContent = "Publish Game to Catalog";
-      } else {
-        alert(`Game '${title}' successfully published!`);
-        window.location.href = '../';
       }
     }
 
@@ -183,7 +260,6 @@
       btn.disabled = true;
       btn.textContent = "Publishing Item...";
 
-      // 1. insert plzity plz insert
       const { error: catalogError } = await supabaseClient.from('catalog_items').insert([{
         name: name,
         creator: savedUser,
@@ -200,7 +276,6 @@
         return;
       }
 
-      // 2. Automatically grant the creator ownership in their inventory or not idc tbh BUT SHOULD WORK AKA IDK
       await supabaseClient.from('inventory').insert([{
         user_id: savedUser,
         item_name: name,
