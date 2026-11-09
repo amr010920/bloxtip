@@ -58,18 +58,18 @@
 
   <main class="main">
     <div class="create-box">
-      <h1>Creator Studio</h1>
+      <h1>Creator</h1>
       <div class="error" id="error-box"></div>
 
       <div class="tab-selector">
-        <button class="tab-btn active" onclick="switchTab('game', event)">Publish Game</button>
-        <button class="tab-btn" onclick="switchTab('item', event)">Publish Catalog Item</button>
+        <button class="tab-btn active" onclick="switchTab('game', event)">Games</button>
+        <button class="tab-btn" onclick="switchTab('item', event)">Catalog Item</button>
       </div>
 
       <!-- PUBLISH GAME FORM -->
       <form id="form-game" class="section-form active" onsubmit="publishGame(event)">
         <div class="form-group">
-          <label for="game-title">Game Title</label>
+          <label for="game-title">Title</label>
           <input type="text" id="game-title" required placeholder="My Awesome 2013 Place">
         </div>
         <div class="form-group">
@@ -80,7 +80,7 @@
           <label for="game-thumb">Thumbnail Image URL <span style="font-weight:normal; color:#777;">(Optional)</span></label>
           <input type="text" id="game-thumb" placeholder="https://raw.githubusercontent.com/...">
         </div>
-        <button type="submit" class="publish-btn" id="pub-game-btn">Publish Game to Catalog</button>
+        <button type="submit" class="publish-btn" id="pub-game-btn">Publish Game</button>
       </form>
 
       <!-- PUBLISH ITEM FORM -->
@@ -129,9 +129,7 @@
       document.getElementById('error-box').classList.remove('show');
     }
 
-    // Helper with 5 MB validation and multi-bucket fallback
     async function uploadFileWithBucketFallback(file, filePath) {
-      // Enforce 5 MB limit on the client side
       if (file.size > MAX_FILE_SIZE_BYTES) {
         throw new Error(`File is too large (${(file.size / (1024 * 1024)).toFixed(2)} MB). Maximum allowed size is ${MAX_FILE_SIZE_MB} MB.`);
       }
@@ -140,20 +138,8 @@
       let bucketName = 'games';
       
       while (true) {
-        // 1. Check/Create Bucket
-        const { data: buckets, error: listError } = await supabaseClient.storage.listBuckets();
+        console.log(`Attempting upload to bucket: ${bucketName}`);
         
-        if (!listError) {
-          const bucketExists = buckets.some(b => b.name === bucketName);
-          if (!bucketExists) {
-            const { error: createError } = await supabaseClient.storage.createBucket(bucketName, { public: true });
-            if (createError) {
-              console.warn(`Could not create bucket ${bucketName}:`, createError.message);
-            }
-          }
-        }
-
-        // 2. Upload File
         const { data, error } = await supabaseClient.storage
           .from(bucketName)
           .upload(filePath, file, { upsert: true });
@@ -165,13 +151,13 @@
           return publicUrlData.publicUrl;
         }
 
-        // 3. Fallback to next bucket if quota/size limits hit
-        console.warn(`Bucket '${bucketName}' upload failed. Attempting fallback...`, error.message);
+        console.warn(`Upload to '${bucketName}' failed:`, error.message);
+
         bucketIndex++;
         bucketName = `games-${bucketIndex}`;
 
-        if (bucketIndex > 50) {
-          throw new Error("All storage buckets are full or unavailable.");
+        if (bucketIndex > 20) {
+          throw new Error("Storage upload failed: " + error.message);
         }
       }
     }
@@ -198,7 +184,6 @@
 
       const file = fileInput.files[0];
 
-      // Quick pre-check before disabling button
       if (file.size > MAX_FILE_SIZE_BYTES) {
         errorBox.textContent = `File size exceeds the ${MAX_FILE_SIZE_MB} MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)} MB.`;
         errorBox.classList.add('show');
@@ -207,6 +192,7 @@
 
       btn.disabled = true;
       btn.textContent = "Uploading .rbxl File...";
+      errorBox.classList.remove('show');
 
       if (!thumbnail) {
         thumbnail = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
@@ -216,7 +202,9 @@
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
         
+        console.log("Starting file upload...");
         const filePublicUrl = await uploadFileWithBucketFallback(file, fileName);
+        console.log("File uploaded successfully. Public URL:", filePublicUrl);
 
         btn.textContent = "Publishing Game...";
 
@@ -235,7 +223,8 @@
         alert(`Game '${title}' successfully published!`);
         window.location.href = '../';
       } catch (err) {
-        errorBox.textContent = "Failed to publish game: " + err.message;
+        console.error("Publish error:", err);
+        errorBox.textContent = "Failed to publish game: " + (err.message || JSON.stringify(err));
         errorBox.classList.add('show');
         btn.disabled = false;
         btn.textContent = "Publish Game to Catalog";
@@ -282,7 +271,7 @@
         category: category,
         image_url: imageUrl,
         is_equipped: false
-      }]);
+      }Saving...]);
 
       alert(`Item '${name}' successfully published to the catalog and added to your inventory!`);
       window.location.href = '../avatar';
