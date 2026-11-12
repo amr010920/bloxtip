@@ -73,7 +73,22 @@
           <input type="text" id="game-title" required placeholder="My Awesome 2013 Place">
         </div>
         <div class="form-group">
-          <label for="game-file">Upload .rbxl File <span style="font-weight:normal; color:#777;">(Max 5 MB)</span></label>
+          <label for="game-year">Game Client Year</label>
+          <select id="game-year">
+            <option value="2007">2007</option>
+            <option value="2008">2008</option>
+            <option value="2009">2009</option>
+            <option value="2010">2010</option>
+            <option value="2011">2011</option>
+            <option value="2012">2012</option>
+            <option value="2013" selected>2013</option>
+            <option value="2014">2014</option>
+            <option value="2015">2015</option>
+            <option value="2016">2016</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="game-file">Upload .rbxl File <span style="font-weight:normal; color:#777;">(Max 15 MB)</span></label>
           <input type="file" id="game-file" accept=".rbxl,.rbxlx" required>
         </div>
         <div class="form-group">
@@ -117,7 +132,7 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX'; 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const MAX_FILE_SIZE_MB = 5;
+    const MAX_FILE_SIZE_MB = 15;
     const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
     function switchTab(tab, event) {
@@ -129,42 +144,19 @@
       document.getElementById('error-box').classList.remove('show');
     }
 
-    async function uploadFileWithBucketFallback(file, filePath) {
-      if (file.size > MAX_FILE_SIZE_BYTES) {
-        throw new Error(`File is too large (${(file.size / (1024 * 1024)).toFixed(2)} MB). Maximum allowed size is ${MAX_FILE_SIZE_MB} MB.`);
-      }
-
-      let bucketIndex = 1;
-      let bucketName = 'games';
-      
-      while (true) {
-        console.log(`Attempting upload to bucket: ${bucketName}`);
-        
-        const { data, error } = await supabaseClient.storage
-          .from(bucketName)
-          .upload(filePath, file, { upsert: true });
-
-        if (!error) {
-          const { data: publicUrlData } = supabaseClient.storage
-            .from(bucketName)
-            .getPublicUrl(filePath);
-          return publicUrlData.publicUrl;
-        }
-
-        console.warn(`Upload to '${bucketName}' failed:`, error.message);
-
-        bucketIndex++;
-        bucketName = `games-${bucketIndex}`;
-
-        if (bucketIndex > 20) {
-          throw new Error("Storage upload failed: " + error.message);
-        }
-      }
+    function readFileAsText(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(new Error("Failed to read file contents."));
+        reader.readAsText(file);
+      });
     }
 
     async function publishGame(event) {
       event.preventDefault();
       const title = document.getElementById('game-title').value.trim();
+      const year = parseInt(document.getElementById('game-year').value);
       const fileInput = document.getElementById('game-file');
       let thumbnail = document.getElementById('game-thumb').value.trim();
       const errorBox = document.getElementById('error-box');
@@ -191,7 +183,7 @@
       }
 
       btn.disabled = true;
-      btn.textContent = "Uploading .rbxl File...";
+      btn.textContent = "Converting file to XML...";
       errorBox.classList.remove('show');
 
       if (!thumbnail) {
@@ -199,35 +191,33 @@
       }
 
       try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-        
-        console.log("Starting file upload...");
-        const filePublicUrl = await uploadFileWithBucketFallback(file, fileName);
-        console.log("File uploaded successfully. Public URL:", filePublicUrl);
+        console.log("Reading .rbxl file text...");
+        const xmlContent = await readFileAsText(file);
 
-        btn.textContent = "Publishing Game...";
+        btn.textContent = "Saving to Database...";
 
-        const { error } = await supabaseClient.from('games').insert([{
+        const { data, error } = await supabaseClient.from('games').insert([{
           title: title,
+          year: year,
           creator: savedUser,
           thumbnail_url: thumbnail,
-          file_url: filePublicUrl, 
+          xml: xmlContent,
           visits: 0
-        }]);
+        }]).select();
 
         if (error) {
           throw error;
         }
 
-        alert(`Game '${title}' successfully published!`);
+        const newGameId = data && data[0] ? data[0].id : 'unknown';
+        alert(`Game '${title}' (${year}) successfully published! Game ID: ${newGameId}`);
         window.location.href = '../';
       } catch (err) {
         console.error("Publish error:", err);
         errorBox.textContent = "Failed to publish game: " + (err.message || JSON.stringify(err));
         errorBox.classList.add('show');
         btn.disabled = false;
-        btn.textContent = "Publish Game to Catalog";
+        btn.textContent = "Publish Game";
       }
     }
 
@@ -265,13 +255,17 @@
         return;
       }
 
-      await supabaseClient.from('inventory').insert([{
+      const { error: inventoryError } = await supabaseClient.from('inventory').insert([{
         user_id: savedUser,
         item_name: name,
         category: category,
         image_url: imageUrl,
         is_equipped: false
-      }Saving...]);
+      }]);
+
+      if (inventoryError) {
+        console.warn("Failed to add to inventory directly:", inventoryError.message);
+      }
 
       alert(`Item '${name}' successfully published to the catalog and added to your inventory!`);
       window.location.href = '../avatar';
