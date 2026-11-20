@@ -29,22 +29,27 @@
     .nav-link { color: white; text-decoration: none; font-size: 13px; font-weight: bold; }
 
     .main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
-    .create-box { background: white; padding: 30px; border: 1px solid #ccc; border-radius: 4px; width: 100%; max-width: 480px; }
+    .create-box { background: white; padding: 30px; border: 1px solid #ccc; border-radius: 4px; width: 100%; max-width: 520px; }
     .create-box h1 { font-size: 22px; margin-bottom: 15px; color: #0074BD; }
 
-    .tab-selector { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+    .tab-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
     .tab-btn { background: none; border: none; font-size: 14px; font-weight: bold; color: #666; cursor: pointer; padding: 4px 8px; }
     .tab-btn.active { color: #0074BD; border-bottom: 2px solid #0074BD; }
 
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
-    .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; font-size: 14px; }
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="file"],
+    .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; font-size: 14px; background: #fff; }
+    .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .checkbox-row input { width: auto; }
 
     .publish-btn { width: 100%; padding: 10px; background: var(--theme-primary); color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 2px; }
     .publish-btn:hover { background: var(--theme-primary-hover); }
     .publish-btn:disabled { background: #888; cursor: not-allowed; }
 
-    .error { background: #fee; color: #c00; padding: 8px; margin-bottom: 15px; display: none; font-size: 13px; }
+    .error { background: #fee; color: #c00; padding: 8px; margin-bottom: 15px; display: none; font-size: 13px; border: 1px solid #f5c2c2; border-radius: 2px; }
     .error.show { display: block; }
     .section-form { display: none; }
     .section-form.active { display: block; }
@@ -62,9 +67,10 @@
       <div class="error" id="error-box"></div>
 
       <div class="tab-selector">
-        <button class="tab-btn active" onclick="switchTab('game', event)">Games</button>
-        <button class="tab-btn" onclick="switchTab('item', event)">Catalog Item</button>
-        <button class="tab-btn" onclick="switchTab('toolbox', event)">Toolbox</button>
+        <button type="button" class="tab-btn active" onclick="switchTab('game', event)">Games</button>
+        <button type="button" class="tab-btn" onclick="switchTab('item', event)">Catalog Item</button>
+        <button type="button" class="tab-btn" onclick="switchTab('toolbox', event)">Toolbox</button>
+        <button type="button" class="tab-btn" onclick="switchTab('plugin', event)">Plugin</button>
       </div>
 
       <!-- PUBLISH GAME FORM -->
@@ -133,6 +139,27 @@
         </div>
         <button type="submit" class="publish-btn" id="pub-toolbox-btn">Publish to Toolbox</button>
       </form>
+
+      <!-- PUBLISH PLUGIN FORM -->
+      <form id="form-plugin" class="section-form" onsubmit="publishPlugin(event)">
+        <div class="form-group">
+          <label for="plugin-name">Plugin Name</label>
+          <input type="text" id="plugin-name" required placeholder="Part Resize Tool">
+        </div>
+        <div class="form-group">
+          <label for="plugin-asset-id">Plugin Asset ID <span style="font-weight:normal; color:#777;">(Optional — auto-generated if empty)</span></label>
+          <input type="text" id="plugin-asset-id" placeholder="e.g. 142314093">
+        </div>
+        <div class="form-group">
+          <label for="plugin-file">Plugin File (.rbxmx / .lua / .luau / .xml) <span style="font-weight:normal; color:#777;">(Optional, Max 15 MB)</span></label>
+          <input type="file" id="plugin-file" accept=".rbxmx,.lua,.luau,.xml">
+        </div>
+        <div class="form-group checkbox-row">
+          <input type="checkbox" id="plugin-enabled" checked>
+          <label for="plugin-enabled" style="margin:0; font-weight:normal;">Enable plugin in Studio Manage Plugins immediately</label>
+        </div>
+        <button type="submit" class="publish-btn" id="pub-plugin-btn">Publish Plugin</button>
+      </form>
     </div>
   </main>
 
@@ -200,7 +227,6 @@
       }
 
       try {
-        console.log("Reading .rbxl file text...");
         const xmlContent = await readFileAsText(file);
 
         btn.textContent = "Saving to Database...";
@@ -332,6 +358,73 @@
         errorBox.classList.add('show');
         btn.disabled = false;
         btn.textContent = "Publish to Toolbox";
+      }
+    }
+
+    async function publishPlugin(event) {
+      event.preventDefault();
+      const name = document.getElementById('plugin-name').value.trim();
+      const rawAssetId = document.getElementById('plugin-asset-id').value.trim();
+      const fileInput = document.getElementById('plugin-file');
+      const enabled = document.getElementById('plugin-enabled').checked;
+      const errorBox = document.getElementById('error-box');
+      const btn = document.getElementById('pub-plugin-btn');
+
+      const savedUser = localStorage.getItem('bloxtip_username');
+      if (!savedUser) {
+        alert("You must be logged in to publish a plugin!");
+        window.location.href = '../login';
+        return;
+      }
+
+      const pluginId = rawAssetId || String(Math.floor(100000000 + Math.random() * 900000000));
+      let pluginSource = '';
+
+      if (fileInput.files && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+          errorBox.textContent = `File size exceeds the ${MAX_FILE_SIZE_MB} MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)} MB.`;
+          errorBox.classList.add('show');
+          return;
+        }
+        pluginSource = await readFileAsText(file);
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Publishing Plugin...";
+      errorBox.classList.remove('show');
+
+      try {
+        const { error: pluginError } = await supabaseClient.from('studio_plugins').insert([{
+          plugin_id: pluginId,
+          name: name,
+          creator: savedUser,
+          enabled: enabled
+        }]);
+
+        if (pluginError) {
+          throw pluginError;
+        }
+
+        if (pluginSource) {
+          const { error: toolboxError } = await supabaseClient.from('toolbox').insert([{
+            name: `${name} [Plugin]`,
+            creator: savedUser,
+            xml: pluginSource
+          }]);
+          if (toolboxError) {
+            console.warn("Plugin saved to studio_plugins, but toolbox asset insert warning:", toolboxError.message);
+          }
+        }
+
+        alert(`Plugin '${name}' (ID: ${pluginId}) published!`);
+        window.location.href = '/studio/plugins/manage';
+      } catch (err) {
+        console.error("Plugin publish error:", err);
+        errorBox.textContent = "Failed to publish plugin: " + (err.message || JSON.stringify(err));
+        errorBox.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = "Publish Plugin";
       }
     }
   </script>
