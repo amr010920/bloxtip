@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Toolbox - Bloxtip</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f0f0f0;
+      color: #191919;
+      font-size: 12px;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0074bd;
+      color: #ffffff;
+      padding: 8px 10px;
+      border-radius: 3px;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .refresh-btn {
+      background: #ffffff;
+      color: #0074bd;
+      border: 1px solid #005b94;
+      padding: 3px 8px;
+      border-radius: 2px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .refresh-btn:hover { background: #eef6fc; }
+
+    .search-box {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 0;
+      padding: 5px 8px;
+      border: 1px solid #bbbbbb;
+      border-radius: 2px;
+      font-size: 12px;
+      background: #ffffff;
+      color: #191919;
+    }
+    .search-input:focus { outline: none; border-color: #0074bd; }
+
+    .clear-btn {
+      background: #e4e4e4;
+      color: #222222;
+      border: 1px solid #bbbbbb;
+      padding: 5px 8px;
+      border-radius: 2px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .status {
+      background: #ffffff;
+      border: 1px solid #cccccc;
+      padding: 10px;
+      border-radius: 3px;
+      color: #444444;
+      text-align: center;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .item {
+      background: #ffffff;
+      border: 1px solid #cccccc;
+      border-radius: 3px;
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .item:hover { border-color: #999999; }
+
+    .item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-name {
+      font-weight: bold;
+      font-size: 12px;
+      color: #191919;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-meta {
+      color: #666666;
+      font-size: 11px;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .insert-btn {
+      background: #02b757;
+      color: #ffffff;
+      border: 1px solid #018a41;
+      padding: 5px 10px;
+      border-radius: 2px;
+      font-weight: bold;
+      font-size: 11px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .insert-btn:hover { background: #00cc61; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span>Bloxtip Toolbox</span>
+    <button type="button" class="refresh-btn" onclick="loadToolboxItems()">Refresh</button>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="toolbox-search" class="search-input" placeholder="Search models..." oninput="filterToolboxItems()">
+    <button type="button" class="clear-btn" onclick="clearSearch()">Clear</button>
+  </div>
+
+  <div id="toolbox-container" class="status">Loading toolbox items...</div>
+
+  <script>
+    var SUPABASE_URL = 'https://hdpxjesfeawnntjzttwj.supabase.co';
+    var SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX';
+    var ASSET_ENDPOINT = 'https://hdpxjesfeawnntjzttwj.supabase.co/functions/v1/asset';
+
+    var allToolboxItems = [];
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function insertAsset(id) {
+      var assetUrl = ASSET_ENDPOINT + '?id=' + encodeURIComponent(id);
+      try {
+        if (window.external && typeof window.external.Insert === 'function') {
+          window.external.Insert(assetUrl);
+          return;
+        }
+      } catch (e) {}
+
+      window.open(assetUrl, '_blank');
+    }
+
+    function renderItems(items) {
+      var container = document.getElementById('toolbox-container');
+      if (!container) return;
+
+      if (!items || items.length === 0) {
+        container.className = 'status';
+        container.innerHTML = 'No models found in the toolbox.';
+        return;
+      }
+
+      var html = '<div class="list">';
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        var safeIdAttr = escapeHtml(item.id);
+        var safeIdJs = String(item.id || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        var safeName = escapeHtml(item.name || ('Model #' + item.id));
+        var safeCreator = escapeHtml(item.creator || 'Unknown');
+
+        html += '' +
+          '<div class="item">' +
+            '<div class="item-info">' +
+              '<div class="item-name">' + safeName + '</div>' +
+              '<div class="item-meta">By ' + safeCreator + ' &middot; #' + safeIdAttr + '</div>' +
+            '</div>' +
+            '<button type="button" class="insert-btn" onclick="insertAsset(\'' + safeIdJs + '\')">Insert</button>' +
+          '</div>';
+      }
+      html += '</div>';
+
+      container.className = '';
+      container.innerHTML = html;
+    }
+
+    function filterToolboxItems() {
+      var input = document.getElementById('toolbox-search');
+      var q = (input ? input.value : '').toLowerCase().replace(/^\s+|\s+$/g, '');
+
+      if (!q) {
+        renderItems(allToolboxItems);
+        return;
+      }
+
+      var filtered = [];
+      for (var i = 0; i < allToolboxItems.length; i++) {
+        var row = allToolboxItems[i];
+        var name = String(row.name || '').toLowerCase();
+        var creator = String(row.creator || '').toLowerCase();
+        var idStr = String(row.id || '').toLowerCase();
+        if (name.indexOf(q) !== -1 || creator.indexOf(q) !== -1 || idStr.indexOf(q) !== -1) {
+          filtered.push(row);
+        }
+      }
+      renderItems(filtered);
+    }
+
+    function clearSearch() {
+      var input = document.getElementById('toolbox-search');
+      if (input) input.value = '';
+      renderItems(allToolboxItems);
+    }
+
+    function loadToolboxItems() {
+      var container = document.getElementById('toolbox-container');
+      if (container) {
+        container.className = 'status';
+        container.innerHTML = 'Loading toolbox items...';
+      }
+
+      var url = SUPABASE_URL + '/rest/v1/toolbox?select=id,name,creator&order=id.desc';
+
+      fetch(url, {
+        method: 'GET',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+        }
+      })
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        return response.json();
+      })
+      .then(function(data) {
+        allToolboxItems = Array.isArray(data) ? data : [];
+        filterToolboxItems();
+      })
+      .catch(function(err) {
+        if (container) {
+          container.className = 'status';
+          container.innerHTML = 'Failed to load items: ' + escapeHtml(err && err.message ? err.message : 'Network error');
+        }
+      });
+    }
+
+    loadToolboxItems();
+  </script>
+</body>
+</html>
