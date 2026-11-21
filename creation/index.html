@@ -70,27 +70,6 @@
     .publish-btn:hover { background: var(--theme-primary-hover); }
     .publish-btn:disabled { background: #888; cursor: not-allowed; }
 
-    .result-card {
-      margin-top: 15px;
-      padding: 12px;
-      background: #f0f8ff;
-      border: 1px solid #b6d8f2;
-      border-radius: 3px;
-      font-size: 12px;
-      display: none;
-    }
-    .result-card.show { display: block; }
-    .result-card code {
-      display: block;
-      background: #fff;
-      border: 1px solid #d0e3f2;
-      padding: 5px 7px;
-      margin: 5px 0 8px 0;
-      word-break: break-all;
-      font-family: Consolas, monospace;
-      font-size: 11px;
-    }
-
     .error { background: #fee; color: #c00; padding: 8px; margin-bottom: 15px; display: none; font-size: 13px; border: 1px solid #f5c2c2; border-radius: 2px; }
     .error.show { display: block; }
     .section-form { display: none; }
@@ -206,13 +185,13 @@
 
       <!-- PUBLISH LOW-QUALITY IMAGE / DECAL FORM -->
       <div id="form-image" class="section-form">
-        <form onsubmit="publishImageAsset(event)">
+        <form id="image-upload-form" onsubmit="publishImageAsset(event)">
           <div class="form-group">
             <label for="image-name">Image Name</label>
             <input type="text" id="image-name" required placeholder="Brick Texture or ImageLabel">
           </div>
           <div class="form-group">
-            <label for="image-file">Image File<span style="font-weight:normal; color:#777;">(PNG, JPG, WebP, GIF)</span></label>
+            <label for="image-file">Image File <span style="font-weight:normal; color:#777;">(PNG, JPG, WebP, GIF)</span></label>
             <input type="file" id="image-file" accept="image/*" required onchange="previewCompressedImage()">
           </div>
 
@@ -224,7 +203,7 @@
           </div>
 
           <button type="submit" class="publish-btn" id="pub-image-btn">Upload</button>
-        </div>
+        </form>
       </div>
     </div>
   </main>
@@ -433,7 +412,6 @@
       const name = document.getElementById('image-name').value.trim();
       const fileInput = document.getElementById('image-file');
       const errorBox = document.getElementById('error-box');
-      const resultCard = document.getElementById('image-upload-result');
       const btn = document.getElementById('pub-image-btn');
 
       const savedUser = localStorage.getItem('bloxtip_username');
@@ -456,21 +434,20 @@
       }
 
       btn.disabled = true;
-      btn.textContent = "Compressing to ~5 KB...";
+      btn.textContent = "Compressing...";
       errorBox.classList.remove('show');
-      resultCard.classList.remove('show');
 
       try {
         const compressed = latestCompressedBlob
           ? { blob: latestCompressedBlob, ...latestCompressedDimensions }
           : await compressImageToTargetKB(file, DEFAULT_TARGET_KB);
 
-        btn.textContent = "Assigning Next ID...";
+        btn.textContent = "Assigning ID...";
         const assetId = await getNextSequentialImageId();
         const safeUser = savedUser.replace(/[^a-zA-Z0-9_-]/g, '_');
         const storagePath = `studio_assets/${safeUser}/${assetId}.jpg`;
 
-        btn.textContent = "Uploading to Bucket...";
+        btn.textContent = "Uploading...";
 
         const { error: uploadError } = await supabaseClient
           .storage
@@ -491,7 +468,7 @@
 
         const publicUrl = publicUrlData && publicUrlData.publicUrl ? publicUrlData.publicUrl : '';
 
-        btn.textContent = "Saving Asset Record...";
+        btn.textContent = "Saving...";
 
         const { error: dbError } = await supabaseClient
           .from('images')
@@ -508,21 +485,22 @@
           }], { onConflict: 'asset_id' });
 
         if (dbError) {
-          console.warn("Bucket upload succeeded, but 'images' table insert warning:", dbError.message);
+          throw dbError;
         }
 
-        document.getElementById('res-content-id').textContent = `ID: ${assetId}  |  rbxassetid://${assetId}`;
-        document.getElementById('res-public-url').textContent = publicUrl;
-        resultCard.classList.add('show');
+        document.getElementById('image-upload-form').reset();
+        document.getElementById('image-preview-box').classList.remove('show');
+        latestCompressedBlob = null;
 
+        alert(`Image '${name}' uploaded with ID ${assetId}!`);
         btn.disabled = false;
-        btn.textContent = "Compress & Upload to Bucket";
+        btn.textContent = "Upload";
       } catch (err) {
         console.error("Image publish error:", err);
         errorBox.textContent = "Failed to upload image: " + (err.message || JSON.stringify(err));
         errorBox.classList.add('show');
         btn.disabled = false;
-        btn.textContent = "Compress & Upload to Bucket";
+        btn.textContent = "Upload";
       }
     }
 
