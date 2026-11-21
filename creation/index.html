@@ -70,19 +70,6 @@
     .publish-btn:hover { background: var(--theme-primary-hover); }
     .publish-btn:disabled { background: #888; cursor: not-allowed; }
 
-    .secondary-btn {
-      padding: 8px 12px;
-      background: #0074BD;
-      color: #fff;
-      border: none;
-      font-weight: bold;
-      font-size: 12px;
-      cursor: pointer;
-      border-radius: 2px;
-      white-space: nowrap;
-    }
-    .secondary-btn:hover { background: #005f9c; }
-
     .result-card {
       margin-top: 15px;
       padding: 12px;
@@ -102,62 +89,6 @@
       word-break: break-all;
       font-family: Consolas, monospace;
       font-size: 11px;
-    }
-
-    .divider {
-      border: 0;
-      border-top: 1px solid #ddd;
-      margin: 22px 0 16px 0;
-    }
-
-    .lookup-row { display: flex; gap: 8px; }
-    .lookup-row input { flex: 1; padding: 7px 8px; border: 1px solid #ccc; font-size: 13px; }
-
-    .studio-mock-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-    .studio-mock-card {
-      border: 1px solid #ccc;
-      background: #f7f7f7;
-      padding: 8px;
-      text-align: center;
-      border-radius: 2px;
-    }
-    .studio-mock-card span {
-      display: block;
-      font-size: 11px;
-      font-weight: bold;
-      color: #555;
-      margin-bottom: 6px;
-    }
-    .part-surface {
-      width: 96px;
-      height: 96px;
-      margin: 0 auto;
-      background-color: #a3a2a5;
-      background-size: cover;
-      background-position: center;
-      border: 2px solid #6e6e6e;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
-    }
-    .imagelabel-surface {
-      width: 96px;
-      height: 96px;
-      margin: 0 auto;
-      background: #ffffff;
-      border: 1px solid #999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-    .imagelabel-surface img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
     }
 
     .error { background: #fee; color: #c00; padding: 8px; margin-bottom: 15px; display: none; font-size: 13px; border: 1px solid #f5c2c2; border-radius: 2px; }
@@ -281,14 +212,6 @@
             <input type="text" id="image-name" required placeholder="Brick Texture or ImageLabel">
           </div>
           <div class="form-group">
-            <label for="image-asset-id">Asset ID <span style="font-weight:normal; color:#777;">(Optional — auto-generated if empty)</span></label>
-            <input type="text" id="image-asset-id" placeholder="e.g. 987654321">
-          </div>
-          <div class="form-group">
-            <label for="image-target-kb">Target Max Size (KB) <span style="font-weight:normal; color:#777;">(Low quality ~5 KB)</span></label>
-            <input type="number" id="image-target-kb" value="5" min="1" max="100" step="0.5" onchange="previewCompressedImage()">
-          </div>
-          <div class="form-group">
             <label for="image-file">Image File <span style="font-weight:normal; color:#777;">(PNG, JPG, WebP, GIF)</span></label>
             <input type="file" id="image-file" accept="image/*" required onchange="previewCompressedImage()">
           </div>
@@ -305,34 +228,10 @@
 
         <div class="result-card" id="image-upload-result">
           <strong>Uploaded Successfully!</strong>
-          <div style="margin-top:6px;">Content ID (Parts / ImageLabels):</div>
+          <div style="margin-top:6px;">Image ID & Content ID:</div>
           <code id="res-content-id"></code>
           <div>Direct Supabase Bucket URL:</div>
           <code id="res-public-url"></code>
-        </div>
-
-        <hr class="divider">
-
-        <div class="form-group" style="margin-bottom:0;">
-          <label for="lookup-asset-input">Test Asset ID Lookup (Part Decal & ImageLabel Preview)</label>
-          <div class="lookup-row">
-            <input type="text" id="lookup-asset-input" placeholder="Enter Asset ID or rbxassetid://...">
-            <button type="button" class="secondary-btn" onclick="lookupAndPreviewAsset()">Load Asset</button>
-          </div>
-          <div id="lookup-status" style="font-size:12px; color:#555; margin-top:6px;"></div>
-
-          <div class="studio-mock-grid" id="studio-mock-grid" style="display:none;">
-            <div class="studio-mock-card">
-              <span>Part (Decal / Texture)</span>
-              <div class="part-surface" id="mock-part-surface"></div>
-            </div>
-            <div class="studio-mock-card">
-              <span>ScreenGui (ImageLabel)</span>
-              <div class="imagelabel-surface">
-                <img id="mock-imagelabel-img" alt="ImageLabel preview">
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -342,6 +241,7 @@
     const SUPABASE_URL = 'https://hdpxjesfeawnntjzttwj.supabase.co/'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX'; 
     const SUPABASE_IMAGE_BUCKET = 'images';
+    const DEFAULT_TARGET_KB = 5;
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const MAX_FILE_SIZE_MB = 15;
@@ -396,7 +296,7 @@
       });
     }
 
-    async function compressImageToTargetKB(file, targetKB = 5) {
+    async function compressImageToTargetKB(file, targetKB = DEFAULT_TARGET_KB) {
       const img = await loadImageElement(file);
       const targetBytes = Math.max(512, targetKB * 1024);
 
@@ -437,7 +337,6 @@
 
     async function previewCompressedImage() {
       const fileInput = document.getElementById('image-file');
-      const targetKB = parseFloat(document.getElementById('image-target-kb').value) || 5;
       const box = document.getElementById('image-preview-box');
       const imgEl = document.getElementById('image-preview-img');
       const metaEl = document.getElementById('image-preview-meta');
@@ -463,7 +362,7 @@
       metaEl.textContent = "Compressing image...";
 
       try {
-        const { blob, width, height } = await compressImageToTargetKB(file, targetKB);
+        const { blob, width, height } = await compressImageToTargetKB(file, DEFAULT_TARGET_KB);
         latestCompressedBlob = blob;
         latestCompressedDimensions = { width, height };
 
@@ -483,6 +382,27 @@
       } catch (err) {
         metaEl.textContent = "Preview failed: " + err.message;
       }
+    }
+
+    // Sequential ID: 1 for first image, 2 for second, etc.
+    async function getNextSequentialImageId() {
+      const { data, error } = await supabaseClient
+        .from('images')
+        .select('asset_id');
+
+      if (error || !data || data.length === 0) {
+        return '1';
+      }
+
+      let maxNum = 0;
+      for (const row of data) {
+        const parsed = parseInt(row.asset_id, 10);
+        if (!Number.isNaN(parsed) && parsed > maxNum) {
+          maxNum = parsed;
+        }
+      }
+
+      return String(Math.max(maxNum, data.length) + 1);
     }
 
     async function getAssetById(assetIdOrContent) {
@@ -516,48 +436,9 @@
       return output;
     }
 
-    function renderStudioMockPreview(asset) {
-      const grid = document.getElementById('studio-mock-grid');
-      const partSurface = document.getElementById('mock-part-surface');
-      const labelImg = document.getElementById('mock-imagelabel-img');
-
-      partSurface.style.backgroundImage = `url("${asset.image_url}")`;
-      labelImg.src = asset.image_url;
-      grid.style.display = 'grid';
-    }
-
-    async function lookupAndPreviewAsset() {
-      const input = document.getElementById('lookup-asset-input').value.trim();
-      const statusEl = document.getElementById('lookup-status');
-      const grid = document.getElementById('studio-mock-grid');
-
-      if (!input) {
-        statusEl.textContent = "Enter an Asset ID first.";
-        return;
-      }
-
-      statusEl.textContent = "Looking up asset...";
-      try {
-        const asset = await getAssetById(input);
-        if (!asset) {
-          grid.style.display = 'none';
-          statusEl.textContent = "No image found for that Asset ID.";
-          return;
-        }
-        const kb = ((asset.file_size_bytes || 0) / 1024).toFixed(2);
-        statusEl.textContent = `Loaded "${asset.name}" by ${asset.creator} (${kb} KB, ${asset.width}×${asset.height}px)`;
-        renderStudioMockPreview(asset);
-      } catch (err) {
-        grid.style.display = 'none';
-        statusEl.textContent = "Lookup error: " + (err.message || JSON.stringify(err));
-      }
-    }
-
     async function publishImageAsset(event) {
       event.preventDefault();
       const name = document.getElementById('image-name').value.trim();
-      const rawAssetId = document.getElementById('image-asset-id').value.trim();
-      const targetKB = parseFloat(document.getElementById('image-target-kb').value) || 5;
       const fileInput = document.getElementById('image-file');
       const errorBox = document.getElementById('error-box');
       const resultCard = document.getElementById('image-upload-result');
@@ -583,16 +464,17 @@
       }
 
       btn.disabled = true;
-      btn.textContent = "Compressing to ~" + targetKB + " KB...";
+      btn.textContent = "Compressing to ~5 KB...";
       errorBox.classList.remove('show');
       resultCard.classList.remove('show');
 
       try {
         const compressed = latestCompressedBlob
           ? { blob: latestCompressedBlob, ...latestCompressedDimensions }
-          : await compressImageToTargetKB(file, targetKB);
+          : await compressImageToTargetKB(file, DEFAULT_TARGET_KB);
 
-        const assetId = rawAssetId || String(Math.floor(100000000 + Math.random() * 900000000));
+        btn.textContent = "Assigning Next ID...";
+        const assetId = await getNextSequentialImageId();
         const safeUser = savedUser.replace(/[^a-zA-Z0-9_-]/g, '_');
         const storagePath = `studio_assets/${safeUser}/${assetId}.jpg`;
 
@@ -637,12 +519,9 @@
           console.warn("Bucket upload succeeded, but 'images' table insert warning:", dbError.message);
         }
 
-        document.getElementById('res-content-id').textContent = `rbxassetid://${assetId}`;
+        document.getElementById('res-content-id').textContent = `ID: ${assetId}  |  rbxassetid://${assetId}`;
         document.getElementById('res-public-url').textContent = publicUrl;
         resultCard.classList.add('show');
-
-        document.getElementById('lookup-asset-input').value = assetId;
-        renderStudioMockPreview({ image_url: publicUrl });
 
         btn.disabled = false;
         btn.textContent = "Compress & Upload to Bucket";
