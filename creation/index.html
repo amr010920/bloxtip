@@ -208,11 +208,11 @@
       <div id="form-image" class="section-form">
         <form onsubmit="publishImageAsset(event)">
           <div class="form-group">
-            <label for="image-name">Image / Decal Name</label>
+            <label for="image-name">Image Name</label>
             <input type="text" id="image-name" required placeholder="Brick Texture or ImageLabel">
           </div>
           <div class="form-group">
-            <label for="image-file">Image File <span style="font-weight:normal; color:#777;">(PNG, JPG, WebP, GIF)</span></label>
+            <label for="image-file">Image File<span style="font-weight:normal; color:#777;">(PNG, JPG, WebP, GIF)</span></label>
             <input type="file" id="image-file" accept="image/*" required onchange="previewCompressedImage()">
           </div>
 
@@ -223,7 +223,7 @@
             </div>
           </div>
 
-          <button type="submit" class="publish-btn" id="pub-image-btn">Compress & Upload to Bucket</button>
+          <button type="submit" class="publish-btn" id="pub-image-btn">Upload</button>
         </form>
 
         <div class="result-card" id="image-upload-result">
