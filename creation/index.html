@@ -230,7 +230,7 @@
           <strong>Uploaded Successfully!</strong>
           <div style="margin-top:6px;">Image ID & Content ID:</div>
           <code id="res-content-id"></code>
-          <div>Direct Supabase Bucket URL:</div>
+          <div>Direct Bucket URL:</div>
           <code id="res-public-url"></code>
         </div>
       </div>
@@ -238,8 +238,9 @@
   </main>
 
   <script>
-    const SUPABASE_URL = 'https://hdpxjesfeawnntjzttwj.supabase.co/'; 
-    const SUPABASE_ANON_KEY = 'sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX'; 
+    const SUPABASE_PROJECT_ID = 'hdpxjesfeawnntjzttwj';
+    const SUPABASE_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co`;
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
     const SUPABASE_IMAGE_BUCKET = 'images';
     const DEFAULT_TARGET_KB = 5;
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -384,7 +385,6 @@
       }
     }
 
-    // Sequential ID: 1 for first image, 2 for second, etc.
     async function getNextSequentialImageId() {
       const { data, error } = await supabaseClient
         .from('images')
@@ -478,7 +478,7 @@
         const safeUser = savedUser.replace(/[^a-zA-Z0-9_-]/g, '_');
         const storagePath = `studio_assets/${safeUser}/${assetId}.jpg`;
 
-        btn.textContent = "Uploading to Supabase Bucket...";
+        btn.textContent = "Uploading to Bucket...";
 
         const { error: uploadError } = await supabaseClient
           .storage
