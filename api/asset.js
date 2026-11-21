@@ -1,5 +1,5 @@
 const SUPABASE_PROJECT_ID = "hdpxjesfeawnntjzttwj";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const SUPABASE_ANON_KEY = "sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX";
 const SERVE_BYTES_DIRECTLY = true;
 
 function toHttpsUrl(rawUrl) {
