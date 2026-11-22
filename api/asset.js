@@ -16,60 +16,103 @@ function extractAssetId(rawId) {
   return match ? match[1] : null;
 }
 
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "*");
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+  "Access-Control-Allow-Headers": "*",
+};
 
-  if (req.method === "OPTIONS") {
-    return res.status(204).end();
-  }
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
 
-  const assetId = extractAssetId(req.query?.id);
-  if (!assetId) {
-    return res.status(400).send("Missing or invalid ?id= parameter");
-  }
+    if (
+      url.pathname === "/asset" ||
+      url.pathname === "/asset/" ||
+      url.pathname === "/api/asset"
+    ) {
+      if (request.method === "OPTIONS") {
+        return new Response(null, {
+          status: 204,
+          headers: CORS_HEADERS,
+        });
+      }
 
-  try {
-    const endpoint =
-      `https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/images` +
-      `?select=image_url&asset_id=eq.${encodeURIComponent(assetId)}&limit=1`;
+      const assetId = extractAssetId(url.searchParams.get("id"));
+      if (!assetId) {
+        return new Response("Missing or invalid ?id= parameter", {
+          status: 400,
+          headers: CORS_HEADERS,
+        });
+      }
 
-    const dbRes = await fetch(endpoint, {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-        Accept: "application/json",
-      },
-    });
+      try {
+        const endpoint =
+          `https://${SUPABASE_PROJECT_ID}.supabase.co/rest/v1/images` +
+          `?select=image_url&asset_id=eq.${encodeURIComponent(assetId)}&limit=1`;
 
-    if (!dbRes.ok) {
-      return res.status(502).send(`Supabase query failed (${dbRes.status})`);
+        const dbRes = await fetch(endpoint, {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            Accept: "application/json",
+          },
+        });
+
+        if (!dbRes.ok) {
+          return new Response(`Supabase query failed (${dbRes.status})`, {
+            status: 502,
+            headers: CORS_HEADERS,
+          });
+        }
+
+        const rows = await dbRes.json();
+        const imageUrl = rows?.[0]?.image_url ? toHttpsUrl(rows[0].image_url) : "";
+
+        if (!imageUrl) {
+          return new Response(`Asset ${assetId} not found`, {
+            status: 404,
+            headers: CORS_HEADERS,
+          });
+        }
+
+        if (!SERVE_BYTES_DIRECTLY) {
+          return new Response(null, {
+            status: 302,
+            headers: {
+              ...CORS_HEADERS,
+              Location: imageUrl,
+            },
+          });
+        }
+
+        const imgRes = await fetch(imageUrl);
+        if (!imgRes.ok) {
+          return new Response(`Failed to fetch image from bucket (${imgRes.status})`, {
+            status: 502,
+            headers: CORS_HEADERS,
+          });
+        }
+
+        const contentType = imgRes.headers.get("content-type") || "image/jpeg";
+        const arrayBuf = await imgRes.arrayBuffer();
+
+        return new Response(arrayBuf, {
+          status: 200,
+          headers: {
+            ...CORS_HEADERS,
+            "Content-Type": contentType,
+            "Cache-Control": "public, max-age=300",
+          },
+        });
+      } catch (err) {
+        return new Response(`Server error: ${err.message || err}`, {
+          status: 500,
+          headers: CORS_HEADERS,
+        });
+      }
     }
 
-    const rows = await dbRes.json();
-    const imageUrl = rows?.[0]?.image_url ? toHttpsUrl(rows[0].image_url) : "";
-
-    if (!imageUrl) {
-      return res.status(404).send(`Asset ${assetId} not found`);
-    }
-
-    if (!SERVE_BYTES_DIRECTLY) {
-      return res.redirect(302, imageUrl);
-    }
-
-    const imgRes = await fetch(imageUrl);
-    if (!imgRes.ok) {
-      return res.status(502).send(`Failed to fetch image from bucket (${imgRes.status})`);
-    }
-
-    const contentType = imgRes.headers.get("content-type") || "image/jpeg";
-    const arrayBuf = await imgRes.arrayBuffer();
-
-    res.setHeader("Content-Type", contentType);
-    res.setHeader("Cache-Control", "public, max-age=300");
-    return res.status(200).send(Buffer.from(arrayBuf));
-  } catch (err) {
-    return res.status(500).send(`Server error: ${err.message || err}`);
-  }
-}
+    return env.ASSETS.fetch(request);
+  },
+};
