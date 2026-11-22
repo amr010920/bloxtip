@@ -11,9 +11,29 @@ function toHttpsUrl(rawUrl) {
   return trimmed;
 }
 
-function extractAssetId(rawId) {
+function extractAssetId(searchParams) {
+  const rawId = searchParams.get("id") || searchParams.get("ID");
   const match = String(rawId || "").trim().match(/(\d+)/);
-  return match ? match.at(1) : null;
+  return match ? match[1] : null;
+}
+
+function detectImageType(bytes, fallbackHeader) {
+  if (bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+    return "image/png";
+  }
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return "image/jpeg";
+  }
+  if (bytes.length >= 4 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) {
+    return "image/gif";
+  }
+  if (bytes.length >= 2 && bytes[0] === 0x42 && bytes[1] === 0x4d) {
+    return "image/bmp";
+  }
+  if (fallbackHeader && fallbackHeader.toLowerCase().startsWith("image/")) {
+    return fallbackHeader;
+  }
+  return "image/jpeg";
 }
 
 const CORS_HEADERS = {
@@ -25,7 +45,7 @@ const CORS_HEADERS = {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const cleanPath = url.pathname.replace(/\/+$/, "") || "/";
+    const cleanPath = (url.pathname.replace(/\/+$/, "") || "/").toLowerCase();
 
     if (cleanPath === "/asset" || cleanPath === "/api/asset") {
       if (request.method === "OPTIONS") {
@@ -35,7 +55,7 @@ export default {
         });
       }
 
-      const assetId = extractAssetId(url.searchParams.get("id"));
+      const assetId = extractAssetId(url.searchParams);
       if (!assetId) {
         return new Response("Missing or invalid ?id= parameter", {
           status: 400,
@@ -64,7 +84,7 @@ export default {
         }
 
         const rows = await dbRes.json();
-        const firstRow = Array.isArray(rows) ? rows.at(0) : null;
+        const firstRow = Array.isArray(rows) ? rows[0] : null;
         const imageUrl = firstRow?.image_url ? toHttpsUrl(firstRow.image_url) : "";
 
         if (!imageUrl) {
@@ -92,8 +112,9 @@ export default {
           });
         }
 
-        const contentType = imgRes.headers.get("content-type") || "image/jpeg";
         const arrayBuf = await imgRes.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuf);
+        const contentType = detectImageType(bytes, imgRes.headers.get("content-type"));
 
         return new Response(arrayBuf, {
           status: 200,
