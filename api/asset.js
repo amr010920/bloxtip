@@ -100,6 +100,7 @@ export default {
           headers: {
             ...CORS_HEADERS,
             "Content-Type": contentType,
+            "Content-Length": String(arrayBuf.byteLength),
             "Cache-Control": "public, max-age=300",
           },
         });
