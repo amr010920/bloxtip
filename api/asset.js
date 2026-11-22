@@ -13,7 +13,7 @@ function toHttpsUrl(rawUrl) {
 
 function extractAssetId(rawId) {
   const match = String(rawId || "").trim().match(/(\d+)/);
-  return match ? match[1] : null;
+  return match ? match.at(1) : null;
 }
 
 const CORS_HEADERS = {
@@ -25,12 +25,9 @@ const CORS_HEADERS = {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const cleanPath = url.pathname.replace(/\/+$/, "") || "/";
 
-    if (
-      url.pathname === "/asset" ||
-      url.pathname === "/asset/" ||
-      url.pathname === "/api/asset"
-    ) {
+    if (cleanPath === "/asset" || cleanPath === "/api/asset") {
       if (request.method === "OPTIONS") {
         return new Response(null, {
           status: 204,
@@ -67,7 +64,8 @@ export default {
         }
 
         const rows = await dbRes.json();
-        const imageUrl = rows?.[0]?.image_url ? toHttpsUrl(rows[0].image_url) : "";
+        const firstRow = Array.isArray(rows) ? rows.at(0) : null;
+        const imageUrl = firstRow?.image_url ? toHttpsUrl(firstRow.image_url) : "";
 
         if (!imageUrl) {
           return new Response(`Asset ${assetId} not found`, {
