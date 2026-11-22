@@ -1,0 +1,9 @@
+{
+  "name": "bloxtip",
+  "main": "api/asseti.js",
+  "compatibility_date": "2026-11-22",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  }
+}
