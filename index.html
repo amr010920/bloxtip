@@ -1,19 +1,18 @@
-<!DOCTYPE html>
-<html><head data-machine-id="WEB1300"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Home - Novrex</title>
+<html><head data-machine-id="WEB1300">
+<title>Home - Bloxtip</title>
 <meta http-equiv="X-UA-Compatible" content="IE=edge,requiresActiveX=true">
-
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <meta name="author" content="amr010920">
-<meta name="description" content="Novrex is a global platform that brings people together through play.">
+<meta name="description" content="Bloxtip is a global platform that brings people together through play.">
 <meta name="keywords" content="free games, online games, building games, virtual worlds, free mmo, gaming cloud, physics engine">
 
-<link href="./Home - Novrex_files/N-11-22-2026 (1).png" rel="icon">
-<link rel="stylesheet" href="./Home - Novrex_files/fetch">
-<link rel="stylesheet" href="./Home - Novrex_files/fetch(1)">
+<link href="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" rel="icon">
+<link rel="stylesheet" href="https://static.rbxcdn.com/css/leanbase___44d3ec635baa2fbff8aed61cdea7301b_m.css/fetch">
+<link rel="stylesheet" href="https://static.rbxcdn.com/css/page___ddf27612a36eda6cc492d0930642e0d7_m.css/fetch">
 <link rel="stylesheet" href="https://chatsite.roblox.com/chat/7c264a14-3d57-4980-8e65-78700cf1a4c1/get-css-bundle">
 
-<script src="./Home - Novrex_files/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style type="text/css">
 .nvx-logo-img {
@@ -121,68 +120,6 @@
     color: #666666;
     margin-top: 2px;
 }
-.nvx-robux-icon-img {
-    width: 16px;
-    height: 16px;
-    object-fit: contain;
-    vertical-align: middle;
-    margin-right: 4px;
-}
-.nvx-settings-gear-img {
-    width: 18px;
-    height: 18px;
-    object-fit: contain;
-    vertical-align: middle;
-    display: inline-block;
-}
-.nvx-promo-banner {
-    background: #F68802;
-    color: #ffffff;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    border-radius: 4px;
-    margin-bottom: 12px;
-}
-.nvx-promo-banner a {
-    color: #ffffff;
-    text-decoration: underline;
-}
-.nvx-forum-box {
-    background: #ffffff;
-    border: 1px solid #d5d7dc;
-    border-radius: 4px;
-    padding: 12px;
-}
-.nvx-forum-textarea {
-    width: 100%;
-    min-height: 62px;
-    padding: 8px;
-    border: 1px solid #cccccc;
-    border-radius: 3px;
-    font-size: 13px;
-    margin-bottom: 8px;
-    resize: vertical;
-}
-.nvx-forum-post {
-    padding: 10px 0;
-    border-bottom: 1px solid #eeeeee;
-}
-.nvx-forum-post:last-child {
-    border-bottom: none;
-}
-.nvx-forum-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: #777777;
-    margin-bottom: 4px;
-}
-.nvx-forum-body {
-    font-size: 13px;
-    color: #191919;
-    word-break: break-word;
-}
 </style>
 </head>
 
@@ -195,24 +132,24 @@
                     <span class="icon-nav-menu"></span>
                 </div>
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="./index.html">
+                    <a class="navbar-brand" href="https://blt.cc.cd/home.html">
                         <img src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" alt="Novrex" class="nvx-logo-img">
                     </a>
                 </div>
             </div>
 
             <ul class="nav rbx-navbar hidden-xs hidden-sm col-md-4 col-lg-3">
-                <li><a class="nav-menu-title" href="./index">Games</a></li>
-                <li><a class="nav-menu-title" href="./catalog">Catalog</a></li>
-                <li><a class="nav-menu-title" href="./creation">Create</a></li>
-                <li><a class="buy-robux nav-menu-title" href="./download">Download</a></li>
+                <li><a class="nav-menu-title" href="https://blt.cc.cd/games">Games</a></li>
+                <li><a class="nav-menu-title" href="https://blt.cc.cd/catalog/">Catalog</a></li>
+                <li><a class="nav-menu-title" href="https://blt.cc.cd/develop">Create</a></li>
+                <li><a class="buy-robux nav-menu-title" href="https://blt.cc.cd/upgrades/robux?ctx=nav">Currency</a></li>
             </ul>
 
             <div id="navbar-universal-search" class="navbar-left rbx-navbar-search col-xs-5 col-sm-6 col-md-3" data-behavior="univeral-search" role="search">
                 <div class="input-group">
-                    <input id="navbar-search-input" class="form-control input-field" type="text" placeholder="Search games..." maxlength="120">
+                    <input id="navbar-search-input" class="form-control input-field" type="text" placeholder="Search" maxlength="120">
                     <div class="input-group-btn">
-                        <button id="navbar-search-btn" class="input-addon-btn" type="button">
+                        <button id="navbar-search-btn" class="input-addon-btn" type="submit">
                             <span class="icon-nav-search"></span>
                         </button>
                     </div>
@@ -221,16 +158,9 @@
 
             <div class="navbar-right rbx-navbar-right">
                 <div id="nvx-nav-auth" class="nvx-nav-session">
-                    <span class="nvx-session-pill" id="user-display">yepme2</span>
-                    <span class="nvx-session-pill" id="robux-badge">
-                        <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/ROBUX_icon_3F19%2529.webp" alt="Robux" class="nvx-robux-icon-img">
-                        <span id="robux-amount">904333394299999900</span>
-                    </span>
-                    <a href="./settings" title="Settings" class="nvx-auth-link-btn">
-                        <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot%202026-10-27%20111306.png" id="settings-gear-img" alt="Settings" class="nvx-settings-gear-img" onmouseover="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot%202026-10-27%20111358.png'" onmouseout="this.src='https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/Screenshot%202026-10-27%20111306.png'">
-                    </a>
-                    <button type="button" id="nvx-home-logout-btn" class="nvx-logout-btn">Logout</button>
-                </div>
+                <span class="nvx-session-pill">yepme2</span>
+                <button type="button" id="nvx-home-logout-btn" class="nvx-logout-btn">Log Out</button>
+            </div>
             </div>
         </div>
     </div>
@@ -238,19 +168,21 @@
     <div id="navigation" class="rbx-left-col" data-behavior="left-col">
         <ul>
             <li class="text-lead">
-                <a class="text-overflow" id="nvx-left-username" href="./index.html">yepme2</a>
+                <a class="text-overflow" id="nvx-left-username" href="https://blt.cc.cd/home.html">yepme2</a>
             </li>
             <li class="rbx-divider"></li>
         </ul>
         <div class="rbx-scrollbar" data-toggle="scrollbar" onselectstart="return false">
             <ul>
-                <li><a href="./index" id="nav-home"><span class="icon-nav-home"></span><span>Games</span></a></li>
-                <li><a href="./catalog" id="nav-catalog"><span class="icon-nav-catalog"></span><span>Catalog</span></a></li>
-                <li><a href="./creation" id="nav-create"><span class="icon-nav-create"></span><span>Develop / Create</span></a></li>
-                <li><a href="./download" id="nav-download"><span class="icon-nav-download"></span><span>Download</span></a></li>
-                <li><a href="./promocode" id="nav-promo"><span class="icon-nav-trade"></span><span>Promo Codes</span></a></li>
-                <li><a href="./settings" id="nav-settings"><span class="icon-nav-settings"></span><span>Settings</span></a></li>
-                <li><a href="./help" id="nav-help"><span class="icon-nav-help"></span><span>Help</span></a></li>
+                <li><a href="https://blt.cc.cd/home.html" id="nav-home"><span class="icon-nav-home"></span><span>Home</span></a></li>
+                <li><a href="https://blt.cc.cd/users/profile" id="nav-profile"><span class="icon-nav-profile"></span><span>Profile</span></a></li>
+                <li id="navigation-messages"><a href="https://blt.cc.cd/my/messages/#!/inbox" id="nav-message"><span class="icon-nav-message"></span><span>Messages</span></a></li>
+                <li id="navigation-friends"><a href="https://blt.cc.cd/users/friends" id="nav-friends"><span class="icon-nav-friends"></span><span>Friends</span></a></li>
+                <li><a href="https://blt.cc.cd/my/avatar" id="nav-character"><span class="icon-nav-charactercustomizer"></span><span>Avatar</span></a></li>
+                <li><a href="https://blt.cc.cd/inventory" id="nav-inventory"><span class="icon-nav-inventory"></span><span>Inventory</span></a></li>
+                <li><a href="https://blt.cc.cd/my/money.aspx#/#TradeItems_tab" id="nav-trade"><span class="icon-nav-trade"></span><span>Trade</span></a></li>
+                <li><a href="https://blt.cc.cd/my/groups.aspx" id="nav-group"><span class="icon-nav-group"></span><span>Groups</span></a></li>
+                <li><a href="https://blt.cc.cd/info/blog" id="nav-blog"><span class="icon-nav-blog"></span><span>Blog</span></a></li>
             </ul>
         </div>
     </div>
@@ -258,116 +190,56 @@
     <div class="container-main">
         <div class="content">
             <div id="HomeContainer" class="row home-container">
-                <div class="col-xs-12">
-                    <div class="nvx-promo-banner">
-                        Redeem promo codes now! Visit the <a href="./promocode">Promo Code Page</a>!
-                    </div>
-                </div>
-
                 <div class="col-xs-12 home-header">
                     <div class="nvx-home-header-row">
                         <div style="display:flex; align-items:center; gap:12px;">
-                            <a href="./index.html" class="avatar avatar-headshot-lg">
-                                <img alt="avatar" src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png" id="home-avatar-thumb" class="avatar-card-image">
+                            <a href="https://blt.cc.cd/home.html" class="avatar avatar-headshot-lg">
+                                <img alt="avatar" src="https://raw.githubusercontent.com/amr010920/bloxtip/images/more/Untitled-removebg-preview.png" id="home-avatar-thumb" class="avatar-card-image">
                             </a>
                             <div class="home-header-content non-bc">
-                                <h1><a href="./index.html" id="nvx-home-greeting">Welcome back, yepme2!</a></h1>
-                                <p id="account-status-text" style="margin:2px 0 0;font-size:12px;color:#666666;">Logged in as a registered user.</p>
+                                <h1><a href="https://blt.cc.cd/home.html" id="nvx-home-greeting">Hello, yepme2!</a></h1>
                             </div>
                         </div>
-                        <img src="./Home - Novrex_files/novrex-11-22-2026.png" alt="Novrex" class="nvx-banner-logo">
+                    </div>
+                </div>
+
+                <div class="col-xs-12 section home-friends">
+                    <div class="container-header">
+                        <h3 id="nvx-friends-heading">Friends</h3>
+                        <a href="https://blt.cc.cd/users/friends" class="btn-secondary-xs btn-more btn-fixed-width">See All</a>
+                    </div>
+                    <div class="section-content">
+                        <ul id="nvx-friends-list" class="hlist friend-list"><li class="nvx-empty-note">No connected friends yet.</li></ul>
+                    </div>
+                </div>
+
+                <div id="recently-visited-places" class="col-xs-12 container-list home-games">
+                    <div id="recently-visited-places-header" class="container-header">
+                        <h3>Recently Played</h3>
+                        <a href="https://blt.cc.cd/games?sortFilter=6" class="btn-secondary-xs btn-more btn-fixed-width">See All</a>
+                    </div>
+                    <div id="recently-visited-places-list" class="game-card-list">
+                        <div id="recently-visited-places-content"><div class="nvx-empty-note">No recently played games yet.</div></div>
+                    </div>
+                </div>
+
+                <div id="my-favorites-games" class="col-xs-12 container-list home-games">
+                    <div id="my-favorites-games-header" class="container-header">
+                        <h3>My Favorites</h3>
+                        <a href="https://blt.cc.cd/favorites" class="btn-secondary-xs btn-more btn-fixed-width">See All</a>
+                    </div>
+                    <div id="my-favorites-games-list" class="game-card-list">
+                        <div id="my-favorites-games-content"><div class="nvx-empty-note">No favorite games yet.</div></div>
                     </div>
                 </div>
 
                 <div id="all-novrex-games" class="col-xs-12 container-list home-games">
                     <div class="container-header">
-                        <h3 id="section-heading">Games</h3>
-                        <a href="./index" class="btn-secondary-xs btn-more btn-fixed-width">See All</a>
+                        <h3>Games</h3>
+                        <a href="https://blt.cc.cd/games" class="btn-secondary-xs btn-more btn-fixed-width">See All</a>
                     </div>
                     <div class="game-card-list">
-                        <div id="nvx-all-games-content">
-                            <div class="nvx-game-grid">
-                                <a href="bloxtip:placeId=3" class="nvx-game-tile">
-                                    <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png" alt="My awesome 2013 place" class="nvx-game-thumb">
-                                    <div class="nvx-game-meta">
-                                        <div class="nvx-game-title">My awesome 2013 place</div>
-                                        <div class="nvx-game-creator">By meow</div>
-                                    </div>
-                                </a>
-                                <a href="bloxtip:placeId=2" class="nvx-game-tile">
-                                    <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png" alt="cart ride into an epic duck" class="nvx-game-thumb">
-                                    <div class="nvx-game-meta">
-                                        <div class="nvx-game-title">cart ride into an epic duck</div>
-                                        <div class="nvx-game-creator">By yepme2</div>
-                                    </div>
-                                </a>
-                                <a href="bloxtip:placeId=1" class="nvx-game-tile">
-                                    <img src="https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png" alt="random game" class="nvx-game-thumb">
-                                    <div class="nvx-game-meta">
-                                        <div class="nvx-game-title">random game</div>
-                                        <div class="nvx-game-creator">By yepme2</div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xs-12 section">
-                    <div class="container-header">
-                        <h3>Forum</h3>
-                    </div>
-                    <div class="nvx-forum-box">
-                        <div style="margin-bottom:14px;">
-                            <textarea id="forum-post-body-input" class="nvx-forum-textarea" placeholder="Write a forum post..."></textarea>
-                            <button type="button" id="forum-post-submit-btn" class="btn-secondary-xs">Post Thread</button>
-                        </div>
-                        <div id="forum-posts-list">
-                            <div class="nvx-forum-post">
-                                <div class="nvx-forum-meta"><span><strong>bloxtip</strong></span><span>11/24/2026</span></div>
-                                <div class="nvx-forum-body">Lol</div>
-                            </div>
-                            <div class="nvx-forum-post">
-                                <div class="nvx-forum-meta"><span><strong>Guest</strong></span><span>11/22/2026</span></div>
-                                <div class="nvx-forum-body">Lol</div>
-                            </div>
-                            <div class="nvx-forum-post">
-                                <div class="nvx-forum-meta"><span><strong>Guest</strong></span><span>11/22/2026</span></div>
-                                <div class="nvx-forum-body">Lol</div>
-                            </div>
-                            <div class="nvx-forum-post">
-                                <div class="nvx-forum-meta"><span><strong>Guest</strong></span><span>11/21/2026</span></div>
-                                <div class="nvx-forum-body">meow</div>
-                            </div>
-                            <div class="nvx-forum-post">
-                                <div class="nvx-forum-meta"><span><strong>Guest</strong></span><span>11/21/2026</span></div>
-                                <div class="nvx-forum-body">no fah u meow</div>
-                            </div>
-                            <div class="nvx-forum-post">
-                                <div class="nvx-forum-meta"><span><strong>Harry</strong></span><span>11/21/2026</span></div>
-                                <div class="nvx-forum-body">new rule: meowing is strictly forbidden</div>
-                            </div>
-                            <div class="nvx-forum-post">
-                                <div class="nvx-forum-meta"><span><strong>Harry</strong></span><span>11/21/2026</span></div>
-                                <div class="nvx-forum-body">new rule: meowing is strictly forbidden</div>
-                            </div>
-                            <div class="nvx-forum-post">
-                                <div class="nvx-forum-meta"><span><strong>bloxtip</strong></span><span>11/21/2026</span></div>
-                                <div class="nvx-forum-body">jk</div>
-                            </div>
-                            <div class="nvx-forum-post">
-                                <div class="nvx-forum-meta"><span><strong>bloxtip</strong></span><span>11/21/2026</span></div>
-                                <div class="nvx-forum-body">ok dude who said the n word with ian</div>
-                            </div>
-                            <div class="nvx-forum-post">
-                                <div class="nvx-forum-meta"><span><strong>Guest</strong></span><span>11/20/2026</span></div>
-                                <div class="nvx-forum-body">nigerian</div>
-                            </div>
-                            <div class="nvx-forum-post">
-                                <div class="nvx-forum-meta"><span><strong>yepme2</strong></span><span>11/20/2026</span></div>
-                                <div class="nvx-forum-body">meow</div>
-                            </div>
-                        </div>
+                        <div id="nvx-all-games-content"><div class="nvx-empty-note">No games in games yet.</div></div>
                     </div>
                 </div>
             </div>
@@ -377,11 +249,15 @@
     <footer class="container-footer">
         <div class="footer">
             <ul class="row footer-links">
-                <li class="footer-link"><a href="./about" class="text-footer-nav">About Us</a></li>
-                <li class="footer-link"><a href="./privacy" class="text-footer-nav">Privacy</a></li>
-                <li class="footer-link"><a href="./help" class="text-footer-nav">Help</a></li>
+                <li class="footer-link"><a href="https://blt.cc.cd/info/about-us" class="text-footer-nav" target="_blank">About Us</a></li>
+                <li class="footer-link"><a href="https://blt.cc.cd/info/jobs" class="text-footer-nav" target="_blank">Jobs</a></li>
+                <li class="footer-link"><a href="https://blt.cc.cd/info/blog" class="text-footer-nav" target="_blank">Blog</a></li>
+                <li class="footer-link"><a href="https://blt.cc.cd/info/parents" class="text-footer-nav" target="_blank">Parents</a></li>
+                <li class="footer-link"><a href="https://blt.cc.cd/info/help" class="text-footer-nav" target="_blank">Help</a></li>
+                <li class="footer-link"><a href="https://blt.cc.cd/info/terms" class="text-footer-nav" target="_blank">Terms</a></li>
+                <li class="footer-link"><a href="https://blt.cc.cd/info/privacy" class="text-footer-nav privacy" target="_blank">Privacy</a></li>
             </ul>
-            <p class="text-footer footer-note">©2026 Novrex. Built by amr010920.</p>
+            <p class="text-footer footer-note">©2026 Bloxtip. Built by yepme2.</p>
         </div>
     </footer>
 </div>
@@ -389,17 +265,21 @@
 <script>
 (function () {
     const SUPABASE_URL = "https://hdpxjesfeawnntjzttwj.supabase.co/";
-    const SUPABASE_ANON_KEY = "sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX";
-    const DEFAULT_THUMBNAIL = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
+    const SUPABASE_KEY = "sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX";
+    const COOKIE_NAME = "nvx_session";
+    const DEFAULT_ICON = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/defaultgamethumbnail.png";
+    const DEFAULT_AVATAR = "https://raw.githubusercontent.com/amr010920/bloxtip/refs/heads/images/more/guestpfp.png";
 
-    const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-    const gamesContainer = document.getElementById("nvx-all-games-content");
-    const forumContainer = document.getElementById("forum-posts-list");
-    const searchInput = document.getElementById("navbar-search-input");
-    const searchBtn = document.getElementById("navbar-search-btn");
-    const postBtn = document.getElementById("forum-post-submit-btn");
-    const postInput = document.getElementById("forum-post-body-input");
-    const logoutBtn = document.getElementById("nvx-home-logout-btn");
+    const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+    const navAuth = document.getElementById("nvx-nav-auth");
+    const leftUsername = document.getElementById("nvx-left-username");
+    const homeGreeting = document.getElementById("nvx-home-greeting");
+    const friendsHeading = document.getElementById("nvx-friends-heading");
+    const friendsListEl = document.getElementById("nvx-friends-list");
+    const recentEl = document.getElementById("recently-visited-places-content");
+    const favoritesEl = document.getElementById("my-favorites-games-content");
+    const allGamesEl = document.getElementById("nvx-all-games-content");
 
     function escapeHtml(value) {
         return String(value ?? "")
@@ -409,125 +289,158 @@
             .replace(/"/g, "&quot;");
     }
 
-    function renderGamesList(games, emptyText) {
+    function getNovrexCookie() {
+        const parts = document.cookie ? document.cookie.split("; ") : [];
+        for (const part of parts) {
+            const eq = part.indexOf("=");
+            if (eq === -1) continue;
+            if (part.slice(0, eq) === COOKIE_NAME) {
+                try {
+                    return JSON.parse(decodeURIComponent(part.slice(eq + 1)));
+                } catch (_e) {
+                    return null;
+                }
+            }
+        }
+        const storedUser = localStorage.getItem("bloxtip_username");
+        return storedUser ? { username: storedUser } : null;
+    }
+
+    function clearNovrexCookie() {
+        const secure = window.location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax${secure}`;
+        localStorage.removeItem("bloxtip_username");
+    }
+
+    function renderGameCards(targetEl, games, emptyMessage) {
         if (!games || games.length === 0) {
-            gamesContainer.innerHTML = `<div class="nvx-empty-note">${escapeHtml(emptyText)}</div>`;
+            targetEl.innerHTML = `<div class="nvx-empty-note">${escapeHtml(emptyMessage)}</div>`;
             return;
         }
-        gamesContainer.innerHTML = `<div class="nvx-game-grid">${
-            games.map((game) => `
-                <a href="bloxtip:placeId=${escapeHtml(game.id)}" class="nvx-game-tile">
-                    <img src="${escapeHtml(game.thumbnail_url || DEFAULT_THUMBNAIL)}" alt="${escapeHtml(game.title)}" class="nvx-game-thumb">
-                    <div class="nvx-game-meta">
-                        <div class="nvx-game-title">${escapeHtml(game.title)}</div>
-                        <div class="nvx-game-creator">By ${escapeHtml(game.creator || "Novrex")}</div>
-                    </div>
-                </a>
-            `).join("")
+        targetEl.innerHTML = `<div class="nvx-game-grid">${
+            games.map((g) => {
+                const thumb = g.thumbnail_url || DEFAULT_ICON;
+                const href = g.place_url || (g.id ? `bloxtip:placeId=${encodeURIComponent(g.id)}` : "#");
+                return `
+                    <a href="${escapeHtml(href)}" class="nvx-game-tile">
+                        <img src="${escapeHtml(thumb)}" alt="${escapeHtml(g.title)}" class="nvx-game-thumb">
+                        <div class="nvx-game-meta">
+                            <div class="nvx-game-title">${escapeHtml(g.title)}</div>
+                            <div class="nvx-game-creator">By ${escapeHtml(g.creator || g.creator_name || "Bloxtip")}</div>
+                        </div>
+                    </a>
+                `;
+            }).join("")
         }</div>`;
     }
 
-    async function loadGames(query) {
-        if (!sb) return;
-        const q = String(query || "").trim();
-        try {
-            let req = sb.from("games").select("*").order("id", { ascending: false });
-            if (q) {
-                req = sb.from("games").select("*").ilike("title", `%${q}%`);
+    async function loadFriends(username) {
+        friendsHeading.textContent = "Friends";
+        if (!sb || !username) {
+            friendsListEl.innerHTML = `<li class="nvx-empty-note">Log in to see your connected friends.</li>`;
+            return;
+        }
+
+        const { data: rows, error } = await sb
+            .from("connections")
+            .select("*")
+            .or(`user1.eq.${username},user2.eq.${username}`);
+
+        if (error || !rows || rows.length === 0) {
+            friendsListEl.innerHTML = `<li class="nvx-empty-note">No connected friends yet.</li>`;
+            return;
+        }
+
+        const friends = [...new Set(rows.map((r) => (r.user1 === username ? r.user2 : r.user1)).filter(Boolean))];
+        friendsHeading.textContent = `Friends (${friends.length})`;
+        if (friends.length === 0) {
+            friendsListEl.innerHTML = `<li class="nvx-empty-note">No connected friends yet.</li>`;
+            return;
+        }
+
+        friendsListEl.innerHTML = friends.map((name) => `
+            <li class="list-item friend">
+                <div class="avatar-container">
+                    <a href="https://blt.cc.cd/users/profile" class="avatar avatar-card-fullbody friend-link" title="${escapeHtml(name)}">
+                        <span class="avatar-card-link friend-avatar">
+                            <img alt="${escapeHtml(name)}" class="avatar-card-image" src="${DEFAULT_AVATAR}">
+                        </span>
+                        <span class="text-overflow friend-name">${escapeHtml(name)}</span>
+                    </a>
+                    <span class="avatar-status friend-status icon-online" title="Connected"></span>
+                </div>
+            </li>
+        `).join("");
+    }
+
+    async function loadGamesSections(username) {
+        if (!sb) {
+            recentEl.innerHTML = `<div class="nvx-empty-note">Supabase client not available.</div>`;
+            favoritesEl.innerHTML = `<div class="nvx-empty-note">Supabase client not available.</div>`;
+            allGamesEl.innerHTML = `<div class="nvx-empty-note">Supabase client not available.</div>`;
+            return;
+        }
+
+        const { data: allGames } = await sb
+            .from("games")
+            .select("*")
+            .order("id", { ascending: false });
+
+        renderGameCards(allGamesEl, allGames || [], "No games in games yet.");
+
+        if (!username) {
+            recentEl.innerHTML = `<div class="nvx-empty-note">Log in to view your recently played games.</div>`;
+            favoritesEl.innerHTML = `<div class="nvx-empty-note">Log in to view your favorite games.</div>`;
+            return;
+        }
+
+        recentEl.innerHTML = `<div class="nvx-empty-note">No recently played games yet.</div>`;
+        favoritesEl.innerHTML = `<div class="nvx-empty-note">No favorite games yet.</div>`;
+    }
+
+    async function renderHome() {
+        const acct = getNovrexCookie();
+        if (acct && acct.username) {
+            let displayName = acct.username;
+            if (sb) {
+                const { data } = await sb
+                    .from("accounts")
+                    .select("username")
+                    .eq("username", displayName)
+                    .single();
+                if (data && data.username) {
+                    displayName = data.username;
+                }
             }
-            const { data: games, error } = await req;
-            if (!error && games && games.length > 0) {
-                renderGamesList(games, "No games found in the catalog.");
-            } else if (q) {
-                renderGamesList([], `No results found for "${q}".`);
+            leftUsername.textContent = displayName;
+            homeGreeting.textContent = `Hello, ${displayName}!`;
+            navAuth.innerHTML = `
+                <span class="nvx-session-pill">${escapeHtml(displayName)}</span>
+                <button type="button" id="nvx-home-logout-btn" class="nvx-logout-btn">Log Out</button>
+            `;
+            const logoutBtn = document.getElementById("nvx-home-logout-btn");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", function () {
+                    clearNovrexCookie();
+                    renderHome();
+                });
             }
-        } catch (_e) {}
+            await Promise.all([loadFriends(displayName), loadGamesSections(displayName)]);
+        } else {
+            leftUsername.textContent = "Guest";
+            homeGreeting.textContent = "Hello, Guest!";
+            navAuth.innerHTML = `
+                <a href="https://blt.cc.cd/Untitled-4.html" class="nvx-auth-link-btn">Log In</a>
+                <a href="https://blt.cc.cd/myplace.html" class="nvx-auth-link-btn">Sign Up</a>
+            `;
+            await Promise.all([loadFriends(null), loadGamesSections(null)]);
+        }
     }
 
-    async function checkUserSession() {
-        if (!sb) return;
-        const currentUser = localStorage.getItem("bloxtip_username");
-        if (!currentUser) return;
-
-        try {
-            const { data, error } = await sb
-                .from("accounts")
-                .select("*")
-                .eq("username", currentUser)
-                .single();
-
-            if (!error && data) {
-                document.getElementById("user-display").textContent = data.username;
-                document.getElementById("nvx-left-username").textContent = data.username;
-                document.getElementById("robux-amount").textContent = data.robux || 0;
-                document.getElementById("nvx-home-greeting").textContent = `Welcome back, ${data.username}!`;
-                document.getElementById("account-status-text").textContent = "Logged in as a registered user.";
-            }
-        } catch (_e) {}
-    }
-
-    async function loadForumPosts() {
-        if (!sb) return;
-        try {
-            const { data: posts, error } = await sb
-                .from("forum_posts")
-                .select("*")
-                .order("id", { ascending: false });
-
-            if (!error && posts && posts.length > 0) {
-                forumContainer.innerHTML = posts.map((post) => `
-                    <div class="nvx-forum-post">
-                        <div class="nvx-forum-meta">
-                            <span><strong>${escapeHtml(post.author)}</strong></span>
-                            <span>${escapeHtml(new Date(post.created_at).toLocaleDateString())}</span>
-                        </div>
-                        <div class="nvx-forum-body">${escapeHtml(post.content)}</div>
-                    </div>
-                `).join("");
-            }
-        } catch (_e) {}
-    }
-
-    async function submitForumPost() {
-        if (!sb || !postInput) return;
-        const content = postInput.value.trim();
-        if (!content) return;
-        const currentUser = localStorage.getItem("bloxtip_username") || "Guest";
-
-        try {
-            const { error } = await sb
-                .from("forum_posts")
-                .insert([{ author: currentUser, content: content }]);
-            if (!error) {
-                postInput.value = "";
-                loadForumPosts();
-            }
-        } catch (_e) {}
-    }
-
-    if (searchInput) {
-        searchInput.addEventListener("keyup", function () {
-            loadGames(searchInput.value);
-        });
-    }
-    if (searchBtn) {
-        searchBtn.addEventListener("click", function () {
-            loadGames(searchInput ? searchInput.value : "");
-        });
-    }
-    if (postBtn) {
-        postBtn.addEventListener("click", submitForumPost);
-    }
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", function () {
-            localStorage.removeItem("bloxtip_username");
-            window.location.reload();
-        });
-    }
-
-    loadGames("");
-    checkUserSession();
-    loadForumPosts();
+    renderHome();
 })();
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;4501289f75f646c081cf29991d85116a&quot;,&quot;r&quot;:1,&quot;spa&quot;:2}" crossorigin="anonymous"></script>
+
+
 </body></html>
