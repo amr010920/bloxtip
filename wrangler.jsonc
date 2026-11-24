@@ -6,8 +6,7 @@
     "directory": ".",
     "binding": "ASSETS",
     "run_worker_first": [
-      "/js/game.js",
-      "/js/game.js/"
+      "/game"
     ]
   }
 }
