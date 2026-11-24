@@ -320,7 +320,12 @@
         targetEl.innerHTML = `<div class="nvx-game-grid">${
             games.map((g) => {
                 const thumb = g.thumbnail_url || DEFAULT_ICON;
-                const href = g.place_url || (g.id ? `bloxtip:placeId=${encodeURIComponent(g.id)}` : "#");
+                const gameId = g.id ?? "";
+                const rawHref = g.place_url || (gameId !== "" ? `bloxtip:placeId=${encodeURIComponent(gameId)}` : "#");
+                const isProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(rawHref) && !/^https?:/i.test(rawHref);
+                const href = isProtocol && gameId !== ""
+                    ? `/js/game.js?id=${encodeURIComponent(gameId)}`
+                    : rawHref;
                 return `
                     <a href="${escapeHtml(href)}" class="nvx-game-tile">
                         <img src="${escapeHtml(thumb)}" alt="${escapeHtml(g.title)}" class="nvx-game-thumb">
