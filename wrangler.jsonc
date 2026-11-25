@@ -1,12 +1,11 @@
 {
   "name": "bloxtip",
+  "main": "api/asseti.js",
   "main": "api/asset.js",
   "compatibility_date": "2026-11-22",
   "assets": {
+    "directory": "./public",
     "directory": ".",
-    "binding": "ASSETS",
-    "run_worker_first": [
-      "/game"
-    ]
+    "binding": "ASSETS"
   }
 }
