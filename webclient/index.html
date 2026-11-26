@@ -10,7 +10,7 @@
 html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; color: #ffffff; }
 #topbar {
   height: 36px;
-  background: linear-gradient(rgba(255, 255, 255, 0.35));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.35));
   border-bottom: 1px solid #0e1013;
   display: flex;
   align-items: center;
@@ -43,16 +43,51 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; c
 .tb-btn:hover { background: #00a2ff; border-color: #00a2ff; }
 #viewport { position: relative; width: 100%; height: calc(100% - 36px); }
 canvas { display: block; width: 100%; height: 100%; }
+#loading-screen {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 22, 29, 0.92);
+  z-index: 40;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #ffffff;
+  user-select: none;
+}
+#loading-screen.active {
+  display: flex;
+}
+.loader-spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid rgba(255, 255, 255, 0.22);
+  border-top-color: #00a2ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+#loading-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+#loading-status {
+  font-size: 12px;
+  color: #b8c4d4;
+}
 #games-modal {
   display: none;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 540px;
-  max-width: 90%;
-  max-height: 75%;
-  background: rgba(255, 255, 255, 0.92);
+  width: 580px;
+  max-width: 92%;
+  max-height: 78%;
+  background: rgba(255, 255, 255, 0.94);
   color: #16181d;
   border: 1px solid #0e1013;
   border-radius: 4px;
@@ -77,7 +112,7 @@ canvas { display: block; width: 100%; height: 100%; }
   padding: 12px;
   overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 10px;
 }
 .game-card {
@@ -90,6 +125,13 @@ canvas { display: block; width: 100%; height: 100%; }
   justify-content: space-between;
   gap: 8px;
   color: #16181d;
+}
+.game-card-thumb {
+  width: 100%;
+  height: 82px;
+  object-fit: cover;
+  border-radius: 2px;
+  background: #d8dee8;
 }
 .game-card-title {
   font-weight: 700;
@@ -210,6 +252,12 @@ canvas { display: block; width: 100%; height: 100%; }
 <div id="viewport">
   <canvas id="game-canvas"></canvas>
 
+  <div id="loading-screen">
+    <div class="loader-spinner"></div>
+    <div id="loading-title">Loading Game...</div>
+    <div id="loading-status">Reading xml from games table...</div>
+  </div>
+
   <div id="games-modal">
     <div id="games-modal-header">
       <span>Games</span>
@@ -274,9 +322,26 @@ const openGamesBtn = document.getElementById("open-games-btn");
 const closeGamesBtn = document.getElementById("close-games-btn");
 const gamesModal = document.getElementById("games-modal");
 const gamesGrid = document.getElementById("games-grid");
+const loadingScreen = document.getElementById("loading-screen");
+const loadingTitle = document.getElementById("loading-title");
+const loadingStatus = document.getElementById("loading-status");
 const leaderboardBody = document.getElementById("leaderboard-body");
 const playerCountEl = document.getElementById("player-count");
 const hotbarEl = document.getElementById("hotbar");
+
+function showLoading(titleText, statusText) {
+  loadingTitle.textContent = titleText || "Loading Game...";
+  loadingStatus.textContent = statusText || "Preparing world...";
+  loadingScreen.classList.add("active");
+}
+
+function updateLoadingStatus(statusText) {
+  loadingStatus.textContent = statusText;
+}
+
+function hideLoading() {
+  loadingScreen.classList.remove("active");
+}
 
 document.getElementById("player-label").textContent = "Player: " + username;
 
@@ -1474,6 +1539,14 @@ let attackTimer = 0;
 let currentSpawn = { x: 0, y: 0.5, z: 0 };
 let speedBoostTimer = 0;
 
+let floorCacheTime = 0;
+let cachedFloorBoxes = [];
+
+function invalidateFloorCache() {
+  floorCacheTime = 0;
+  cachedFloorBoxes = [];
+}
+
 function syncLocalAvatarTransform() {
   if (!localAvatarInst) return;
   localAvatarInst.container.position.set(playerPos.x, playerPos.y + localAvatarInst.footOffset, playerPos.z);
@@ -1495,6 +1568,7 @@ function respawnLocalPlayer() {
 
 function loadPlaceXmlString(xmlText) {
   clearWorldGroup();
+  invalidateFloorCache();
   pickupItems = [];
   interactiveParts = [];
   physicsParts = [];
@@ -1530,39 +1604,53 @@ function loadPlaceXmlString(xmlText) {
   respawnLocalPlayer();
 }
 
-function extractXmlFromGameRow(place) {
-  if (!place || typeof place !== "object") return "";
-  const xmlColumnKeys = ["xml", "xml_file", "xml_data", "xml_content", "place_xml", "rbxlx", "data", "content", "code"];
-  for (const key of xmlColumnKeys) {
-    const val = place[key];
-    if (typeof val === "string") {
-      const trimmed = val.trim();
-      if (trimmed.includes("<roblox") || trimmed.startsWith("<Item") || trimmed.startsWith("<?xml")) {
-        return trimmed;
-      }
-    }
-  }
-  for (const [k, val] of Object.entries(place)) {
-    if (typeof val === "string" && k !== "name" && k !== "title") {
-      const trimmed = val.trim();
-      if (trimmed.includes("<roblox") || trimmed.startsWith("<Item") || trimmed.startsWith("<?xml")) {
-        return trimmed;
-      }
-    }
-  }
-  return "";
+function looksLikeXml(raw) {
+  if (typeof raw !== "string") return false;
+  const s = raw.trim();
+  return s.startsWith("<") && (s.includes("<Item") || s.includes("<roblox") || s.includes("<?xml"));
 }
 
-async function fetchPlaceXml(place) {
-  const inlineXml = extractXmlFromGameRow(place);
-  if (inlineXml) return inlineXml;
+async function resolveXmlFromGameRow(place) {
+  let row = place;
 
   if (place && place.id !== undefined && place.id !== null) {
+    const hasXml = typeof place.xml === "string" && place.xml.trim().length > 0;
+    if (!hasXml) {
+      try {
+        const { data, error } = await sb
+          .from("games")
+          .select("id, title, xml, file_url")
+          .eq("id", place.id)
+          .limit(1);
+        if (!error && Array.isArray(data) && data[0]) {
+          row = { ...place, ...data[0] };
+        }
+      } catch (_) {}
+    }
+  }
+
+  if (row && typeof row.xml === "string" && row.xml.trim()) {
+    const trimmedXml = row.xml.trim();
+    if (looksLikeXml(trimmedXml)) {
+      return trimmedXml;
+    }
+    if (/^https?:\/\//i.test(trimmedXml)) {
+      try {
+        const res = await fetch(trimmedXml);
+        if (res.ok) {
+          const fetched = await res.text();
+          if (looksLikeXml(fetched)) return fetched.trim();
+        }
+      } catch (_) {}
+    }
+  }
+
+  if (row && typeof row.file_url === "string" && /^https?:\/\//i.test(row.file_url.trim())) {
     try {
-      const { data, error } = await sb.from("games").select("xml").eq("id", place.id).limit(1);
-      if (!error && Array.isArray(data) && data[0]) {
-        const dbXml = extractXmlFromGameRow(data[0]);
-        if (dbXml) return dbXml;
+      const res = await fetch(row.file_url.trim());
+      if (res.ok) {
+        const fetched = await res.text();
+        if (looksLikeXml(fetched)) return fetched.trim();
       }
     } catch (_) {}
   }
@@ -1587,12 +1675,6 @@ async function fetchPlaceXml(place) {
         <Vector3 name="Size"><X>6</X><Y>4</Y><Z>6</Z></Vector3>
         <CoordinateFrame name="CFrame"><X>10</X><Y>2</Y><Z>-10</Z></CoordinateFrame>
         <int name="BrickColor">21</int>
-      </Properties>
-    </Item>
-    <Item class="Tool">
-      <Properties>
-        <string name="Name">Sword</string>
-        <Color3 name="Color3"><R>0.75</R><G>0.8</G><B>0.85</B></Color3>
       </Properties>
     </Item>
   </Item>
@@ -1846,8 +1928,8 @@ async function loadGamesList() {
 
   if (rows.length === 0) {
     rows = [
-      { id: "classic_baseplate", name: "Classic Baseplate" },
-      { id: "obby_arena", name: "Obby & Physics Arena" }
+      { id: "classic_baseplate", title: "Classic Baseplate", creator: "amr010920" },
+      { id: "obby_arena", title: "Obby & Physics Arena", creator: "amr010920" }
     ];
   }
 
@@ -1860,9 +1942,19 @@ async function renderGamesModalList() {
   gamesGrid.innerHTML = "";
   rows.forEach((g, idx) => {
     const gId = String(g.id ?? idx);
-    const title = String(g.name || g.title || ("Game " + (idx + 1)));
+    const title = String(g.title || g.name || ("Game " + (idx + 1)));
+    const creator = String(g.creator || "amr010920");
+    const yearStr = g.year ? ` (${g.year})` : "";
     const card = document.createElement("div");
     card.className = "game-card";
+
+    if (g.thumbnail_url && /^https?:\/\//i.test(String(g.thumbnail_url).trim())) {
+      const thumb = document.createElement("img");
+      thumb.className = "game-card-thumb";
+      thumb.src = String(g.thumbnail_url).trim();
+      thumb.alt = title;
+      card.appendChild(thumb);
+    }
 
     const titleEl = document.createElement("div");
     titleEl.className = "game-card-title";
@@ -1870,12 +1962,12 @@ async function renderGamesModalList() {
 
     const metaEl = document.createElement("div");
     metaEl.className = "game-card-meta";
-    metaEl.textContent = gId === String(placeId) ? "Playing" : "Ready";
+    metaEl.textContent = `By ${creator}${yearStr}`;
 
     const joinBtn = document.createElement("button");
     joinBtn.className = "tb-btn";
     joinBtn.type = "button";
-    joinBtn.textContent = "Join";
+    joinBtn.textContent = gId === String(placeId) ? "Rejoin" : "Join";
     joinBtn.addEventListener("click", async () => {
       gamesModal.classList.remove("open");
       await selectAndLaunchGame(g);
@@ -1889,21 +1981,36 @@ async function renderGamesModalList() {
 }
 
 async function selectAndLaunchGame(gameOrId) {
-  if (!gamesCache || gamesCache.length === 0) {
-    await loadGamesList();
-  }
-  const targetId = typeof gameOrId === "object" && gameOrId !== null
-    ? String(gameOrId.id ?? "")
-    : String(gameOrId ?? "");
-  const chosen = (typeof gameOrId === "object" && gameOrId !== null)
-    ? gameOrId
-    : (gamesCache.find((g) => String(g.id) === targetId) || gamesCache[0] || { id: targetId || "default", name: "Baseplate" });
+  const titleText = typeof gameOrId === "object" && gameOrId !== null
+    ? String(gameOrId.title || gameOrId.name || "Loading Game...")
+    : "Loading Game...";
+  showLoading("Loading " + titleText, "Reading xml column from games table...");
 
-  placeId = String(chosen.id ?? targetId ?? "default");
-  activeServerId = "";
-  const xml = await fetchPlaceXml(chosen);
-  loadPlaceXmlString(xml);
-  await discoverAndJoinMultiplayerServer(placeId);
+  try {
+    if (!gamesCache || gamesCache.length === 0) {
+      await loadGamesList();
+    }
+    const targetId = typeof gameOrId === "object" && gameOrId !== null
+      ? String(gameOrId.id ?? "")
+      : String(gameOrId ?? "");
+    const chosen = (typeof gameOrId === "object" && gameOrId !== null)
+      ? gameOrId
+      : (gamesCache.find((g) => String(g.id) === targetId) || gamesCache[0] || { id: targetId || "default", title: "Baseplate" });
+
+    placeId = String(chosen.id ?? targetId ?? "default");
+    activeServerId = "";
+
+    updateLoadingStatus("Fetching xml for " + (chosen.title || chosen.name || placeId) + "...");
+    const xml = await resolveXmlFromGameRow(chosen);
+
+    updateLoadingStatus("Building 3D world from XML...");
+    loadPlaceXmlString(xml);
+
+    updateLoadingStatus("Connecting to multiplayer server...");
+    await discoverAndJoinMultiplayerServer(placeId);
+  } finally {
+    setTimeout(() => hideLoading(), 220);
+  }
 }
 
 document.getElementById("reset-btn").addEventListener("click", () => {
@@ -2005,9 +2112,6 @@ window.addEventListener("resize", () => {
     renderer.setSize(w, h, false);
   }
 });
-
-let floorCacheTime = 0;
-let cachedFloorBoxes = [];
 
 function refreshFloorBoxes(now) {
   if (now - floorCacheTime < 120 && cachedFloorBoxes.length > 0) return;
@@ -2175,6 +2279,7 @@ function animate(now) {
 }
 
 (async function init() {
+  showLoading("Starting Bloxtip...", "Loading avatar GLB...");
   const tpl = await loadAvatarTemplate(AVATAR_GLB_URL);
   localAvatarInst = createAnimatedAvatarInstance(tpl, username);
   scene.add(localAvatarInst.container);
@@ -2184,8 +2289,8 @@ function animate(now) {
 
   const rows = await loadGamesList();
   const initialGame = placeId
-    ? (rows.find((g) => String(g.id) === String(placeId)) || { id: placeId, name: "Game" })
-    : (rows[0] || { id: "default", name: "Baseplate" });
+    ? (rows.find((g) => String(g.id) === String(placeId)) || { id: placeId, title: "Game" })
+    : (rows[0] || { id: "default", title: "Baseplate" });
   await selectAndLaunchGame(initialGame);
   requestAnimationFrame(animate);
 })();
