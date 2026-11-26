@@ -10,7 +10,7 @@
 html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; color: #ffffff; }
 #topbar {
   height: 36px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.54));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.35));
   border-bottom: 1px solid #0e1013;
   display: flex;
   align-items: center;
@@ -22,7 +22,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; c
   z-index: 20;
 }
 .tb-group { display: flex; align-items: center; gap: 10px; }
-#top-game-selector {
+#top-games-bar {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -30,19 +30,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; c
   display: flex;
   align-items: center;
   gap: 6px;
-  border: 0px solid rgba(255, 255, 255, 0.18);
-  border-radius: 0px;
-  padding: 3px 6px;
-  font-size: 12px;
-}
-#game-select {
-  background: #252a34;
-  color: #fff;
-  border: 1px solid #4b5565;
-  border-radius: 2px;
-  padding: 3px 6px;
-  font-size: 12px;
-  min-width: 180px;
 }
 .tb-btn {
   background: #343a46;
@@ -56,6 +43,63 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; c
 .tb-btn:hover { background: #00a2ff; border-color: #00a2ff; }
 #viewport { position: relative; width: 100%; height: calc(100% - 36px); }
 canvas { display: block; width: 100%; height: 100%; }
+#games-modal {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 540px;
+  max-width: 90%;
+  max-height: 75%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #16181d;
+  border: 1px solid #0e1013;
+  border-radius: 4px;
+  z-index: 30;
+  flex-direction: column;
+  overflow: hidden;
+}
+#games-modal.open {
+  display: flex;
+}
+#games-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #252a34;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+}
+#games-grid {
+  padding: 12px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.game-card {
+  background: #ffffff;
+  border: 1px solid #b8c0cc;
+  border-radius: 3px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  color: #16181d;
+}
+.game-card-title {
+  font-weight: 700;
+  font-size: 13px;
+  word-break: break-word;
+}
+.game-card-meta {
+  font-size: 11px;
+  color: #4b5565;
+}
 #leaderboard {
   position: absolute;
   top: 10px;
@@ -153,11 +197,8 @@ canvas { display: block; width: 100%; height: 100%; }
   <div class="tb-group">
     <span id="server-role-label" style="color:#ffffff;">waiting</span>
   </div>
-  <div id="top-game-selector">
-    <select id="game-select">
-      <option value="">Loading Games</option>
-    </select>
-    <button class="tb-btn" id="load-game-btn" type="button">Join</button>
+  <div id="top-games-bar">
+    <button class="tb-btn" id="open-games-btn" type="button">Games</button>
   </div>
   <div class="tb-group">
     <span id="player-label">ur user here</span>
@@ -168,6 +209,14 @@ canvas { display: block; width: 100%; height: 100%; }
 
 <div id="viewport">
   <canvas id="game-canvas"></canvas>
+
+  <div id="games-modal">
+    <div id="games-modal-header">
+      <span>Games</span>
+      <button class="tb-btn" id="close-games-btn" type="button">X</button>
+    </div>
+    <div id="games-grid"></div>
+  </div>
 
   <div id="chat-box">
     <div id="chat-log"></div>
@@ -215,19 +264,32 @@ function escapeHtml(str) {
 }
 
 const params = new URLSearchParams(window.location.search);
-let placeId = params.get("placeId") || params.get("id") || "default";
+let placeId = params.get("placeId") || params.get("id") || "";
 let activeServerId = params.get("server") || "";
 const peerId = "peer_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
 const username = params.get("user") || localStorage.getItem("bloxtip_username") || ("Guest_" + peerId.slice(-4));
 
 const serverRoleLabel = document.getElementById("server-role-label");
-const gameSelect = document.getElementById("game-select");
-const loadGameBtn = document.getElementById("load-game-btn");
+const openGamesBtn = document.getElementById("open-games-btn");
+const closeGamesBtn = document.getElementById("close-games-btn");
+const gamesModal = document.getElementById("games-modal");
+const gamesGrid = document.getElementById("games-grid");
 const leaderboardBody = document.getElementById("leaderboard-body");
 const playerCountEl = document.getElementById("player-count");
 const hotbarEl = document.getElementById("hotbar");
 
 document.getElementById("player-label").textContent = "Player: " + username;
+
+openGamesBtn.addEventListener("click", async () => {
+  gamesModal.classList.toggle("open");
+  if (gamesModal.classList.contains("open")) {
+    await renderGamesModalList();
+  }
+});
+
+closeGamesBtn.addEventListener("click", () => {
+  gamesModal.classList.remove("open");
+});
 
 const chatLog = document.getElementById("chat-log");
 const chatForm = document.getElementById("chat-form");
@@ -370,18 +432,18 @@ function buildFallbackRobloxRig() {
 
   const root = new THREE.Group();
   root.name = "HumanoidRootPart";
-  root.position.set(0, 3, 0);
   rig.add(root);
 
   const torso = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 1), torsoMat);
   torso.name = "Torso";
+  torso.position.set(0, 3, 0);
   torso.castShadow = true;
   torso.receiveShadow = true;
   root.add(torso);
 
   const headPivot = new THREE.Group();
   headPivot.name = "HeadPivot";
-  headPivot.position.set(0, 1.6, 0);
+  headPivot.position.set(0, 4.6, 0);
   const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), headMat);
   head.name = "Head";
   head.castShadow = true;
@@ -390,7 +452,7 @@ function buildFallbackRobloxRig() {
 
   const leftArmPivot = new THREE.Group();
   leftArmPivot.name = "LeftShoulder";
-  leftArmPivot.position.set(-1.5, 0.5, 0);
+  leftArmPivot.position.set(-1.5, 3.5, 0);
   const leftArm = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), armMat);
   leftArm.name = "Left Arm";
   leftArm.position.set(0, -0.5, 0);
@@ -400,7 +462,7 @@ function buildFallbackRobloxRig() {
 
   const rightArmPivot = new THREE.Group();
   rightArmPivot.name = "RightShoulder";
-  rightArmPivot.position.set(1.5, 0.5, 0);
+  rightArmPivot.position.set(1.5, 3.5, 0);
   const rightArm = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), armMat);
   rightArm.name = "Right Arm";
   rightArm.position.set(0, -0.5, 0);
@@ -410,7 +472,7 @@ function buildFallbackRobloxRig() {
 
   const leftLegPivot = new THREE.Group();
   leftLegPivot.name = "LeftHip";
-  leftLegPivot.position.set(-0.5, -1, 0);
+  leftLegPivot.position.set(-0.5, 2, 0);
   const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), limbMat);
   leftLeg.name = "Left Leg";
   leftLeg.position.set(0, -1, 0);
@@ -420,7 +482,7 @@ function buildFallbackRobloxRig() {
 
   const rightLegPivot = new THREE.Group();
   rightLegPivot.name = "RightHip";
-  rightLegPivot.position.set(0.5, -1, 0);
+  rightLegPivot.position.set(0.5, 2, 0);
   const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), limbMat);
   rightLeg.name = "Right Leg";
   rightLeg.position.set(0, -1, 0);
@@ -437,6 +499,8 @@ function buildFallbackRobloxRig() {
     rightArmPivot,
     leftLegPivot,
     rightLegPivot,
+    footOffset: 0.05,
+    height: 5.2,
     isFallback: true
   };
 }
@@ -487,19 +551,28 @@ function loadAvatarTemplate(glbUrl = AVATAR_GLB_URL) {
     gltfLoader.load(
       glbUrl,
       (gltf) => {
-        const box = new THREE.Box3().setFromObject(gltf.scene);
-        const size = new THREE.Vector3();
-        box.getSize(size);
-        const maxDim = Math.max(size.x, size.y, size.z, 0.001);
+        const rawBox = new THREE.Box3().setFromObject(gltf.scene);
+        const rawSize = new THREE.Vector3();
+        rawBox.getSize(rawSize);
+        const maxDim = Math.max(rawSize.x, rawSize.y, rawSize.z, 0.001);
         const targetHeight = 5.0;
-        const scaleFactor = size.y > 0.01 ? (targetHeight / size.y) : (targetHeight / maxDim);
+        const scaleFactor = rawSize.y > 0.01 ? (targetHeight / rawSize.y) : (targetHeight / maxDim);
         gltf.scene.scale.multiplyScalar(scaleFactor);
+
+        gltf.scene.updateMatrixWorld(true);
+        const scaledBox = new THREE.Box3().setFromObject(gltf.scene);
+        const minY = Number.isFinite(scaledBox.min.y) ? scaledBox.min.y : 0;
+        const maxY = Number.isFinite(scaledBox.max.y) ? scaledBox.max.y : targetHeight;
+        const footOffset = Math.max(0.05, -minY + 0.05);
+        const height = Math.max(1.0, maxY - minY);
 
         const parts = extractRigParts(gltf.scene);
         const result = {
           scene: gltf.scene,
           clips: gltf.animations || [],
           ...parts,
+          footOffset,
+          height,
           isFallback: false
         };
         if (glbUrl === AVATAR_GLB_URL) {
@@ -524,7 +597,7 @@ function loadAvatarTemplate(glbUrl = AVATAR_GLB_URL) {
   return p;
 }
 
-function createNameplateSprite(name) {
+function createNameplateSprite(name, topY = 5.6) {
   const c = document.createElement("canvas");
   c.width = 256;
   c.height = 64;
@@ -541,7 +614,7 @@ function createNameplateSprite(name) {
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
   const sprite = new THREE.Sprite(mat);
   sprite.scale.set(4.5, 1.15, 1);
-  sprite.position.set(0, 3.8, 0);
+  sprite.position.set(0, topY, 0);
   return sprite;
 }
 
@@ -564,7 +637,8 @@ function createAnimatedAvatarInstance(template, playerName) {
     });
   }
 
-  const nameplate = createNameplateSprite(playerName);
+  const height = template.height || 5.0;
+  const nameplate = createNameplateSprite(playerName, height + 0.8);
   container.add(nameplate);
 
   const heldMount = new THREE.Group();
@@ -582,6 +656,8 @@ function createAnimatedAvatarInstance(template, playerName) {
     mixer,
     actions,
     heldMount,
+    footOffset: template.footOffset || 0.05,
+    height,
     animTime: 0,
     equippedToolName: ""
   };
@@ -1384,25 +1460,30 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
   }
 }
 
-const playerPos = new THREE.Vector3(0, 4, 0);
+const playerPos = new THREE.Vector3(0, 0.5, 0);
 const playerVel = new THREE.Vector3(0, 0, 0);
 let playerYaw = 0;
 let isGrounded = false;
 let isJumping = false;
 let isAttacking = false;
 let attackTimer = 0;
-let currentSpawn = { x: 0, y: 4, z: 0 };
+let currentSpawn = { x: 0, y: 0.5, z: 0 };
 let speedBoostTimer = 0;
 
+function syncLocalAvatarTransform() {
+  if (!localAvatarInst) return;
+  localAvatarInst.container.position.set(playerPos.x, playerPos.y + localAvatarInst.footOffset, playerPos.z);
+  localAvatarInst.container.rotation.y = playerYaw;
+}
+
 function respawnLocalPlayer() {
-  playerPos.set(currentSpawn.x, currentSpawn.y + 2, currentSpawn.z);
+  const footOff = localAvatarInst ? localAvatarInst.footOffset : 0.05;
+  playerPos.set(currentSpawn.x, currentSpawn.y + footOff + 0.5, currentSpawn.z);
   playerVel.set(0, 0, 0);
   isGrounded = false;
   isJumping = false;
   speedBoostTimer = 0;
-  if (localAvatarInst) {
-    localAvatarInst.container.position.copy(playerPos);
-  }
+  syncLocalAvatarTransform();
   broadcastSelfState();
 }
 
@@ -1429,7 +1510,7 @@ function loadPlaceXmlString(xmlText) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(xmlText, "application/xml");
   const rootItems = Array.from(doc.documentElement ? doc.documentElement.children : []).filter((c) => c.tagName === "Item");
-  const spawnRef = { set: false, x: 0, y: 4, z: 0 };
+  const spawnRef = { set: false, x: 0, y: 0.5, z: 0 };
 
   rootItems.forEach((item) => {
     processStudioItem(item, worldGroup, spawnRef, pickupItems);
@@ -1438,12 +1519,32 @@ function loadPlaceXmlString(xmlText) {
   if (spawnRef.set) {
     currentSpawn = { x: spawnRef.x, y: spawnRef.y, z: spawnRef.z };
   } else {
-    currentSpawn = { x: 0, y: 4, z: 0 };
+    currentSpawn = { x: 0, y: 0.5, z: 0 };
   }
   respawnLocalPlayer();
 }
 
+function extractXmlFromGameRow(place) {
+  if (!place || typeof place !== "object") return "";
+  const directKeys = ["xml", "xml_content", "place_xml", "rbxlx", "data", "content", "code"];
+  for (const key of directKeys) {
+    const val = place[key];
+    if (typeof val === "string" && val.trim().startsWith("<")) {
+      return val.trim();
+    }
+  }
+  for (const [k, val] of Object.entries(place)) {
+    if (typeof val === "string" && (val.includes("<roblox") || (val.trim().startsWith("<Item") && k !== "name"))) {
+      return val.trim();
+    }
+  }
+  return "";
+}
+
 async function fetchPlaceXml(place) {
+  const inlineXml = extractXmlFromGameRow(place);
+  if (inlineXml) return inlineXml;
+
   const candidates = [
     place && place.xml_url,
     place && place.place_url,
@@ -1518,13 +1619,20 @@ function addOrUpdateRemotePlayer(id, payload) {
   if (!id || id === peerId) return;
   let rp = remotePlayers.get(id);
   if (!rp) {
-    const avatarInst = createAnimatedAvatarInstance(cachedAvatarTemplate || buildFallbackRobloxRig(), payload.name || "Player");
+    const tpl = cachedAvatarTemplate || buildFallbackRobloxRig();
+    const avatarInst = createAnimatedAvatarInstance(tpl, payload.name || "Player");
     remotePlayersGroup.add(avatarInst.container);
+    const footOff = avatarInst.footOffset || 0.05;
+    const px = payload.x ?? 0;
+    const py = (payload.y ?? 0.5) + footOff;
+    const pz = payload.z ?? 0;
+    avatarInst.container.position.set(px, py, pz);
     rp = {
       id,
       name: payload.name || "Player",
       avatarInst,
-      targetPos: new THREE.Vector3(payload.x ?? 0, payload.y ?? 4, payload.z ?? 0),
+      footOffset: footOff,
+      targetPos: new THREE.Vector3(px, py, pz),
       targetYaw: payload.yaw ?? 0,
       speedRatio: payload.speedRatio ?? 0,
       isGrounded: payload.isGrounded ?? true,
@@ -1538,7 +1646,11 @@ function addOrUpdateRemotePlayer(id, payload) {
     updateLeaderboard();
   } else {
     rp.name = payload.name || rp.name;
-    rp.targetPos.set(payload.x ?? rp.targetPos.x, payload.y ?? rp.targetPos.y, payload.z ?? rp.targetPos.z);
+    rp.targetPos.set(
+      payload.x ?? (rp.targetPos.x),
+      (payload.y ?? (rp.targetPos.y - rp.footOffset)) + rp.footOffset,
+      payload.z ?? (rp.targetPos.z)
+    );
     rp.targetYaw = payload.yaw ?? rp.targetYaw;
     rp.speedRatio = payload.speedRatio ?? 0;
     rp.isGrounded = payload.isGrounded ?? true;
@@ -1670,7 +1782,7 @@ async function discoverAndJoinMultiplayerServer(targetPlaceId) {
         addOrUpdateRemotePlayer(k, {
           name: meta.name || ("Player_" + k.slice(-4)),
           x: meta.x ?? 0,
-          y: meta.y ?? 4,
+          y: meta.y ?? 0.5,
           z: meta.z ?? 0,
           yaw: meta.yaw ?? 0
         });
@@ -1717,7 +1829,7 @@ async function discoverAndJoinMultiplayerServer(targetPlaceId) {
 async function loadGamesList() {
   let rows = [];
   try {
-    const { data, error } = await sb.from("games").select("*").limit(50);
+    const { data, error } = await sb.from("games").select("*");
     if (!error && Array.isArray(data) && data.length > 0) {
       rows = data;
     }
@@ -1742,21 +1854,46 @@ async function loadGamesList() {
   }
 
   gamesCache = rows;
-  gameSelect.innerHTML = "";
-  rows.forEach((g, idx) => {
-    const opt = document.createElement("option");
-    opt.value = String(g.id ?? idx);
-    opt.textContent = String(g.name || g.title || ("Game " + (idx + 1)));
-    gameSelect.appendChild(opt);
-  });
+  return rows;
+}
 
-  if (placeId) {
-    const match = rows.find((g) => String(g.id) === String(placeId));
-    if (match) gameSelect.value = String(match.id);
-  }
+async function renderGamesModalList() {
+  const rows = await loadGamesList();
+  gamesGrid.innerHTML = "";
+  rows.forEach((g, idx) => {
+    const gId = String(g.id ?? idx);
+    const title = String(g.name || g.title || ("Game " + (idx + 1)));
+    const card = document.createElement("div");
+    card.className = "game-card";
+
+    const titleEl = document.createElement("div");
+    titleEl.className = "game-card-title";
+    titleEl.textContent = title;
+
+    const metaEl = document.createElement("div");
+    metaEl.className = "game-card-meta";
+    metaEl.textContent = gId === String(placeId) ? "Playing" : "Ready";
+
+    const joinBtn = document.createElement("button");
+    joinBtn.className = "tb-btn";
+    joinBtn.type = "button";
+    joinBtn.textContent = "Join";
+    joinBtn.addEventListener("click", async () => {
+      gamesModal.classList.remove("open");
+      await selectAndLaunchGame(gId);
+    });
+
+    card.appendChild(titleEl);
+    card.appendChild(metaEl);
+    card.appendChild(joinBtn);
+    gamesGrid.appendChild(card);
+  });
 }
 
 async function selectAndLaunchGame(targetId) {
+  if (!gamesCache || gamesCache.length === 0) {
+    await loadGamesList();
+  }
   const chosen = gamesCache.find((g) => String(g.id) === String(targetId)) || gamesCache[0] || { id: targetId || "default", name: "Baseplate" };
   placeId = String(chosen.id);
   activeServerId = "";
@@ -1764,10 +1901,6 @@ async function selectAndLaunchGame(targetId) {
   loadPlaceXmlString(xml);
   await discoverAndJoinMultiplayerServer(placeId);
 }
-
-loadGameBtn.addEventListener("click", () => {
-  selectAndLaunchGame(gameSelect.value);
-});
 
 document.getElementById("reset-btn").addEventListener("click", () => {
   respawnLocalPlayer();
@@ -1831,8 +1964,8 @@ canvas.addEventListener("mousedown", (e) => {
 let isDraggingLook = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
-let camPitch = 0.25;
-let camDist = 13;
+let camPitch = 0.22;
+let camDist = 8.5;
 
 canvas.addEventListener("mousedown", (e) => {
   if (e.button === 2 || e.button === 1) {
@@ -1855,7 +1988,7 @@ window.addEventListener("mousemove", (e) => {
 });
 canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 canvas.addEventListener("wheel", (e) => {
-  camDist = Math.max(4, Math.min(35, camDist + e.deltaY * 0.01));
+  camDist = Math.max(3, Math.min(35, camDist + e.deltaY * 0.01));
 });
 
 window.addEventListener("resize", () => {
@@ -1923,9 +2056,8 @@ function updatePhysicsAndPlayer(dt) {
   playerPos.z += playerVel.z * dt;
 
   const floorY = getFloorHeightAt(playerPos.x, playerPos.z, playerPos.y);
-  const footOffset = 2.5;
-  if (floorY > -Infinity && playerPos.y - footOffset <= floorY && playerVel.y <= 0) {
-    playerPos.y = floorY + footOffset;
+  if (floorY > -Infinity && playerPos.y <= floorY && playerVel.y <= 0) {
+    playerPos.y = floorY;
     playerVel.y = 0;
     isGrounded = true;
     isJumping = false;
@@ -1951,7 +2083,7 @@ function updatePhysicsAndPlayer(dt) {
   for (const inter of interactiveParts) {
     const pos = inter.mesh.position;
     const dx = Math.abs(playerPos.x - pos.x);
-    const dy = Math.abs(playerPos.y - pos.y);
+    const dy = Math.abs(playerPos.y + 2.5 - pos.y);
     const dz = Math.abs(playerPos.z - pos.z);
     if (dx <= inter.halfExtents.x + 1.2 && dy <= inter.halfExtents.y + 2.6 && dz <= inter.halfExtents.z + 1.2) {
       if (inter.type === "kill") {
@@ -1982,21 +2114,22 @@ function updatePhysicsAndPlayer(dt) {
     }
   }
 
+  const avatarHeight = localAvatarInst ? localAvatarInst.height : 5.0;
   if (localAvatarInst) {
-    localAvatarInst.container.position.copy(playerPos);
-    localAvatarInst.container.rotation.y = playerYaw;
+    syncLocalAvatarTransform();
     const horizSpeed = Math.hypot(playerVel.x, playerVel.z);
     const speedRatio = Math.min(1, horizSpeed / Math.max(1, studioConfig.walkSpeed));
     stepAvatarAnimation(localAvatarInst, dt, speedRatio, isGrounded, isJumping, isAttacking);
   }
 
+  const anchorY = playerPos.y + avatarHeight * 0.65;
   const camOffset = new THREE.Vector3(
     Math.sin(playerYaw) * Math.cos(camPitch) * camDist,
-    Math.sin(camPitch) * camDist + 3.0,
+    Math.sin(camPitch) * camDist + 1.2,
     Math.cos(playerYaw) * Math.cos(camPitch) * camDist
   );
-  camera.position.copy(playerPos).add(camOffset);
-  camera.lookAt(playerPos.x, playerPos.y + 2.0, playerPos.z);
+  camera.position.set(playerPos.x + camOffset.x, anchorY + camOffset.y, playerPos.z + camOffset.z);
+  camera.lookAt(playerPos.x, anchorY, playerPos.z);
   skyDome.position.copy(camera.position);
 }
 
@@ -2028,11 +2161,13 @@ function animate(now) {
   const tpl = await loadAvatarTemplate(AVATAR_GLB_URL);
   localAvatarInst = createAnimatedAvatarInstance(tpl, username);
   scene.add(localAvatarInst.container);
+  syncLocalAvatarTransform();
   renderHotbar();
   updateLeaderboard();
 
-  await loadGamesList();
-  await selectAndLaunchGame(gameSelect.value || placeId);
+  const rows = await loadGamesList();
+  const initialId = placeId || (rows[0] ? String(rows[0].id) : "default");
+  await selectAndLaunchGame(initialId);
   requestAnimationFrame(animate);
 })();
 </script>
