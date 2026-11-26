@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="amr010920">
-<title>Bloxtip Web Player (Multiplayer)</title>
+<title>Bloxtip Webclient</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
 html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; color: #ffffff; }
 #topbar {
   height: 36px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.35));
+  background: linear-gradient(rgba(255, 255, 255, 0.35));
   border-bottom: 1px solid #0e1013;
   display: flex;
   align-items: center;
@@ -43,6 +43,67 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; c
 .tb-btn:hover { background: #00a2ff; border-color: #00a2ff; }
 #viewport { position: relative; width: 100%; height: calc(100% - 36px); }
 canvas { display: block; width: 100%; height: 100%; }
+
+#roblox-gui-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 12;
+  overflow: hidden;
+}
+.rblx-screengui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.rblx-el {
+  position: absolute;
+  pointer-events: auto;
+  overflow: hidden;
+}
+.rblx-label, .rblx-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  user-select: none;
+}
+.rblx-button {
+  cursor: pointer;
+}
+.rblx-button:active {
+  filter: brightness(0.9);
+}
+
+#shiftlock-reticle {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+  z-index: 18;
+}
+#shiftlock-reticle.active {
+  display: block;
+}
+#shiftlock-reticle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  transform: translate(-50%, -50%);
+  background: #00a2ff;
+  border-radius: 50%;
+}
+
 #loading-screen {
   display: none;
   position: absolute;
@@ -142,6 +203,192 @@ canvas { display: block; width: 100%; height: 100%; }
   font-size: 11px;
   color: #4b5565;
 }
+
+#esc-menu {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 18, 24, 0.78);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+#esc-menu.open {
+  display: flex;
+}
+#esc-main-frame {
+  width: 720px;
+  max-width: 94%;
+  height: 520px;
+  max-height: 90%;
+  background: #1f242d;
+  border: 1px solid #3c4556;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.65);
+}
+#esc-top-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #161920;
+  border-bottom: 1px solid #323a4a;
+  padding: 0 12px;
+  height: 46px;
+}
+.esc-tab-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+}
+.esc-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #b4becd;
+  height: 100%;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.esc-tab-btn:hover {
+  color: #ffffff;
+}
+.esc-tab-btn.active {
+  color: #ffffff;
+  border-bottom-color: #00a2ff;
+}
+#esc-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.esc-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #9ec5ff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+#esc-players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 10px;
+}
+.esc-player-card {
+  background: #272d38;
+  border: 1px solid #3b4454;
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.esc-player-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: #181c23;
+  border: 2px solid #00a2ff;
+  object-fit: cover;
+}
+.esc-player-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  word-break: break-word;
+}
+.esc-player-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(0, 162, 255, 0.2);
+  color: #6bc6ff;
+}
+.esc-panel-box {
+  background: #272d38;
+  border: 1px solid #3b4454;
+  border-radius: 5px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 13px;
+}
+.esc-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.esc-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 190px;
+}
+.esc-toggle-btn {
+  background: #384152;
+  border: 1px solid #525e75;
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.esc-toggle-btn.on {
+  background: #00a2ff;
+  border-color: #38b8ff;
+}
+#esc-bottom-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: #161920;
+  border-top: 1px solid #323a4a;
+}
+.esc-action-btn {
+  min-width: 120px;
+  padding: 8px 18px;
+  border-radius: 4px;
+  border: 1px solid #4d586e;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #ffffff;
+  background: #2d3543;
+}
+.esc-action-btn:hover {
+  filter: brightness(1.12);
+}
+#esc-resume-btn {
+  background: #0084d4;
+  border-color: #29a9ff;
+}
+#esc-reset-btn {
+  background: #8a5a14;
+  border-color: #c28222;
+}
+#esc-leave-btn {
+  background: #9e2727;
+  border-color: #d44242;
+}
+
 #leaderboard {
   position: absolute;
   top: 10px;
@@ -241,6 +488,7 @@ canvas { display: block; width: 100%; height: 100%; }
   </div>
   <div id="top-games-bar">
     <button class="tb-btn" id="open-games-btn" type="button">Games</button>
+    <button class="tb-btn" id="open-esc-btn" type="button">Menu (Esc)</button>
   </div>
   <div class="tb-group">
     <span id="player-label">ur user here</span>
@@ -251,6 +499,8 @@ canvas { display: block; width: 100%; height: 100%; }
 
 <div id="viewport">
   <canvas id="game-canvas"></canvas>
+  <div id="roblox-gui-layer"></div>
+  <div id="shiftlock-reticle"></div>
 
   <div id="loading-screen">
     <div class="loader-spinner"></div>
@@ -264,6 +514,34 @@ canvas { display: block; width: 100%; height: 100%; }
       <button class="tb-btn" id="close-games-btn" type="button">X</button>
     </div>
     <div id="games-grid"></div>
+  </div>
+
+  <div id="esc-menu">
+    <div id="esc-main-frame">
+      <div id="esc-top-tabs">
+        <div class="esc-tab-group">
+          <button class="esc-tab-btn active" data-esc-tab="guidance" type="button">Guidance</button>
+          <button class="esc-tab-btn" data-esc-tab="settings" type="button">Settings</button>
+          <button class="esc-tab-btn" data-esc-tab="more" type="button">More</button>
+        </div>
+        <span style="font-size:12px;color:#8fa0b8;" id="esc-server-info">Bloxtip Menu</span>
+      </div>
+
+      <div id="esc-body">
+        <div id="esc-tab-content"></div>
+
+        <div>
+          <div class="esc-section-title">Players in Server</div>
+          <div id="esc-players-grid"></div>
+        </div>
+      </div>
+
+      <div id="esc-bottom-actions">
+        <button class="esc-action-btn" id="esc-leave-btn" type="button">Leave</button>
+        <button class="esc-action-btn" id="esc-reset-btn" type="button">Reset</button>
+        <button class="esc-action-btn" id="esc-resume-btn" type="button">Resume</button>
+      </div>
+    </div>
   </div>
 
   <div id="chat-box">
@@ -317,17 +595,71 @@ let activeServerId = params.get("server") || "";
 const peerId = "peer_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
 const username = params.get("user") || localStorage.getItem("bloxtip_username") || ("Guest_" + peerId.slice(-4));
 
+let masterVolume = Number(localStorage.getItem("bloxtip_volume") ?? "0.6");
+if (!Number.isFinite(masterVolume) || masterVolume < 0 || masterVolume > 1) masterVolume = 0.6;
+let shiftLockEnabled = localStorage.getItem("bloxtip_shiftlock") === "1";
+let activeEscTab = "guidance";
+
+let audioCtx = null;
+function playUiSound(freq = 520, duration = 0.06, type = "sine") {
+  if (masterVolume <= 0.001) return;
+  try {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (!audioCtx) return;
+    if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(Math.min(0.25, masterVolume * 0.18), audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch (_) {}
+}
+
 const serverRoleLabel = document.getElementById("server-role-label");
 const openGamesBtn = document.getElementById("open-games-btn");
+const openEscBtn = document.getElementById("open-esc-btn");
 const closeGamesBtn = document.getElementById("close-games-btn");
 const gamesModal = document.getElementById("games-modal");
 const gamesGrid = document.getElementById("games-grid");
+const escMenu = document.getElementById("esc-menu");
+const escTabContent = document.getElementById("esc-tab-content");
+const escPlayersGrid = document.getElementById("esc-players-grid");
+const escServerInfo = document.getElementById("esc-server-info");
+const shiftlockReticle = document.getElementById("shiftlock-reticle");
+const robloxGuiLayer = document.getElementById("roblox-gui-layer");
 const loadingScreen = document.getElementById("loading-screen");
 const loadingTitle = document.getElementById("loading-title");
 const loadingStatus = document.getElementById("loading-status");
 const leaderboardBody = document.getElementById("leaderboard-body");
 const playerCountEl = document.getElementById("player-count");
 const hotbarEl = document.getElementById("hotbar");
+
+function syncShiftLockUI() {
+  shiftlockReticle.classList.toggle("active", shiftLockEnabled && !escMenu.classList.contains("open"));
+}
+
+function setShiftLock(enabled) {
+  shiftLockEnabled = Boolean(enabled);
+  localStorage.setItem("bloxtip_shiftlock", shiftLockEnabled ? "1" : "0");
+  syncShiftLockUI();
+  playUiSound(shiftLockEnabled ? 740 : 440, 0.07, "triangle");
+  if (escMenu.classList.contains("open") && activeEscTab === "settings") {
+    renderEscTabContent();
+  }
+}
+
+function setMasterVolume(val) {
+  masterVolume = Math.max(0, Math.min(1, Number(val) || 0));
+  localStorage.setItem("bloxtip_volume", String(masterVolume));
+}
 
 function showLoading(titleText, statusText) {
   loadingTitle.textContent = titleText || "Loading Game...";
@@ -346,6 +678,7 @@ function hideLoading() {
 document.getElementById("player-label").textContent = "Player: " + username;
 
 openGamesBtn.addEventListener("click", async () => {
+  playUiSound(560, 0.05);
   gamesModal.classList.toggle("open");
   if (gamesModal.classList.contains("open")) {
     await renderGamesModalList();
@@ -353,6 +686,7 @@ openGamesBtn.addEventListener("click", async () => {
 });
 
 closeGamesBtn.addEventListener("click", () => {
+  playUiSound(440, 0.05);
   gamesModal.classList.remove("open");
 });
 
@@ -385,9 +719,9 @@ scene.background = new THREE.Color(0x87c6ff);
 scene.fog = new THREE.Fog(0x87c6ff, 80, 260);
 
 const camera = new THREE.PerspectiveCamera(65, canvas.clientWidth / canvas.clientHeight, 0.1, 600);
-const cameraMount = new THREE.Group();
-cameraMount.name = "GlbCameraMount";
-cameraMount.add(camera);
+const glbTorsoCameraGroup = new THREE.Group();
+glbTorsoCameraGroup.name = "GlbTorsoCameraGroup";
+glbTorsoCameraGroup.add(camera);
 
 const hemi = new THREE.HemisphereLight(0xffffff, 0x4b5563, 1.15);
 scene.add(hemi);
@@ -421,6 +755,8 @@ const baseplate = new THREE.Mesh(
 );
 baseplate.position.y = -1;
 baseplate.receiveShadow = true;
+baseplate.userData.canCollide = true;
+baseplate.userData.anchored = true;
 scene.add(baseplate);
 
 const spawnPad = new THREE.Mesh(
@@ -429,6 +765,8 @@ const spawnPad = new THREE.Mesh(
 );
 spawnPad.position.set(0, 0.2, 0);
 spawnPad.receiveShadow = true;
+spawnPad.userData.canCollide = true;
+spawnPad.userData.anchored = true;
 scene.add(spawnPad);
 
 const worldGroup = new THREE.Group();
@@ -490,6 +828,7 @@ updateSkyAndLighting();
 
 let cachedAvatarTemplate = null;
 let avatarTemplatePromise = null;
+let cachedAvatarPortraitUrl = "";
 
 function buildFallbackRobloxRig() {
   const rig = new THREE.Group();
@@ -563,6 +902,7 @@ function buildFallbackRobloxRig() {
     scene: rig,
     clips: [],
     root,
+    torso,
     headPivot,
     leftArmPivot,
     rightArmPivot,
@@ -576,6 +916,7 @@ function buildFallbackRobloxRig() {
 
 function extractRigParts(obj) {
   let root = null;
+  let torso = null;
   let headPivot = null;
   let leftArmPivot = null;
   let rightArmPivot = null;
@@ -586,6 +927,9 @@ function extractRigParts(obj) {
     node.castShadow = true;
     node.receiveShadow = true;
     const n = (node.name || "").toLowerCase();
+    if (!torso && (n.includes("torso") || n.includes("uppertorso") || n.includes("chest") || n.includes("body"))) {
+      torso = node;
+    }
     if (!root && (n.includes("humanoidrootpart") || n.includes("root") || n.includes("torso") || n.includes("hips"))) {
       root = node;
     }
@@ -605,7 +949,34 @@ function extractRigParts(obj) {
   });
 
   if (!root) root = obj;
-  return { root, headPivot, leftArmPivot, rightArmPivot, leftLegPivot, rightLegPivot };
+  if (!torso) torso = root;
+  return { root, torso, headPivot, leftArmPivot, rightArmPivot, leftLegPivot, rightLegPivot };
+}
+
+function generateAvatarPortraitDataUrl(template) {
+  try {
+    const pScene = new THREE.Scene();
+    pScene.background = new THREE.Color(0x1b212c);
+    pScene.add(new THREE.AmbientLight(0xffffff, 1.4));
+    const pLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    pLight.position.set(2, 4, 4);
+    pScene.add(pLight);
+
+    const pCam = new THREE.PerspectiveCamera(45, 1, 0.1, 50);
+    pCam.position.set(0, 3.6, 5.4);
+    pCam.lookAt(0, 3.0, 0);
+
+    const pRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    pRenderer.setSize(96, 96);
+    const clone = template.scene.clone(true);
+    pScene.add(clone);
+    pRenderer.render(pScene, pCam);
+    const url = pRenderer.domElement.toDataURL("image/png");
+    pRenderer.dispose();
+    return url;
+  } catch (_) {
+    return "";
+  }
 }
 
 function loadAvatarTemplate(glbUrl = AVATAR_GLB_URL) {
@@ -646,6 +1017,7 @@ function loadAvatarTemplate(glbUrl = AVATAR_GLB_URL) {
         };
         if (glbUrl === AVATAR_GLB_URL) {
           cachedAvatarTemplate = result;
+          cachedAvatarPortraitUrl = generateAvatarPortraitDataUrl(result);
         }
         resolve(result);
       },
@@ -654,6 +1026,7 @@ function loadAvatarTemplate(glbUrl = AVATAR_GLB_URL) {
         const fallback = buildFallbackRobloxRig();
         if (glbUrl === AVATAR_GLB_URL) {
           cachedAvatarTemplate = fallback;
+          cachedAvatarPortraitUrl = generateAvatarPortraitDataUrl(fallback);
         }
         resolve(fallback);
       }
@@ -733,20 +1106,14 @@ function createAnimatedAvatarInstance(template, playerName) {
   };
 }
 
-function attachCameraToGlbObject(avatarInst) {
+function attachCameraDirectlyToGlbTorso(avatarInst) {
   if (!avatarInst) return;
-  const targetParent = avatarInst.parts?.headPivot || avatarInst.cloned || avatarInst.container;
-  if (cameraMount.parent !== targetParent) {
-    targetParent.add(cameraMount);
+  const torsoTarget = avatarInst.parts?.torso || avatarInst.parts?.root || avatarInst.cloned || avatarInst.container;
+  if (glbTorsoCameraGroup.parent !== torsoTarget) {
+    torsoTarget.add(glbTorsoCameraGroup);
   }
-  if (targetParent === avatarInst.parts?.headPivot) {
-    cameraMount.position.set(0, 0.35, 0);
-  } else if (targetParent === avatarInst.cloned) {
-    cameraMount.position.set(0, (avatarInst.height || 5.0) * 0.78, 0);
-  } else {
-    cameraMount.position.set(0, (avatarInst.height || 5.0) * 0.78, 0);
-  }
-  cameraMount.rotation.set(0, 0, 0);
+  glbTorsoCameraGroup.position.set(0, 0, 0);
+  glbTorsoCameraGroup.rotation.set(0, 0, 0);
 }
 
 function stepAvatarAnimation(avatarInst, dt, speedRatio, isGrounded, isJumping, isAttacking) {
@@ -757,29 +1124,39 @@ function stepAvatarAnimation(avatarInst, dt, speedRatio, isGrounded, isJumping, 
     avatarInst.mixer.update(dt);
   }
 
-  const { leftArmPivot, rightArmPivot, leftLegPivot, rightLegPivot, headPivot } = avatarInst.parts || {};
+  const { leftArmPivot, rightArmPivot, leftLegPivot, rightLegPivot, headPivot, root } = avatarInst.parts || {};
   const t = avatarInst.animTime;
 
   if (!isGrounded || isJumping) {
-    if (leftArmPivot) leftArmPivot.rotation.x = THREE.MathUtils.lerp(leftArmPivot.rotation.x, -2.5, dt * 12);
-    if (rightArmPivot) rightArmPivot.rotation.x = THREE.MathUtils.lerp(rightArmPivot.rotation.x, -2.5, dt * 12);
-    if (leftLegPivot) leftLegPivot.rotation.x = THREE.MathUtils.lerp(leftLegPivot.rotation.x, -0.5, dt * 12);
-    if (rightLegPivot) rightLegPivot.rotation.x = THREE.MathUtils.lerp(rightLegPivot.rotation.x, 0.5, dt * 12);
+    if (leftArmPivot) leftArmPivot.rotation.x = THREE.MathUtils.lerp(leftArmPivot.rotation.x, -2.55, dt * 14);
+    if (rightArmPivot) rightArmPivot.rotation.x = THREE.MathUtils.lerp(rightArmPivot.rotation.x, -2.55, dt * 14);
+    if (leftLegPivot) leftLegPivot.rotation.x = THREE.MathUtils.lerp(leftLegPivot.rotation.x, -0.65, dt * 14);
+    if (rightLegPivot) rightLegPivot.rotation.x = THREE.MathUtils.lerp(rightLegPivot.rotation.x, 0.55, dt * 14);
+    if (root && root !== avatarInst.container) {
+      root.position.y = THREE.MathUtils.lerp(root.position.y, 0.25, dt * 10);
+    }
   } else if (speedRatio > 0.08) {
-    const swing = Math.sin(t * 2.2) * 0.85 * Math.min(1, speedRatio);
-    if (leftLegPivot) leftLegPivot.rotation.x = THREE.MathUtils.lerp(leftLegPivot.rotation.x, swing, dt * 16);
-    if (rightLegPivot) rightLegPivot.rotation.x = THREE.MathUtils.lerp(rightLegPivot.rotation.x, -swing, dt * 16);
-    if (leftArmPivot) leftArmPivot.rotation.x = THREE.MathUtils.lerp(leftArmPivot.rotation.x, -swing * 0.9, dt * 16);
+    const swing = Math.sin(t * 2.3) * 0.9 * Math.min(1, speedRatio);
+    const bob = Math.abs(Math.cos(t * 2.3)) * 0.14 * Math.min(1, speedRatio);
+    if (leftLegPivot) leftLegPivot.rotation.x = THREE.MathUtils.lerp(leftLegPivot.rotation.x, swing, dt * 18);
+    if (rightLegPivot) rightLegPivot.rotation.x = THREE.MathUtils.lerp(rightLegPivot.rotation.x, -swing, dt * 18);
+    if (leftArmPivot) leftArmPivot.rotation.x = THREE.MathUtils.lerp(leftArmPivot.rotation.x, -swing * 0.92, dt * 18);
     if (!avatarInst.equippedToolName && rightArmPivot) {
-      rightArmPivot.rotation.x = THREE.MathUtils.lerp(rightArmPivot.rotation.x, swing * 0.9, dt * 16);
+      rightArmPivot.rotation.x = THREE.MathUtils.lerp(rightArmPivot.rotation.x, swing * 0.92, dt * 18);
+    }
+    if (root && root !== avatarInst.container) {
+      root.position.y = THREE.MathUtils.lerp(root.position.y, bob, dt * 16);
     }
   } else {
-    const breathe = Math.sin(t * 0.6) * 0.06;
-    if (leftLegPivot) leftLegPivot.rotation.x = THREE.MathUtils.lerp(leftLegPivot.rotation.x, 0, dt * 12);
-    if (rightLegPivot) rightLegPivot.rotation.x = THREE.MathUtils.lerp(rightLegPivot.rotation.x, 0, dt * 12);
-    if (leftArmPivot) leftArmPivot.rotation.x = THREE.MathUtils.lerp(leftArmPivot.rotation.x, breathe, dt * 12);
+    const breathe = Math.sin(t * 0.65) * 0.07;
+    if (leftLegPivot) leftLegPivot.rotation.x = THREE.MathUtils.lerp(leftLegPivot.rotation.x, 0, dt * 14);
+    if (rightLegPivot) rightLegPivot.rotation.x = THREE.MathUtils.lerp(rightLegPivot.rotation.x, 0, dt * 14);
+    if (leftArmPivot) leftArmPivot.rotation.x = THREE.MathUtils.lerp(leftArmPivot.rotation.x, breathe, dt * 14);
     if (!avatarInst.equippedToolName && rightArmPivot) {
-      rightArmPivot.rotation.x = THREE.MathUtils.lerp(rightArmPivot.rotation.x, -breathe, dt * 12);
+      rightArmPivot.rotation.x = THREE.MathUtils.lerp(rightArmPivot.rotation.x, -breathe, dt * 14);
+    }
+    if (root && root !== avatarInst.container) {
+      root.position.y = THREE.MathUtils.lerp(root.position.y, 0, dt * 14);
     }
   }
 
@@ -797,6 +1174,7 @@ function clearWorldGroup() {
   while (worldGroup.children.length > 0) {
     worldGroup.remove(worldGroup.children[0]);
   }
+  robloxGuiLayer.innerHTML = "";
 }
 
 const BRICK_COLORS = {
@@ -823,12 +1201,89 @@ const BRICK_COLORS = {
   1032: 0x6495ed
 };
 
+const imageAssetMap = new Map();
+
+function isSupportedWebUrl(url) {
+  if (typeof url !== "string") return false;
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  if (/^rbxasset:\/\//i.test(trimmed)) return false;
+  if (/^rbxassetid:\/\//i.test(trimmed)) return false;
+  return /^https?:\/\//i.test(trimmed) || trimmed.startsWith("data:image/") || trimmed.startsWith("./") || trimmed.startsWith("/");
+}
+
+function resolveImageUrlFromAssets(rawUrl, fallbackName = "") {
+  if (typeof rawUrl === "string" && isSupportedWebUrl(rawUrl)) {
+    return rawUrl.trim();
+  }
+  const clean = String(rawUrl || "").trim();
+  const baseFile = clean.split("/").pop().split("\\").pop().toLowerCase();
+  if (baseFile && imageAssetMap.has(baseFile)) {
+    return imageAssetMap.get(baseFile);
+  }
+  const cleanLower = clean.toLowerCase();
+  if (cleanLower && imageAssetMap.has(cleanLower)) {
+    return imageAssetMap.get(cleanLower);
+  }
+  const nameLower = String(fallbackName || "").trim().toLowerCase();
+  if (nameLower && imageAssetMap.has(nameLower)) {
+    return imageAssetMap.get(nameLower);
+  }
+  for (const [k, v] of imageAssetMap.entries()) {
+    if (baseFile && (k.includes(baseFile) || baseFile.includes(k))) {
+      return v;
+    }
+  }
+  return "";
+}
+
+function registerImagesFromXmlOrRow(xmlText, gameRow) {
+  if (gameRow && typeof gameRow === "object") {
+    for (const [key, val] of Object.entries(gameRow)) {
+      if (typeof val === "string" && isSupportedWebUrl(val)) {
+        imageAssetMap.set(key.toLowerCase(), val.trim());
+        const filePart = val.trim().split("/").pop().split("?")[0].toLowerCase();
+        if (filePart) imageAssetMap.set(filePart, val.trim());
+      }
+    }
+  }
+
+  if (typeof xmlText !== "string" || !xmlText.trim()) return;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlText, "application/xml");
+    const allEls = doc.getElementsByTagName("*");
+    for (let i = 0; i < allEls.length; i++) {
+      const el = allEls[i];
+      const txt = (el.textContent || "").trim();
+      if (isSupportedWebUrl(txt)) {
+        const attrName = (el.getAttribute("name") || el.tagName || "").toLowerCase();
+        if (attrName) imageAssetMap.set(attrName, txt);
+        const filePart = txt.split("/").pop().split("?")[0].toLowerCase();
+        if (filePart) imageAssetMap.set(filePart, txt);
+      }
+    }
+  } catch (_) {}
+}
+
 function readNum(parent, tagName, fallback) {
   if (!parent) return fallback;
   const el = parent.getElementsByTagName(tagName)[0];
   if (!el) return fallback;
   const n = Number(el.textContent);
   return Number.isFinite(n) ? n : fallback;
+}
+
+function readBool(parent, propName, fallback) {
+  if (!parent) return fallback;
+  for (const el of Array.from(parent.children)) {
+    if ((el.getAttribute("name") || "").toLowerCase() === propName.toLowerCase()) {
+      const txt = (el.textContent || "").trim().toLowerCase();
+      if (txt === "true" || txt === "1") return true;
+      if (txt === "false" || txt === "0") return false;
+    }
+  }
+  return fallback;
 }
 
 function readStr(parent, propName, fallback = "") {
@@ -918,6 +1373,27 @@ function parseColorFromProps(props, fallbackHex = 0x00a2ff) {
     }
   }
   return fallbackHex;
+}
+
+function parseUDim2Css(propEl, fallback = { sx: 0, ox: 100, sy: 0, oy: 40 }) {
+  if (!propEl) {
+    return {
+      left: fallback.ox + "px",
+      top: fallback.oy + "px",
+      width: (fallback.sx * 100) + "%",
+      height: fallback.sy + "px"
+    };
+  }
+  const xs = readNum(propEl, "XS", fallback.sx);
+  const xo = readNum(propEl, "XO", fallback.ox);
+  const ys = readNum(propEl, "YS", fallback.sy);
+  const yo = readNum(propEl, "YO", fallback.oy);
+  return {
+    left: `calc(${xs * 100}% + ${xo}px)`,
+    top: `calc(${ys * 100}% + ${yo}px)`,
+    width: `calc(${xs * 100}% + ${xo}px)`,
+    height: `calc(${ys * 100}% + ${yo}px)`
+  };
 }
 
 function parseCFrameMatrix(cfEl) {
@@ -1098,6 +1574,7 @@ function materialPropsFromRoblox(props, colorHex, texUrl) {
   const transparency = Math.max(0, Math.min(1, readNum(props, "Transparency", 0)));
   const reflectance = Math.max(0, Math.min(1, readNum(props, "Reflectance", 0)));
   const matName = (readStr(props, "Material", "") || "").toLowerCase();
+  const validTexUrl = isSupportedWebUrl(texUrl) ? texUrl.trim() : "";
 
   let roughness = 0.65;
   let metalness = Math.min(0.9, reflectance * 0.85);
@@ -1123,7 +1600,7 @@ function materialPropsFromRoblox(props, colorHex, texUrl) {
   }
 
   const opts = {
-    color: texUrl ? 0xffffff : colorHex,
+    color: validTexUrl ? 0xffffff : colorHex,
     roughness,
     metalness,
     emissive,
@@ -1135,18 +1612,28 @@ function materialPropsFromRoblox(props, colorHex, texUrl) {
     opts.opacity = 1 - transparency;
   }
 
-  if (texUrl) {
-    const tex = textureLoader.load(texUrl);
+  const mat = new THREE.MeshStandardMaterial(opts);
+
+  if (validTexUrl) {
+    const tex = textureLoader.load(validTexUrl, undefined, undefined, () => {
+      if (mat.map) {
+        mat.map.dispose();
+        mat.map = null;
+      }
+      mat.color.setHex(colorHex);
+      mat.needsUpdate = true;
+    });
     tex.colorSpace = THREE.SRGBColorSpace;
-    opts.map = tex;
+    mat.map = tex;
   }
 
-  return new THREE.MeshStandardMaterial(opts);
+  return mat;
 }
 
 function extractTextureOrMeshUrl(item, props) {
-  let texUrl = readStr(props, "TextureUrl", "") || readStr(props, "Texture", "") || readStr(props, "Image", "");
-  let meshUrl = "";
+  const itemName = readStr(props, "Name", "");
+  let rawTex = readStr(props, "TextureUrl", "") || readStr(props, "Texture", "") || readStr(props, "Image", "");
+  let rawMesh = "";
 
   for (const child of Array.from(item.children)) {
     if (child.tagName !== "Item") continue;
@@ -1155,15 +1642,18 @@ function extractTextureOrMeshUrl(item, props) {
     if (!cProps) continue;
 
     if (cCls === "Decal" || cCls === "Texture") {
-      const dUrl = readStr(cProps, "Texture", "") || readStr(cProps, "TextureUrl", "");
-      if (dUrl && !texUrl) texUrl = dUrl;
+      const dUrl = readStr(cProps, "Texture", "") || readStr(cProps, "TextureUrl", "") || readStr(cProps, "Image", "");
+      if (dUrl && !rawTex) rawTex = dUrl;
     } else if (cCls === "SpecialMesh" || cCls === "FileMesh") {
       const mTex = readStr(cProps, "TextureId", "") || readStr(cProps, "Texture", "");
       const mId = readStr(cProps, "MeshId", "");
-      if (mTex && !texUrl) texUrl = mTex;
-      if (mId) meshUrl = mId;
+      if (mTex && !rawTex) rawTex = mTex;
+      if (mId) rawMesh = mId;
     }
   }
+
+  const texUrl = resolveImageUrlFromAssets(rawTex, itemName);
+  const meshUrl = isSupportedWebUrl(rawMesh) ? rawMesh.trim() : "";
   return { texUrl, meshUrl };
 }
 
@@ -1195,6 +1685,8 @@ let backpackItems = [];
 let equippedIndex = -1;
 let pickupItems = [];
 let interactiveParts = [];
+let dynamicParts = [];
+let queuedScripts = [];
 
 function renderHotbar() {
   hotbarEl.innerHTML = "";
@@ -1249,6 +1741,18 @@ function createVisualItemMesh(item, props) {
     } else {
       itemRoot.add(new THREE.Mesh(hGeo, hMat));
     }
+  } else if (texUrl) {
+    const spriteTex = textureLoader.load(texUrl);
+    spriteTex.colorSpace = THREE.SRGBColorSpace;
+    const cardMat = new THREE.MeshStandardMaterial({
+      map: spriteTex,
+      transparent: true,
+      side: THREE.DoubleSide,
+      roughness: 0.5
+    });
+    const card = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 2.2), cardMat);
+    card.position.set(0, 1.3, 0);
+    itemRoot.add(card);
   } else {
     const gripMat = new THREE.MeshStandardMaterial({ color: 0x2b2d42, roughness: 0.5 });
     const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 1.1, 12), gripMat);
@@ -1280,13 +1784,29 @@ function createVisualItemMesh(item, props) {
 
 let localAvatarInst = null;
 
-function applyToolVisualToRig(avatarInst, toolName, colorHex = 0xc0c8d0) {
+function applyToolVisualToRig(avatarInst, toolName, colorHex = 0xc0c8d0, texUrl = "") {
   if (!avatarInst || !avatarInst.heldMount) return;
   while (avatarInst.heldMount.children.length > 0) {
     avatarInst.heldMount.remove(avatarInst.heldMount.children[0]);
   }
   avatarInst.equippedToolName = toolName || "";
   if (!toolName) return;
+
+  const resolvedTex = texUrl || resolveImageUrlFromAssets("", toolName);
+  if (resolvedTex) {
+    const tex = textureLoader.load(resolvedTex);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const planeMat = new THREE.MeshStandardMaterial({
+      map: tex,
+      transparent: true,
+      side: THREE.DoubleSide,
+      roughness: 0.4
+    });
+    const badge = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.4), planeMat);
+    badge.position.set(0, 0.6, 0);
+    avatarInst.heldMount.add(badge);
+    return;
+  }
 
   const gripMat = new THREE.MeshStandardMaterial({ color: 0x333842, roughness: 0.5 });
   const bladeMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.25, metalness: 0.75 });
@@ -1308,21 +1828,430 @@ function equipBackpackSlot(index) {
   if (index < 0 || index >= backpackItems.length) return;
   equippedIndex = index;
   const tool = backpackItems[index];
-  applyToolVisualToRig(localAvatarInst, tool.name, tool.colorHex || 0xc0c8d0);
+  applyToolVisualToRig(localAvatarInst, tool.name, tool.colorHex || 0xc0c8d0, tool.texUrl || "");
   renderHotbar();
   broadcastSelfState();
 }
 
-function giveItemToBackpack(itemName, colorHex = 0xc0c8d0, autoEquip = false) {
+function giveItemToBackpack(itemName, colorHex = 0xc0c8d0, autoEquip = false, texUrl = "") {
+  const resolvedTex = texUrl || resolveImageUrlFromAssets("", itemName);
   const existingIdx = backpackItems.findIndex((t) => t.name === itemName);
   if (existingIdx !== -1) {
+    if (resolvedTex && !backpackItems[existingIdx].texUrl) {
+      backpackItems[existingIdx].texUrl = resolvedTex;
+    }
     if (autoEquip) equipBackpackSlot(existingIdx);
     return;
   }
-  backpackItems.push({ name: itemName || "Item", colorHex });
+  backpackItems.push({ name: itemName || "Item", colorHex, texUrl: resolvedTex });
   renderHotbar();
   if (autoEquip || backpackItems.length === 1) {
     equipBackpackSlot(backpackItems.length - 1);
+  }
+}
+
+function applyGuiElementProps(domEl, props, cls) {
+  const name = readStr(props, "Name", cls);
+  domEl.dataset.rblxName = name;
+
+  const posProp = findPropElement(props, "Position");
+  const sizeProp = findPropElement(props, "Size");
+
+  if (posProp) {
+    const xs = readNum(posProp, "XS", 0);
+    const xo = readNum(posProp, "XO", 0);
+    const ys = readNum(posProp, "YS", 0);
+    const yo = readNum(posProp, "YO", 0);
+    domEl.style.left = `calc(${xs * 100}% + ${xo}px)`;
+    domEl.style.top = `calc(${ys * 100}% + ${yo}px)`;
+  }
+
+  if (sizeProp) {
+    const xs = readNum(sizeProp, "XS", 0);
+    const xo = readNum(sizeProp, "XO", 120);
+    const ys = readNum(sizeProp, "YS", 0);
+    const yo = readNum(sizeProp, "YO", 36);
+    domEl.style.width = `calc(${xs * 100}% + ${xo}px)`;
+    domEl.style.height = `calc(${ys * 100}% + ${yo}px)`;
+  } else if (cls === "TextLabel" || cls === "TextButton") {
+    domEl.style.minWidth = "90px";
+    domEl.style.minHeight = "28px";
+    domEl.style.padding = "4px 8px";
+  }
+
+  const visible = readBool(props, "Visible", true);
+  domEl.style.display = visible ? (cls === "TextLabel" || cls === "TextButton" ? "flex" : "block") : "none";
+
+  const bgHex = parseColorFromProps(props, null);
+  const bgTrans = Math.max(0, Math.min(1, readNum(props, "BackgroundTransparency", cls === "TextLabel" ? 0.25 : 0)));
+  if (bgHex !== null) {
+    const r = (bgHex >> 16) & 255;
+    const g = (bgHex >> 8) & 255;
+    const b = bgHex & 255;
+    domEl.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${1 - bgTrans})`;
+  } else if (bgTrans >= 0.999) {
+    domEl.style.backgroundColor = "transparent";
+  } else {
+    domEl.style.backgroundColor = `rgba(37, 42, 52, ${1 - bgTrans})`;
+  }
+
+  const textVal = readStr(props, "Text", "");
+  if (cls === "TextLabel" || cls === "TextButton") {
+    domEl.textContent = textVal || name;
+    const txtHex = parseColor3Value(findPropElement(props, "TextColor3"), 0xffffff);
+    domEl.style.color = "#" + txtHex.toString(16).padStart(6, "0");
+    const tSize = readNum(props, "TextSize", 14);
+    domEl.style.fontSize = Math.max(8, tSize) + "px";
+    if (readBool(props, "TextScaled", false)) {
+      domEl.style.fontSize = "clamp(10px, 2.2vw, 28px)";
+    }
+  }
+
+  const rawImg = readStr(props, "Image", "") || readStr(props, "Texture", "");
+  const resolvedImg = resolveImageUrlFromAssets(rawImg, name);
+  if (resolvedImg && (cls === "ImageLabel" || cls === "ImageButton" || cls === "Frame" || cls === "TextLabel" || cls === "TextButton")) {
+    domEl.style.backgroundImage = `url("${resolvedImg.replace(/"/g, "&quot;")}")`;
+    domEl.style.backgroundSize = "cover";
+    domEl.style.backgroundPosition = "center";
+  }
+}
+
+function buildGuiHierarchy(item, parentDom) {
+  if (!item || item.tagName !== "Item") return;
+  const cls = item.getAttribute("class") || "";
+  const props = findPropElement(item, "Properties") || item.firstElementChild;
+
+  let currentDom = parentDom;
+  if (cls === "ScreenGui") {
+    const sg = document.createElement("div");
+    sg.className = "rblx-screengui";
+    if (props && !readBool(props, "Enabled", true)) {
+      sg.style.display = "none";
+    }
+    robloxGuiLayer.appendChild(sg);
+    currentDom = sg;
+  } else if (cls === "Frame" || cls === "ScrollingFrame") {
+    const fr = document.createElement("div");
+    fr.className = "rblx-el rblx-frame";
+    if (cls === "ScrollingFrame") fr.style.overflow = "auto";
+    if (props) applyGuiElementProps(fr, props, cls);
+    currentDom.appendChild(fr);
+    currentDom = fr;
+  } else if (cls === "TextLabel") {
+    const lbl = document.createElement("div");
+    lbl.className = "rblx-el rblx-label";
+    if (props) applyGuiElementProps(lbl, props, cls);
+    currentDom.appendChild(lbl);
+    currentDom = lbl;
+  } else if (cls === "TextButton") {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "rblx-el rblx-button";
+    if (props) applyGuiElementProps(btn, props, cls);
+    btn.addEventListener("click", () => {
+      playUiSound(660, 0.05);
+      btn.dispatchEvent(new CustomEvent("MouseButton1Click"));
+    });
+    currentDom.appendChild(btn);
+    currentDom = btn;
+  } else if (cls === "ImageLabel" || cls === "ImageButton") {
+    const im = document.createElement(cls === "ImageButton" ? "button" : "div");
+    if (cls === "ImageButton") im.type = "button";
+    im.className = "rblx-el rblx-button";
+    if (props) applyGuiElementProps(im, props, cls);
+    im.addEventListener("click", () => {
+      playUiSound(660, 0.05);
+      im.dispatchEvent(new CustomEvent("MouseButton1Click"));
+    });
+    currentDom.appendChild(im);
+    currentDom = im;
+  } else if (cls === "UICorner" && parentDom && parentDom !== robloxGuiLayer) {
+    const rScale = props ? readNum(props, "CornerRadiusScale", 0) : 0;
+    const rOffset = props ? readNum(props, "CornerRadiusOffset", 8) : 8;
+    parentDom.style.borderRadius = rScale > 0 ? `${Math.round(rScale * 100)}%` : `${rOffset}px`;
+  } else if (cls === "UIStroke" && parentDom && parentDom !== robloxGuiLayer) {
+    const thick = props ? readNum(props, "Thickness", 1) : 1;
+    const strokeHex = props ? parseColorFromProps(props, 0xffffff) : 0xffffff;
+    parentDom.style.border = `${Math.max(1, thick)}px solid #${strokeHex.toString(16).padStart(6, "0")}`;
+  }
+
+  for (const child of Array.from(item.children)) {
+    if (child.tagName === "Item") {
+      buildGuiHierarchy(child, currentDom);
+    }
+  }
+}
+
+function runLuauScriptSource(code, scriptName = "Script") {
+  if (!code || !code.trim()) return;
+
+  let js = String(code);
+  js = js.replace(/--\[\[[\s\S]*?\]\]/g, "");
+  js = js.replace(/--[^\n]*/g, "");
+
+  js = js.replace(/\belseif\b/g, "} else if (");
+  js = js.replace(/\bthen\b/g, ") {");
+  js = js.replace(/\bif\s+/g, "if (");
+  js = js.replace(/\bwhile\s+/g, "while (");
+  js = js.replace(/\bfor\s+([a-zA-Z_]\w*)\s*=\s*([^,\n]+),\s*([^,\n]+)(?:,\s*([^\n]+))?\s+do\b/g, (_, v, start, end, step) => {
+    const s = (step || "1").trim();
+    const cond = Number(s) < 0 ? `${v} >= (${end.trim()})` : `${v} <= (${end.trim()})`;
+    return `for (let ${v} = (${start.trim()}); ${cond}; ${v} += (${s})) {`;
+  });
+  js = js.replace(/\bdo\b/g, "{");
+  js = js.replace(/\bfunction\s+([a-zA-Z0-9_.:]+)\s*\(([^)]*)\)/g, (_, fnName, fnArgs) => {
+    if (fnName.includes(".") || fnName.includes(":")) {
+      return `${fnName} = async function(${fnArgs})`;
+    }
+    return `async function ${fnName}(${fnArgs})`;
+  });
+  js = js.replace(/\bfunction\s*\(([^)]*)\)/g, "async function($1)");
+  js = js.replace(/\bend\b/g, "}");
+  js = js.replace(/\blocal\s+/g, "let ");
+  js = js.replace(/\bnil\b/g, "null");
+  js = js.replace(/\bnot\s+/g, "!");
+  js = js.replace(/\band\b/g, "&&");
+  js = js.replace(/\bor\b/g, "||");
+  js = js.replace(/~=/g, "!==");
+  js = js.replace(/\.\./g, "+");
+  js = js.replace(/\b([a-zA-Z0-9_.\]]+):([a-zA-Z_]\w*)\(/g, "$1.$2(");
+
+  const apiHelper = (obj) => {
+    if (!obj) return null;
+    if (obj.isPartProxy) return obj;
+    return obj;
+  };
+
+  const makePartProxy = (partRecord) => {
+    const holder = partRecord.holder;
+    return {
+      isPartProxy: true,
+      Name: partRecord.name,
+      get Anchored() { return Boolean(partRecord.anchored); },
+      set Anchored(v) { partRecord.anchored = Boolean(v); },
+      get CanCollide() { return Boolean(partRecord.canCollide); },
+      set CanCollide(v) { partRecord.canCollide = Boolean(v); invalidateFloorCache(); },
+      get Transparency() {
+        let tr = 0;
+        holder.traverse((m) => {
+          if (m.isMesh && m.material) tr = 1 - (m.material.opacity ?? 1);
+        });
+        return tr;
+      },
+      set Transparency(v) {
+        const op = Math.max(0, Math.min(1, 1 - Number(v || 0)));
+        holder.traverse((m) => {
+          if (m.isMesh && m.material) {
+            m.material.transparent = op < 0.999;
+            m.material.opacity = op;
+            m.material.needsUpdate = true;
+          }
+        });
+      },
+      get Position() {
+        return { X: holder.position.x, Y: holder.position.y, Z: holder.position.z };
+      },
+      set Position(vec) {
+        if (!vec) return;
+        holder.position.set(Number(vec.X ?? holder.position.x), Number(vec.Y ?? holder.position.y), Number(vec.Z ?? holder.position.z));
+        invalidateFloorCache();
+      },
+      Destroy() {
+        if (holder.parent) holder.parent.remove(holder);
+        partRecord.destroyed = true;
+        invalidateFloorCache();
+      },
+      FindFirstChild(childName) {
+        if (childName === "TouchInterest") return {};
+        return null;
+      },
+      Touched: {
+        Connect(cb) {
+          partRecord.touchedCallbacks.push(cb);
+          return { Disconnect() { partRecord.touchedCallbacks = partRecord.touchedCallbacks.filter((x) => x !== cb); } };
+        }
+      }
+    };
+  };
+
+  const workspaceProxy = {
+    Gravity: studioConfig.gravity,
+    FindFirstChild(name) {
+      const found = dynamicParts.find((p) => !p.destroyed && p.name === name);
+      return found ? makePartProxy(found) : null;
+    },
+    GetChildren() {
+      return dynamicParts.filter((p) => !p.destroyed).map((p) => makePartProxy(p));
+    }
+  };
+
+  const humanoidProxy = {
+    get WalkSpeed() { return studioConfig.walkSpeed; },
+    set WalkSpeed(v) { const n = Number(v); if (Number.isFinite(n) && n > 0) studioConfig.walkSpeed = n; },
+    get JumpPower() { return studioConfig.jumpPower; },
+    set JumpPower(v) { const n = Number(v); if (Number.isFinite(n) && n > 0) studioConfig.jumpPower = n; },
+    Health: 100,
+    MaxHealth: 100,
+    TakeDamage(dmg) {
+      humanoidProxy.Health = Math.max(0, humanoidProxy.Health - Number(dmg || 0));
+      if (humanoidProxy.Health <= 0) {
+        humanoidProxy.Health = humanoidProxy.MaxHealth;
+        respawnLocalPlayer();
+      }
+    }
+  };
+
+  const characterProxy = {
+    Name: username,
+    Humanoid: humanoidProxy,
+    HumanoidRootPart: {
+      get Position() { return { X: playerPos.x, Y: playerPos.y, Z: playerPos.z }; },
+      set Position(v) {
+        if (!v) return;
+        playerPos.set(Number(v.X ?? playerPos.x), Number(v.Y ?? playerPos.y), Number(v.Z ?? playerPos.z));
+        syncLocalAvatarTransform();
+      }
+    },
+    FindFirstChild(n) {
+      if (n === "Humanoid") return humanoidProxy;
+      if (n === "HumanoidRootPart") return characterProxy.HumanoidRootPart;
+      return null;
+    }
+  };
+
+  const localPlayerProxy = {
+    Name: username,
+    Character: characterProxy,
+    Backpack: {
+      GetChildren() {
+        return backpackItems.map((b) => ({ Name: b.name }));
+      }
+    }
+  };
+
+  const gameProxy = {
+    PlaceId: Number(placeId) || 0,
+    Workspace: workspaceProxy,
+    Players: {
+      LocalPlayer: localPlayerProxy,
+      GetPlayers() { return [localPlayerProxy]; }
+    },
+    GetService(svcName) {
+      if (svcName === "Workspace") return workspaceProxy;
+      if (svcName === "Players") return gameProxy.Players;
+      return {};
+    }
+  };
+
+  const InstanceProxy = {
+    new(clsName, parentObj) {
+      if (clsName === "Part" || clsName === "WedgePart" || clsName === "Cylinder" || clsName === "Ball") {
+        const sx = 4, sy = 2, sz = 4;
+        const shape = clsName === "WedgePart" ? "Wedge" : clsName === "Cylinder" ? "Cylinder" : clsName === "Ball" ? "Ball" : "Block";
+        const geo = buildGeometryForPart(shape, sx, sy, sz);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x00a2ff, roughness: 0.5 });
+        const holder = new THREE.Group();
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        holder.add(mesh);
+        holder.position.set(0, 4, -8);
+        worldGroup.add(holder);
+
+        const rec = {
+          name: clsName,
+          holder,
+          anchored: true,
+          canCollide: true,
+          velY: 0,
+          halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2),
+          touchedCallbacks: [],
+          destroyed: false
+        };
+        dynamicParts.push(rec);
+        invalidateFloorCache();
+        const proxy = makePartProxy(rec);
+        if (parentObj && typeof parentObj.FindFirstChild === "function") {
+          return proxy;
+        }
+        return proxy;
+      }
+      if (clsName === "TextLabel" || clsName === "TextButton" || clsName === "Frame") {
+        let sg = robloxGuiLayer.querySelector(".rblx-screengui");
+        if (!sg) {
+          sg = document.createElement("div");
+          sg.className = "rblx-screengui";
+          robloxGuiLayer.appendChild(sg);
+        }
+        const el = document.createElement(clsName === "TextButton" ? "button" : "div");
+        el.className = "rblx-el " + (clsName === "TextButton" ? "rblx-button" : clsName === "TextLabel" ? "rblx-label" : "rblx-frame");
+        el.style.left = "20px";
+        el.style.top = "180px";
+        el.style.width = "160px";
+        el.style.height = "34px";
+        el.style.backgroundColor = "rgba(30, 36, 46, 0.85)";
+        el.style.color = "#ffffff";
+        el.style.borderRadius = "4px";
+        el.textContent = clsName;
+        sg.appendChild(el);
+        return {
+          get Text() { return el.textContent; },
+          set Text(v) { el.textContent = String(v ?? ""); },
+          get Visible() { return el.style.display !== "none"; },
+          set Visible(v) { el.style.display = v ? "flex" : "none"; },
+          MouseButton1Click: {
+            Connect(cb) { el.addEventListener("click", cb); }
+          }
+        };
+      }
+      return { Name: clsName };
+    }
+  };
+
+  const Vector3Proxy = {
+    new(x = 0, y = 0, z = 0) { return { X: Number(x) || 0, Y: Number(y) || 0, Z: Number(z) || 0 }; }
+  };
+  const CFrameProxy = {
+    new(x = 0, y = 0, z = 0) { return { X: Number(x) || 0, Y: Number(y) || 0, Z: Number(z) || 0 }; }
+  };
+  const Color3Proxy = {
+    new(r = 1, g = 1, b = 1) { return { R: Number(r) || 0, G: Number(g) || 0, B: Number(b) || 0 }; },
+    fromRGB(r = 255, g = 255, b = 255) { return { R: (Number(r) || 0) / 255, G: (Number(g) || 0) / 255, B: (Number(b) || 0) / 255 }; }
+  };
+  const BrickColorProxy = {
+    new(c) { return c; }
+  };
+
+  const waitFn = (sec = 0.05) => new Promise((r) => setTimeout(r, Math.max(10, Number(sec || 0.05) * 1000)));
+  const taskProxy = {
+    wait: waitFn,
+    spawn(fn) { Promise.resolve().then(fn).catch((err) => addChat("ScriptWarn", String(err))); }
+  };
+
+  try {
+    const fn = new Function(
+      "workspace", "game", "script", "Instance", "Vector3", "CFrame", "Color3", "BrickColor", "wait", "task", "print", "warn", "apiHelper",
+      `"use strict"; return (async () => { ${js} })();`
+    );
+    fn(
+      workspaceProxy,
+      gameProxy,
+      { Name: scriptName, Parent: workspaceProxy },
+      InstanceProxy,
+      Vector3Proxy,
+      CFrameProxy,
+      Color3Proxy,
+      BrickColorProxy,
+      waitFn,
+      taskProxy,
+      (...args) => addChat(scriptName, args.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" ")),
+      (...args) => addChat(scriptName + " (warn)", args.join(" ")),
+      apiHelper
+    ).catch((err) => {
+      addChat("ScriptError", scriptName + ": " + (err && err.message ? err.message : String(err)));
+    });
+  } catch (err) {
+    addChat("ScriptError", scriptName + ": " + (err && err.message ? err.message : String(err)));
   }
 }
 
@@ -1331,6 +2260,23 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
   const cls = item.getAttribute("class") || "";
   const props = findPropElement(item, "Properties") || item.firstElementChild;
   const name = props ? readStr(props, "Name", cls) : cls;
+
+  if (cls === "StarterGui") {
+    for (const ch of Array.from(item.children)) {
+      if (ch.tagName === "Item") buildGuiHierarchy(ch, robloxGuiLayer);
+    }
+    return;
+  }
+
+  if (cls === "Script" || cls === "LocalScript" || cls === "ModuleScript") {
+    if (props) {
+      const src = readStr(props, "Source", "") || readStr(props, "Code", "") || readStr(props, "ScriptSource", "");
+      if (src.trim()) {
+        queuedScripts.push({ name, source: src });
+      }
+    }
+    return;
+  }
 
   if (cls === "Workspace" && props) {
     const gVal = readNum(props, "Gravity", null);
@@ -1392,6 +2338,7 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
     );
     const visual = createVisualItemMesh(item, props);
     const colorHex = parseColorFromProps(props, 0xc0c8d0);
+    const { texUrl } = extractTextureOrMeshUrl(item, props);
 
     if (hasExplicitWorldPos) {
       const { matrix4 } = parseCFrameMatrix(cfEl);
@@ -1403,10 +2350,10 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
       visual.quaternion.copy(quat);
       parentGroup.add(visual);
       if (worldItemsCollector) {
-        worldItemsCollector.push({ name, colorHex, mesh: visual, pickupPos: posVec.clone(), collected: false });
+        worldItemsCollector.push({ name, colorHex, texUrl, mesh: visual, pickupPos: posVec.clone(), collected: false });
       }
     } else {
-      giveItemToBackpack(name, colorHex, backpackItems.length === 0);
+      giveItemToBackpack(name, colorHex, backpackItems.length === 0, texUrl);
     }
   }
 
@@ -1427,6 +2374,9 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
   );
 
   if (isPartLike && props) {
+    const anchored = readBool(props, "Anchored", true);
+    const canCollide = readBool(props, "CanCollide", true);
+
     if (name === "Baseplate") {
       const sizeEl = findPropElement(props, "size") || findPropElement(props, "Size");
       const cfEl = findPropElement(props, "CFrame");
@@ -1444,6 +2394,8 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
       if (bpColor !== null && baseplate.material) {
         baseplate.material.color.setHex(bpColor);
       }
+      baseplate.userData.canCollide = canCollide;
+      baseplate.userData.anchored = anchored;
       return;
     }
 
@@ -1492,17 +2444,30 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
     matrix4.decompose(posVec, quat, scaleVec);
     partHolder.position.copy(posVec);
     partHolder.quaternion.copy(quat);
+    partHolder.userData.canCollide = canCollide;
+    partHolder.userData.anchored = anchored;
 
     attachLightsFromItem(item, partHolder);
     parentGroup.add(partHolder);
 
+    dynamicParts.push({
+      name,
+      holder: partHolder,
+      anchored,
+      canCollide,
+      velY: 0,
+      halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2),
+      touchedCallbacks: [],
+      destroyed: false
+    });
+
     const lowerName = name.toLowerCase();
     if (lowerName.includes("kill") || lowerName.includes("lava") || lowerName.includes("acid") || lowerName.includes("spike")) {
-      interactiveParts.push({ type: "kill", mesh: partHolder, halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2) });
+      interactiveParts.push({ type: "kill", mesh: partHolder, canCollide, halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2) });
     } else if (lowerName.includes("jump") || lowerName.includes("bounce") || lowerName.includes("pad")) {
-      interactiveParts.push({ type: "jump", mesh: partHolder, halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2), boost: 85 });
+      interactiveParts.push({ type: "jump", mesh: partHolder, canCollide, halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2), boost: 85 });
     } else if (lowerName.includes("speed") || lowerName.includes("boost")) {
-      interactiveParts.push({ type: "speed", mesh: partHolder, halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2), speed: 34 });
+      interactiveParts.push({ type: "speed", mesh: partHolder, canCollide, halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2), speed: 34 });
     }
 
     if (meshUrl && /^https?:\/\//i.test(meshUrl) && meshUrl.toLowerCase().endsWith(".glb")) {
@@ -1547,7 +2512,7 @@ function invalidateFloorCache() {
 
 function syncLocalAvatarTransform() {
   if (!localAvatarInst) return;
-  attachCameraToGlbObject(localAvatarInst);
+  attachCameraDirectlyToGlbTorso(localAvatarInst);
   localAvatarInst.container.position.set(playerPos.x, playerPos.y + localAvatarInst.footOffset, playerPos.z);
   localAvatarInst.container.rotation.y = playerYaw;
 }
@@ -1563,11 +2528,15 @@ function respawnLocalPlayer() {
   broadcastSelfState();
 }
 
-function loadPlaceXmlString(xmlText) {
+function loadPlaceXmlString(xmlText, gameRow = null) {
   clearWorldGroup();
   invalidateFloorCache();
+  imageAssetMap.clear();
+  registerImagesFromXmlOrRow(xmlText, gameRow);
   pickupItems = [];
   interactiveParts = [];
+  dynamicParts = [];
+  queuedScripts = [];
   backpackItems = [];
   equippedIndex = -1;
   applyToolVisualToRig(localAvatarInst, "");
@@ -1598,6 +2567,10 @@ function loadPlaceXmlString(xmlText) {
     currentSpawn = { x: 0, y: 0.5, z: 0 };
   }
   respawnLocalPlayer();
+
+  for (const sc of queuedScripts) {
+    runLuauScriptSource(sc.source, sc.name);
+  }
 }
 
 function looksLikeXml(raw) {
@@ -1615,7 +2588,7 @@ async function resolveXmlFromGameRow(place) {
       try {
         const { data, error } = await sb
           .from("games")
-          .select("id, title, xml, file_url")
+          .select("*")
           .eq("id", place.id)
           .limit(1);
         if (!error && Array.isArray(data) && data[0]) {
@@ -1628,14 +2601,14 @@ async function resolveXmlFromGameRow(place) {
   if (row && typeof row.xml === "string" && row.xml.trim()) {
     const trimmedXml = row.xml.trim();
     if (looksLikeXml(trimmedXml)) {
-      return trimmedXml;
+      return { xml: trimmedXml, row };
     }
     if (/^https?:\/\//i.test(trimmedXml)) {
       try {
         const res = await fetch(trimmedXml);
         if (res.ok) {
           const fetched = await res.text();
-          if (looksLikeXml(fetched)) return fetched.trim();
+          if (looksLikeXml(fetched)) return { xml: fetched.trim(), row };
         }
       } catch (_) {}
     }
@@ -1646,12 +2619,13 @@ async function resolveXmlFromGameRow(place) {
       const res = await fetch(row.file_url.trim());
       if (res.ok) {
         const fetched = await res.text();
-        if (looksLikeXml(fetched)) return fetched.trim();
+        if (looksLikeXml(fetched)) return { xml: fetched.trim(), row };
       }
     } catch (_) {}
   }
 
-  return `<?xml version="1.0" encoding="utf-8"?>
+  return {
+    xml: `<?xml version="1.0" encoding="utf-8"?>
 <roblox version="4">
   <Item class="Workspace">
     <Properties>
@@ -1663,6 +2637,8 @@ async function resolveXmlFromGameRow(place) {
         <string name="Name">SpawnLocation</string>
         <Vector3 name="Size"><X>8</X><Y>1</Y><Z>8</Z></Vector3>
         <CoordinateFrame name="CFrame"><X>0</X><Y>0.5</Y><Z>0</Z></CoordinateFrame>
+        <bool name="Anchored">true</bool>
+        <bool name="CanCollide">true</bool>
       </Properties>
     </Item>
     <Item class="Part">
@@ -1671,11 +2647,180 @@ async function resolveXmlFromGameRow(place) {
         <Vector3 name="Size"><X>6</X><Y>4</Y><Z>6</Z></Vector3>
         <CoordinateFrame name="CFrame"><X>10</X><Y>2</Y><Z>-10</Z></CoordinateFrame>
         <int name="BrickColor">21</int>
+        <bool name="Anchored">true</bool>
+        <bool name="CanCollide">true</bool>
       </Properties>
     </Item>
   </Item>
-</roblox>`;
+</roblox>`,
+    row
+  };
 }
+
+function renderEscTabContent() {
+  escServerInfo.textContent = activeServerId ? `Server: ${activeServerId}` : "Bloxtip Menu";
+
+  if (activeEscTab === "guidance") {
+    escTabContent.innerHTML = `
+      <div class="esc-section-title">Controls & Guidance</div>
+      <div class="esc-panel-box">
+        <div><strong>Move & Jump:</strong> W / A / S / D or Arrow Keys to move, Space to jump, 1–9 to equip items.</div>
+        <div><strong>Roblox Right-Click Orbit:</strong> Hold Right-Click and drag to orbit camera smoothly around your GLB character.</div>
+        <div><strong>Shift Lock:</strong> Toggle Shift Lock in <em>Settings</em> to lock your camera aim and center crosshair.</div>
+        <div><strong>XML & Luau Support:</strong> Parses <code>Anchored</code>, <code>CanCollide</code>, <code>ScreenGui</code> / <code>Frame</code> / <code>TextLabel</code> / <code>TextButton</code>, XML images, and Luau scripts.</div>
+      </div>
+    `;
+  } else if (activeEscTab === "settings") {
+    escTabContent.innerHTML = `
+      <div class="esc-section-title">Client Settings</div>
+      <div class="esc-panel-box">
+        <div class="esc-setting-row">
+          <div>
+            <div><strong>Master Volume</strong></div>
+            <div style="font-size:11px;color:#a8b4c7;">Adjust UI and gameplay sound effects</div>
+          </div>
+          <div class="esc-slider-wrap">
+            <input id="esc-volume-slider" type="range" min="0" max="100" value="${Math.round(masterVolume * 100)}">
+            <span id="esc-volume-label">${Math.round(masterVolume * 100)}%</span>
+          </div>
+        </div>
+        <div class="esc-setting-row">
+          <div>
+            <div><strong>Shift Lock</strong></div>
+            <div style="font-size:11px;color:#a8b4c7;">Align character facing with camera direction and show reticle</div>
+          </div>
+          <button id="esc-shiftlock-toggle" class="esc-toggle-btn ${shiftLockEnabled ? "on" : ""}" type="button">
+            ${shiftLockEnabled ? "ON" : "OFF"}
+          </button>
+        </div>
+      </div>
+    `;
+
+    const slider = document.getElementById("esc-volume-slider");
+    const volLbl = document.getElementById("esc-volume-label");
+    if (slider) {
+      slider.addEventListener("input", () => {
+        const pct = Number(slider.value) || 0;
+        setMasterVolume(pct / 100);
+        if (volLbl) volLbl.textContent = pct + "%";
+      });
+    }
+
+    const slBtn = document.getElementById("esc-shiftlock-toggle");
+    if (slBtn) {
+      slBtn.addEventListener("click", () => {
+        setShiftLock(!shiftLockEnabled);
+      });
+    }
+  } else {
+    escTabContent.innerHTML = `
+      <div class="esc-section-title">More Info</div>
+      <div class="esc-panel-box">
+        <div><strong>Player:</strong> ${escapeHtml(username)}</div>
+        <div><strong>Place ID:</strong> ${escapeHtml(placeId || "default")}</div>
+        <div><strong>Role:</strong> ${isHost ? "Host" : "Peer"}</div>
+      </div>
+    `;
+  }
+}
+
+function renderEscPlayersList() {
+  const avatarSrc = cachedAvatarPortraitUrl || "";
+  const list = [{ id: peerId, name: username, role: isHost ? "Host (You)" : "You", avatarUrl: avatarSrc }];
+  remotePlayers.forEach((rp, id) => {
+    list.push({ id, name: rp.name || "Player", role: "Player", avatarUrl: avatarSrc });
+  });
+
+  escPlayersGrid.innerHTML = "";
+  list.forEach((p) => {
+    const card = document.createElement("div");
+    card.className = "esc-player-card";
+
+    if (p.avatarUrl) {
+      const img = document.createElement("img");
+      img.className = "esc-player-avatar";
+      img.src = p.avatarUrl;
+      img.alt = p.name;
+      card.appendChild(img);
+    } else {
+      const ph = document.createElement("div");
+      ph.className = "esc-player-avatar";
+      ph.style.display = "flex";
+      ph.style.alignItems = "center";
+      ph.style.justifyContent = "center";
+      ph.style.fontWeight = "700";
+      ph.textContent = (p.name || "P").slice(0, 2).toUpperCase();
+      card.appendChild(ph);
+    }
+
+    const nm = document.createElement("div");
+    nm.className = "esc-player-name";
+    nm.textContent = p.name;
+
+    const bg = document.createElement("div");
+    bg.className = "esc-player-badge";
+    bg.textContent = p.role;
+
+    card.appendChild(nm);
+    card.appendChild(bg);
+    escPlayersGrid.appendChild(card);
+  });
+}
+
+function openEscMenu(tabName = null) {
+  if (tabName) activeEscTab = tabName;
+  document.querySelectorAll(".esc-tab-btn").forEach((b) => {
+    b.classList.toggle("active", b.dataset.escTab === activeEscTab);
+  });
+  renderEscTabContent();
+  renderEscPlayersList();
+  escMenu.classList.add("open");
+  syncShiftLockUI();
+  playUiSound(500, 0.05);
+}
+
+function closeEscMenu() {
+  escMenu.classList.remove("open");
+  syncShiftLockUI();
+  playUiSound(620, 0.05);
+}
+
+openEscBtn.addEventListener("click", () => {
+  if (escMenu.classList.contains("open")) closeEscMenu();
+  else openEscMenu();
+});
+
+document.querySelectorAll(".esc-tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    activeEscTab = btn.dataset.escTab || "guidance";
+    document.querySelectorAll(".esc-tab-btn").forEach((b) => {
+      b.classList.toggle("active", b === btn);
+    });
+    renderEscTabContent();
+    playUiSound(580, 0.04);
+  });
+});
+
+document.getElementById("esc-resume-btn").addEventListener("click", () => {
+  closeEscMenu();
+});
+
+document.getElementById("esc-reset-btn").addEventListener("click", () => {
+  closeEscMenu();
+  respawnLocalPlayer();
+});
+
+document.getElementById("esc-leave-btn").addEventListener("click", async () => {
+  closeEscMenu();
+  if (activeChannel) {
+    channelSubscribed = false;
+    try { await sb.removeChannel(activeChannel); } catch (_) {}
+    activeChannel = null;
+  }
+  remotePlayers.forEach((_, id) => removeRemotePlayer(id));
+  serverRoleLabel.textContent = "disconnected";
+  updateLeaderboard();
+});
 
 function updateLeaderboard() {
   const entries = [{ id: peerId, name: username, isSelf: true }];
@@ -1695,6 +2840,9 @@ function updateLeaderboard() {
     row.appendChild(right);
     leaderboardBody.appendChild(row);
   });
+  if (escMenu.classList.contains("open")) {
+    renderEscPlayersList();
+  }
 }
 
 function addOrUpdateRemotePlayer(id, payload) {
@@ -1944,11 +3092,12 @@ async function renderGamesModalList() {
     const card = document.createElement("div");
     card.className = "game-card";
 
-    if (g.thumbnail_url && /^https?:\/\//i.test(String(g.thumbnail_url).trim())) {
+    if (g.thumbnail_url && isSupportedWebUrl(String(g.thumbnail_url).trim())) {
       const thumb = document.createElement("img");
       thumb.className = "game-card-thumb";
       thumb.src = String(g.thumbnail_url).trim();
       thumb.alt = title;
+      thumb.onerror = () => { thumb.remove(); };
       card.appendChild(thumb);
     }
 
@@ -1997,10 +3146,10 @@ async function selectAndLaunchGame(gameOrId) {
     activeServerId = "";
 
     updateLoadingStatus("Fetching xml for " + (chosen.title || chosen.name || placeId) + "...");
-    const xml = await resolveXmlFromGameRow(chosen);
+    const { xml, row } = await resolveXmlFromGameRow(chosen);
 
     updateLoadingStatus("Building 3D world from XML...");
-    loadPlaceXmlString(xml);
+    loadPlaceXmlString(xml, row);
 
     updateLoadingStatus("Connecting to multiplayer server...");
     await discoverAndJoinMultiplayerServer(placeId);
@@ -2041,7 +3190,18 @@ chatForm.addEventListener("submit", (e) => {
 
 const keysDown = new Set();
 window.addEventListener("keydown", (e) => {
-  if (document.activeElement === chatInput) return;
+  if (e.code === "Escape") {
+    e.preventDefault();
+    if (gamesModal.classList.contains("open")) {
+      gamesModal.classList.remove("open");
+      return;
+    }
+    if (escMenu.classList.contains("open")) closeEscMenu();
+    else openEscMenu();
+    return;
+  }
+
+  if (document.activeElement === chatInput || escMenu.classList.contains("open")) return;
   keysDown.add(e.code);
 
   if (e.code.startsWith("Digit")) {
@@ -2054,6 +3214,7 @@ window.addEventListener("keydown", (e) => {
     playerVel.y = studioConfig.jumpPower;
     isGrounded = false;
     isJumping = true;
+    playUiSound(360, 0.08, "sine");
   }
 });
 
@@ -2062,40 +3223,57 @@ window.addEventListener("keyup", (e) => {
 });
 
 canvas.addEventListener("mousedown", (e) => {
+  if (escMenu.classList.contains("open")) return;
   if (e.button === 0 && equippedIndex >= 0) {
     isAttacking = true;
     attackTimer = 0.25;
+    playUiSound(290, 0.07, "sawtooth");
     broadcastSelfState();
   }
 });
 
-let isDraggingLook = false;
+let isRightDragging = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
 let camPitch = 0.16;
 let camDist = 4.2;
 
 canvas.addEventListener("mousedown", (e) => {
-  if (e.button === 2 || e.button === 1) {
-    isDraggingLook = true;
+  if (escMenu.classList.contains("open")) return;
+  if (e.button === 2) {
+    isRightDragging = true;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
+    canvas.style.cursor = "grabbing";
   }
 });
-window.addEventListener("mouseup", () => {
-  isDraggingLook = false;
+window.addEventListener("mouseup", (e) => {
+  if (!e || e.button === 2 || e.button === undefined) {
+    isRightDragging = false;
+    canvas.style.cursor = "default";
+  }
 });
 window.addEventListener("mousemove", (e) => {
-  if (!isDraggingLook) return;
-  const dx = e.clientX - lastMouseX;
-  const dy = e.clientY - lastMouseY;
-  lastMouseX = e.clientX;
-  lastMouseY = e.clientY;
-  playerYaw -= dx * 0.006;
-  camPitch = Math.max(-0.45, Math.min(1.05, camPitch + dy * 0.005));
+  if (escMenu.classList.contains("open")) return;
+  if (isRightDragging) {
+    const dx = e.clientX - lastMouseX;
+    const dy = e.clientY - lastMouseY;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    playerYaw -= dx * 0.0045;
+    camPitch = Math.max(-0.55, Math.min(1.15, camPitch + dy * 0.004));
+  } else if (shiftLockEnabled) {
+    const dx = e.movementX || 0;
+    const dy = e.movementY || 0;
+    if (dx !== 0 || dy !== 0) {
+      playerYaw -= dx * 0.0032;
+      camPitch = Math.max(-0.55, Math.min(1.15, camPitch + dy * 0.003));
+    }
+  }
 });
 canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 canvas.addEventListener("wheel", (e) => {
+  if (escMenu.classList.contains("open")) return;
   camDist = Math.max(1.8, Math.min(14, camDist + e.deltaY * 0.006));
 });
 
@@ -2113,9 +3291,11 @@ function refreshFloorBoxes(now) {
   if (now - floorCacheTime < 120 && cachedFloorBoxes.length > 0) return;
   floorCacheTime = now;
   const list = [];
-  const bpBox = new THREE.Box3().setFromObject(baseplate);
-  list.push(bpBox);
+  if (baseplate.userData.canCollide !== false) {
+    list.push(new THREE.Box3().setFromObject(baseplate));
+  }
   for (const child of worldGroup.children) {
+    if (child.userData && child.userData.canCollide === false) continue;
     list.push(new THREE.Box3().setFromObject(child));
   }
   cachedFloorBoxes = list;
@@ -2136,6 +3316,31 @@ function getFloorHeightAt(x, z, currentY) {
 
 function updatePhysicsAndPlayer(dt, now) {
   refreshFloorBoxes(now);
+
+  for (const partRec of dynamicParts) {
+    if (partRec.destroyed) continue;
+    if (!partRec.anchored) {
+      partRec.velY -= studioConfig.gravity * 0.12 * dt;
+      partRec.holder.position.y += partRec.velY * dt;
+      if (partRec.canCollide && partRec.holder.position.y - partRec.halfExtents.y <= 0) {
+        partRec.holder.position.y = partRec.halfExtents.y;
+        partRec.velY = 0;
+      }
+      if (partRec.holder.position.y < studioConfig.fallenPartsDestroyHeight) {
+        partRec.destroyed = true;
+        if (partRec.holder.parent) partRec.holder.parent.remove(partRec.holder);
+      }
+    }
+    if (partRec.touchedCallbacks && partRec.touchedCallbacks.length > 0) {
+      const p = partRec.holder.position;
+      const dist = Math.hypot(playerPos.x - p.x, (playerPos.y + 2.0) - p.y, playerPos.z - p.z);
+      if (dist < Math.max(partRec.halfExtents.x, partRec.halfExtents.y, partRec.halfExtents.z) + 2.5) {
+        for (const cb of partRec.touchedCallbacks) {
+          try { cb({ Name: username, Humanoid: { TakeDamage() {} } }); } catch (_) {}
+        }
+      }
+    }
+  }
 
   if (speedBoostTimer > 0) speedBoostTimer -= dt;
   if (attackTimer > 0) {
@@ -2188,12 +3393,13 @@ function updatePhysicsAndPlayer(dt, now) {
     if (playerPos.distanceTo(pItem.pickupPos) < 4.0) {
       pItem.collected = true;
       pItem.mesh.visible = false;
-      giveItemToBackpack(pItem.name, pItem.colorHex || 0xc0c8d0, true);
+      giveItemToBackpack(pItem.name, pItem.colorHex || 0xc0c8d0, true, pItem.texUrl || "");
       addChat("System", "Picked up " + pItem.name + "!");
     }
   }
 
   for (const inter of interactiveParts) {
+    if (inter.canCollide === false) continue;
     const pos = inter.mesh.position;
     const dx = Math.abs(playerPos.x - pos.x);
     const dy = Math.abs(playerPos.y + 2.5 - pos.y);
@@ -2219,17 +3425,19 @@ function updatePhysicsAndPlayer(dt, now) {
     stepAvatarAnimation(localAvatarInst, dt, speedRatio, isGrounded, isJumping, isAttacking);
   }
 
+  glbTorsoCameraGroup.getWorldPosition(glbTorsoCameraGroup.userData.worldPos || (glbTorsoCameraGroup.userData.worldPos = new THREE.Vector3()));
+  const torsoWorld = glbTorsoCameraGroup.userData.worldPos;
+  const horizDist = Math.cos(camPitch) * camDist;
+  const vertDist = Math.sin(camPitch) * camDist;
+  const shoulderOffsetX = shiftLockEnabled ? Math.cos(playerYaw) * 0.75 : 0;
+  const shoulderOffsetZ = shiftLockEnabled ? -Math.sin(playerYaw) * 0.75 : 0;
+
   camera.position.set(
-    Math.sin(playerYaw) * Math.cos(camPitch) * camDist,
-    Math.sin(camPitch) * camDist + 0.35,
-    Math.cos(playerYaw) * Math.cos(camPitch) * camDist
+    torsoWorld.x + shoulderOffsetX + Math.sin(playerYaw) * horizDist,
+    torsoWorld.y + vertDist + 0.35,
+    torsoWorld.z + shoulderOffsetZ + Math.cos(playerYaw) * horizDist
   );
-  cameraMount.getWorldPosition(cameraMount.userData.worldPos || (cameraMount.userData.worldPos = new THREE.Vector3()));
-  camera.lookAt(
-    cameraMount.userData.worldPos.x,
-    cameraMount.userData.worldPos.y + 0.25,
-    cameraMount.userData.worldPos.z
-  );
+  camera.lookAt(torsoWorld.x + shoulderOffsetX, torsoWorld.y + 0.35, torsoWorld.z + shoulderOffsetZ);
   camera.getWorldPosition(skyDome.position);
 }
 
@@ -2258,11 +3466,12 @@ function animate(now) {
 }
 
 (async function init() {
+  syncShiftLockUI();
   showLoading("Starting Bloxtip...", "Loading avatar GLB...");
   const tpl = await loadAvatarTemplate(AVATAR_GLB_URL);
   localAvatarInst = createAnimatedAvatarInstance(tpl, username);
   scene.add(localAvatarInst.container);
-  attachCameraToGlbObject(localAvatarInst);
+  attachCameraDirectlyToGlbTorso(localAvatarInst);
   syncLocalAvatarTransform();
   renderHotbar();
   updateLeaderboard();
@@ -2277,3 +3486,4 @@ function animate(now) {
 </script>
 </body>
 </html>
+<!-- OH MY FUCKING BRAIN -->
