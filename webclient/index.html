@@ -163,7 +163,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 const SUPABASE_URL = "https://vzkupnfktlyjmhjgzfli.supabase.co";
 const SUPABASE_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
-const AVATAR_GLB_URL = "https://novrex.lol/roblox-noob.glb";
+const AVATAR_GLB_URL = "https://btip.cc.cd/roblox-noobt.glb";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -277,7 +277,32 @@ function clearWorldGroup() {
   }
 }
 
+const BRICK_COLORS = {
+  1: 0xf2f3f3, 2: 0xcccccd, 3: 0xa3a2a4, 5: 0xe5e4de, 6: 0xfff873, 9: 0xe8bac7,
+  11: 0x80bbdb, 12: 0x93becc, 18: 0xcc8e68, 21: 0xc4281b, 22: 0xda867a, 23: 0x0d69ac,
+  24: 0xf5cd30, 25: 0xe29b40, 26: 0x1b2a35, 27: 0x6d6e6c, 28: 0x287f47, 29: 0xa1c48c,
+  37: 0x4b974b, 38: 0xa05f35, 45: 0xb4d2e3, 101: 0xda867a, 102: 0x6ebfe9, 104: 0x6b327c,
+  105: 0xe27616, 106: 0xda8540, 107: 0x008f9c, 119: 0xa4bd46, 125: 0xea5c18, 128: 0x662f18,
+  131: 0x635f61, 133: 0xd5733d, 134: 0xd8dd26, 135: 0x74869c, 138: 0xcc8e68, 140: 0x203a56,
+  141: 0x27462d, 151: 0x789081, 153: 0x957976, 154: 0x7c2b2f, 168: 0x645a4c, 190: 0xfde052,
+  191: 0xcf6024, 192: 0x694027, 193: 0xcfd6de, 194: 0xaaacb3, 199: 0x635f61, 208: 0xe5e4de,
+  209: 0xb0a06f, 210: 0x77929e, 211: 0x96cedf, 212: 0x9eb8d7, 213: 0xb080a9, 216: 0x945148,
+  217: 0x7e687f, 219: 0x6b5880, 220: 0xd596a0, 221: 0xde9cb2, 222: 0xe7adbe, 223: 0xdc9095,
+  224: 0xf0d5a0, 225: 0xebb87f, 226: 0xf5cd30, 232: 0x7d9bb5, 268: 0x43354b, 301: 0x704a2e,
+  302: 0x3f291c, 303: 0x5c3d28, 304: 0x8a5b3c, 305: 0xb97a50, 306: 0xd49c6a, 307: 0xe8be8e,
+  308: 0x45322e, 310: 0x5b3c2d, 311: 0x755240, 312: 0x99705b, 313: 0xb88f79, 314: 0xd1ad99,
+  315: 0xe6cbb8, 316: 0x61463a, 317: 0x805f4f, 318: 0xa17c6a, 319: 0xc29e8c, 320: 0xdbbeb0,
+  321: 0x3b4d5e, 322: 0x546e87, 323: 0x7593b0, 324: 0x9eb7d4, 325: 0xc2d5e8, 1001: 0xf8f8f8,
+  1002: 0xcdcdcd, 1003: 0x111111, 1004: 0xb40000, 1005: 0xff6600, 1006: 0xffff00, 1007: 0x008000,
+  1008: 0x0000ff, 1009: 0x800080, 1010: 0xff00ff, 1011: 0x00ffff, 1012: 0xffa500, 1013: 0xa52a2a,
+  1014: 0xffc0cb, 1015: 0x90ee90, 1016: 0xadd8e6, 1017: 0xd3d3d3, 1018: 0x808080, 1019: 0x404040,
+  1020: 0x8b0000, 1021: 0x006400, 1022: 0x00008b, 1023: 0x4b0082, 1024: 0xff1493, 1025: 0x00ced1,
+  1026: 0x32cd32, 1027: 0xffd700, 1028: 0x8a2be2, 1029: 0x5f9ea0, 1030: 0xd2691e, 1031: 0xff7f50,
+  1032: 0x6495ed
+};
+
 function readNum(parent, tagName, fallback) {
+  if (!parent) return fallback;
   const el = parent.getElementsByTagName(tagName)[0];
   if (!el) return fallback;
   const n = Number(el.textContent);
@@ -285,17 +310,496 @@ function readNum(parent, tagName, fallback) {
 }
 
 function readStr(parent, propName, fallback = "") {
+  if (!parent) return fallback;
   for (const el of Array.from(parent.children)) {
     if (el.getAttribute("name") === propName) return el.textContent ?? fallback;
   }
   return fallback;
 }
 
+function readBool(parent, propName, fallback = false) {
+  const raw = readStr(parent, propName, "");
+  if (!raw) return fallback;
+  const s = raw.trim().toLowerCase();
+  if (s === "true" || s === "1") return true;
+  if (s === "false" || s === "0") return false;
+  return fallback;
+}
+
 function findPropElement(parent, propName) {
+  if (!parent) return null;
   for (const el of Array.from(parent.children)) {
     if (el.getAttribute("name") === propName) return el;
   }
   return null;
+}
+
+function parseColor3Value(propEl, fallbackHex = 0x00a2ff) {
+  if (!propEl) return fallbackHex;
+  const rEl = propEl.getElementsByTagName("R")[0];
+  const gEl = propEl.getElementsByTagName("G")[0];
+  const bEl = propEl.getElementsByTagName("B")[0];
+  if (rEl && gEl && bEl) {
+    let r = Number(rEl.textContent);
+    let g = Number(gEl.textContent);
+    let b = Number(bEl.textContent);
+    if (Number.isFinite(r) && Number.isFinite(g) && Number.isFinite(b)) {
+      if (r <= 1.001 && g <= 1.001 && b <= 1.001) {
+        r = Math.round(Math.max(0, Math.min(1, r)) * 255);
+        g = Math.round(Math.max(0, Math.min(1, g)) * 255);
+        b = Math.round(Math.max(0, Math.min(1, b)) * 255);
+      } else {
+        r = Math.round(Math.max(0, Math.min(255, r)));
+        g = Math.round(Math.max(0, Math.min(255, g)));
+        b = Math.round(Math.max(0, Math.min(255, b)));
+      }
+      return (r << 16) | (g << 8) | b;
+    }
+  }
+  const uintEl = propEl.getElementsByTagName("uint")[0] || propEl.getElementsByTagName("int")[0];
+  if (uintEl) {
+    const val = Number(uintEl.textContent);
+    if (Number.isFinite(val) && val >= 0) {
+      if (val > 0xffffff) return val & 0xffffff;
+      return val;
+    }
+  }
+  const txt = (propEl.textContent || "").trim();
+  if (/^#?[0-9a-fA-F]{6}$/.test(txt)) {
+    return parseInt(txt.replace("#", ""), 16);
+  }
+  const num = Number(txt);
+  if (Number.isFinite(num) && num >= 0) {
+    return num > 0xffffff ? (num & 0xffffff) : num;
+  }
+  return fallbackHex;
+}
+
+function parseColorFromProps(props, fallbackHex = 0x00a2ff) {
+  const color3Prop = findPropElement(props, "Color3") || findPropElement(props, "color3");
+  if (color3Prop) return parseColor3Value(color3Prop, fallbackHex);
+
+  const colorProp = findPropElement(props, "Color") || findPropElement(props, "color");
+  if (colorProp) {
+    const c3 = parseColor3Value(colorProp, null);
+    if (c3 !== null) return c3;
+  }
+
+  const brickProp = findPropElement(props, "BrickColor") || findPropElement(props, "brickcolor");
+  if (brickProp) {
+    const code = Number((brickProp.textContent || "").trim());
+    if (Number.isFinite(code) && BRICK_COLORS[code] !== undefined) {
+      return BRICK_COLORS[code];
+    }
+  }
+
+  const colorStr = readStr(props, "Color", "") || readStr(props, "BrickColor", "");
+  if (colorStr) {
+    const num = Number(colorStr.trim());
+    if (Number.isFinite(num)) {
+      if (BRICK_COLORS[num] !== undefined) return BRICK_COLORS[num];
+      if (num >= 0) return num > 0xffffff ? (num & 0xffffff) : num;
+    }
+    if (/^#?[0-9a-fA-F]{6}$/.test(colorStr.trim())) {
+      return parseInt(colorStr.trim().replace("#", ""), 16);
+    }
+  }
+  return fallbackHex;
+}
+
+function parseCFrameMatrix(cfEl) {
+  const fallback = {
+    x: 0, y: 2, z: -12,
+    matrix4: new THREE.Matrix4().identity()
+  };
+  if (!cfEl) return fallback;
+
+  const x = readNum(cfEl, "X", 0);
+  const y = readNum(cfEl, "Y", 2);
+  const z = readNum(cfEl, "Z", -12);
+
+  const r00 = readNum(cfEl, "R00", null);
+  const r01 = readNum(cfEl, "R01", null);
+  const r02 = readNum(cfEl, "R02", null);
+  const r10 = readNum(cfEl, "R10", null);
+  const r11 = readNum(cfEl, "R11", null);
+  const r12 = readNum(cfEl, "R12", null);
+  const r20 = readNum(cfEl, "R20", null);
+  const r21 = readNum(cfEl, "R21", null);
+  const r22 = readNum(cfEl, "R22", null);
+
+  const m = new THREE.Matrix4();
+  if (
+    r00 !== null && r01 !== null && r02 !== null &&
+    r10 !== null && r11 !== null && r12 !== null &&
+    r20 !== null && r21 !== null && r22 !== null
+  ) {
+    m.set(
+      r00, r01, r02, x,
+      r10, r11, r12, y,
+      r20, r21, r22, z,
+      0,   0,   0,   1
+    );
+  } else {
+    m.makeTranslation(x, y, z);
+  }
+
+  return { x, y, z, matrix4: m };
+}
+
+function getPartShape(item, props, cls) {
+  if (cls === "WedgePart") return "Wedge";
+  if (cls === "Cylinder" || cls === "CylinderPart") return "Cylinder";
+  if (cls === "Ball" || cls === "SpherePart") return "Ball";
+  if (cls === "TrussPart") return "Truss";
+  if (cls === "CornerWedgePart") return "CornerWedge";
+
+  const shapeProp = findPropElement(props, "shape") || findPropElement(props, "Shape");
+  if (shapeProp) {
+    const txt = (shapeProp.textContent || "").trim();
+    const num = Number(txt);
+    if (Number.isFinite(num)) {
+      if (num === 0) return "Ball";
+      if (num === 1) return "Block";
+      if (num === 2) return "Cylinder";
+      if (num === 3) return "Wedge";
+      if (num === 4) return "CornerWedge";
+    }
+    const lower = txt.toLowerCase();
+    if (lower.includes("cyl")) return "Cylinder";
+    if (lower.includes("ball") || lower.includes("sphere")) return "Ball";
+    if (lower.includes("wedge") && lower.includes("corner")) return "CornerWedge";
+    if (lower.includes("wedge")) return "Wedge";
+  }
+
+  const childItems = Array.from(item.children).filter((c) => c.tagName === "Item");
+  for (const ch of childItems) {
+    const cCls = ch.getAttribute("class");
+    if (cCls === "CylinderMesh") return "Cylinder";
+    if (cCls === "SpecialMesh") {
+      const cProps = findPropElement(ch, "Properties") || ch.firstElementChild;
+      const mType = readStr(cProps, "MeshType", "");
+      const mNum = Number(mType.trim());
+      if (mNum === 0) return "Head";
+      if (mNum === 1) return "Torso";
+      if (mNum === 2) return "Wedge";
+      if (mNum === 3) return "Sphere";
+      if (mNum === 4) return "Cylinder";
+      if (mNum === 5) return "FileMesh";
+      if (mNum === 6) return "Brick";
+      const mLower = mType.toLowerCase();
+      if (mLower.includes("cyl")) return "Cylinder";
+      if (mLower.includes("sphere") || mLower.includes("ball")) return "Ball";
+      if (mLower.includes("wedge")) return "Wedge";
+      if (mLower.includes("file")) return "FileMesh";
+    }
+  }
+
+  return "Block";
+}
+
+function createWedgeGeometry(sx, sy, sz) {
+  const shape = new THREE.Shape();
+  shape.moveTo(-sz / 2, -sy / 2);
+  shape.lineTo(sz / 2, -sy / 2);
+  shape.lineTo(sz / 2, sy / 2);
+  shape.closePath();
+
+  const geom = new THREE.ExtrudeGeometry(shape, {
+    depth: sx,
+    bevelEnabled: false
+  });
+  geom.translate(0, 0, -sx / 2);
+  geom.rotateY(-Math.PI / 2);
+  return geom;
+}
+
+function createCornerWedgeGeometry(sx, sy, sz) {
+  const geom = new THREE.BufferGeometry();
+  const hx = sx / 2, hy = sy / 2, hz = sz / 2;
+  const vertices = new Float32Array([
+    -hx, -hy, -hz,   hx, -hy, -hz,   hx, -hy,  hz,
+    -hx, -hy, -hz,   hx, -hy,  hz,  -hx, -hy,  hz,
+    -hx, -hy, -hz,  -hx,  hy, -hz,   hx, -hy, -hz,
+    -hx, -hy, -hz,  -hx, -hy,  hz,  -hx,  hy, -hz,
+    -hx,  hy, -hz,  -hx, -hy,  hz,   hx, -hy, -hz,
+     hx, -hy, -hz,  -hx, -hy,  hz,   hx, -hy,  hz
+  ]);
+  geom.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+  geom.computeVertexNormals();
+  return geom;
+}
+
+function buildGeometryForPart(shape, sx, sy, sz) {
+  const w = Math.max(0.05, sx);
+  const h = Math.max(0.05, sy);
+  const d = Math.max(0.05, sz);
+
+  if (shape === "Cylinder") {
+    const radius = Math.max(0.025, Math.min(h, d) / 2);
+    const cyl = new THREE.CylinderGeometry(radius, radius, w, 28, 1, false);
+    cyl.rotateZ(-Math.PI / 2);
+    return cyl;
+  }
+  if (shape === "Ball" || shape === "Sphere") {
+    const r = Math.max(0.025, Math.min(w, h, d) / 2);
+    return new THREE.SphereGeometry(r, 24, 18);
+  }
+  if (shape === "Wedge") {
+    return createWedgeGeometry(w, h, d);
+  }
+  if (shape === "CornerWedge") {
+    return createCornerWedgeGeometry(w, h, d);
+  }
+  if (shape === "Truss") {
+    const g = new THREE.Group();
+    const railGeo = new THREE.BoxGeometry(0.25, h, 0.25);
+    const mat = new THREE.MeshStandardMaterial({ color: 0x8a929a });
+    const offsets = [
+      [-w / 2 + 0.125, -d / 2 + 0.125],
+      [w / 2 - 0.125, -d / 2 + 0.125],
+      [-w / 2 + 0.125, d / 2 - 0.125],
+      [w / 2 - 0.125, d / 2 - 0.125]
+    ];
+    offsets.forEach(([ox, oz]) => {
+      const post = new THREE.Mesh(railGeo, mat);
+      post.position.set(ox, 0, oz);
+      g.add(post);
+    });
+    const rungCount = Math.max(1, Math.floor(h / 2));
+    for (let i = 0; i <= rungCount; i++) {
+      const ry = -h / 2 + (i / rungCount) * h;
+      const rung1 = new THREE.Mesh(new THREE.BoxGeometry(w, 0.16, 0.16), mat);
+      rung1.position.set(0, ry, 0);
+      g.add(rung1);
+    }
+    return g;
+  }
+  return new THREE.BoxGeometry(w, h, d);
+}
+
+function materialPropsFromRoblox(props, colorHex, texUrl) {
+  const transparency = Math.max(0, Math.min(1, readNum(props, "Transparency", 0)));
+  const reflectance = Math.max(0, Math.min(1, readNum(props, "Reflectance", 0)));
+  const matName = (readStr(props, "Material", "") || "").toLowerCase();
+
+  let roughness = 0.65;
+  let metalness = Math.min(0.9, reflectance * 0.85);
+  let emissive = 0x000000;
+  let emissiveIntensity = 0;
+
+  if (matName.includes("neon")) {
+    roughness = 0.2;
+    emissive = colorHex;
+    emissiveIntensity = 0.85;
+  } else if (matName.includes("metal") || matName.includes("diamondplate") || matName.includes("foil") || matName.includes("corrugated")) {
+    roughness = 0.28;
+    metalness = Math.max(metalness, 0.72);
+  } else if (matName.includes("glass")) {
+    roughness = 0.08;
+    metalness = 0.1;
+  } else if (matName.includes("smoothplastic") || matName.includes("plastic")) {
+    roughness = 0.42;
+  } else if (matName.includes("wood")) {
+    roughness = 0.78;
+  } else if (matName.includes("grass") || matName.includes("sand") || matName.includes("brick") || matName.includes("stone") || matName.includes("rock") || matName.includes("concrete")) {
+    roughness = 0.88;
+  }
+
+  const opts = {
+    color: texUrl ? 0xffffff : colorHex,
+    roughness,
+    metalness,
+    emissive,
+    emissiveIntensity
+  };
+
+  if (transparency > 0.001) {
+    opts.transparent = true;
+    opts.opacity = 1 - transparency;
+  }
+
+  if (texUrl) {
+    const tex = textureLoader.load(texUrl);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    opts.map = tex;
+  }
+
+  return new THREE.MeshStandardMaterial(opts);
+}
+
+function extractTextureOrMeshUrl(item, props) {
+  let texUrl = readStr(props, "TextureUrl", "") || readStr(props, "Texture", "") || readStr(props, "Image", "");
+  let meshUrl = "";
+
+  for (const child of Array.from(item.children)) {
+    if (child.tagName !== "Item") continue;
+    const cCls = child.getAttribute("class");
+    const cProps = findPropElement(child, "Properties") || child.firstElementChild;
+    if (!cProps) continue;
+
+    if (cCls === "Decal" || cCls === "Texture") {
+      const dUrl = readStr(cProps, "Texture", "") || readStr(cProps, "TextureUrl", "");
+      if (dUrl && !texUrl) texUrl = dUrl;
+    } else if (cCls === "SpecialMesh" || cCls === "FileMesh") {
+      const mTex = readStr(cProps, "TextureId", "") || readStr(cProps, "Texture", "");
+      const mId = readStr(cProps, "MeshId", "");
+      if (mTex && !texUrl) texUrl = mTex;
+      if (mId) meshUrl = mId;
+    }
+  }
+  return { texUrl, meshUrl };
+}
+
+function attachLightsFromItem(item, targetGroup) {
+  for (const child of Array.from(item.children)) {
+    if (child.tagName !== "Item") continue;
+    const cCls = child.getAttribute("class");
+    const cProps = findPropElement(child, "Properties") || child.firstElementChild;
+    if (!cProps) continue;
+    const brightness = readNum(cProps, "Brightness", 1);
+    const range = readNum(cProps, "Range", 16);
+    const lColor = parseColorFromProps(cProps, 0xfff5cc);
+
+    if (cCls === "PointLight") {
+      const pt = new THREE.PointLight(lColor, brightness * 1.4, range);
+      targetGroup.add(pt);
+    } else if (cCls === "SpotLight") {
+      const angleDeg = readNum(cProps, "Angle", 90);
+      const sp = new THREE.SpotLight(lColor, brightness * 1.6, range, THREE.MathUtils.degToRad(angleDeg / 2), 0.35);
+      targetGroup.add(sp);
+    } else if (cCls === "SurfaceLight") {
+      const surf = new THREE.PointLight(lColor, brightness * 1.1, range);
+      targetGroup.add(surf);
+    }
+  }
+}
+
+function processStudioItem(item, parentGroup, defaultSpawnPosRef) {
+  if (!item || item.tagName !== "Item") return;
+  const cls = item.getAttribute("class") || "";
+  const props = findPropElement(item, "Properties") || item.firstElementChild;
+  const name = props ? readStr(props, "Name", cls) : cls;
+
+  if (cls === "Lighting" && props) {
+    const ambientHex = parseColorFromProps(props, null);
+    if (ambientHex !== null) {
+      hemi.color.setHex(ambientHex);
+    }
+    const skyHex = parseColor3Value(findPropElement(props, "OutdoorAmbient") || findPropElement(props, "FogColor"), null);
+    if (skyHex !== null) {
+      scene.background = new THREE.Color(skyHex);
+      if (scene.fog) scene.fog.color.setHex(skyHex);
+    }
+    const fogEnd = readNum(props, "FogEnd", null);
+    const fogStart = readNum(props, "FogStart", null);
+    if (fogEnd !== null && fogEnd > 0) {
+      scene.fog = new THREE.Fog(scene.background.getHex(), fogStart !== null ? fogStart : 40, fogEnd);
+    }
+  }
+
+  const isPartLike = (
+    cls === "Part" ||
+    cls === "SpawnLocation" ||
+    cls === "WedgePart" ||
+    cls === "TrussPart" ||
+    cls === "CornerWedgePart" ||
+    cls === "Cylinder" ||
+    cls === "CylinderPart" ||
+    cls === "Ball" ||
+    cls === "SpherePart" ||
+    cls === "MeshPart" ||
+    cls === "Seat" ||
+    cls === "VehicleSeat" ||
+    cls === "FlagStand"
+  );
+
+  if (isPartLike && props) {
+    if (name === "Baseplate") {
+      const sizeEl = findPropElement(props, "size") || findPropElement(props, "Size");
+      const cfEl = findPropElement(props, "CFrame");
+      if (sizeEl) {
+        const bx = Math.max(4, readNum(sizeEl, "X", 128));
+        const by = Math.max(1, readNum(sizeEl, "Y", 2));
+        const bz = Math.max(4, readNum(sizeEl, "Z", 128));
+        baseplate.geometry.dispose();
+        baseplate.geometry = new THREE.BoxGeometry(bx, by, bz);
+      }
+      if (cfEl) {
+        baseplate.position.set(readNum(cfEl, "X", 0), readNum(cfEl, "Y", -1), readNum(cfEl, "Z", 0));
+      }
+      const bpColor = parseColorFromProps(props, null);
+      if (bpColor !== null && baseplate.material) {
+        baseplate.material.color.setHex(bpColor);
+      }
+      return;
+    }
+
+    const sizeEl = findPropElement(props, "size") || findPropElement(props, "Size");
+    const sx = sizeEl ? readNum(sizeEl, "X", 4) : 4;
+    const sy = sizeEl ? readNum(sizeEl, "Y", 2) : 2;
+    const sz = sizeEl ? readNum(sizeEl, "Z", 4) : 4;
+
+    const cfEl = findPropElement(props, "CFrame") || findPropElement(props, "CoordinateFrame");
+    const { x: px, y: py, z: pz, matrix4 } = parseCFrameMatrix(cfEl);
+
+    if (cls === "SpawnLocation" && !defaultSpawnPosRef.set) {
+      defaultSpawnPosRef.set = true;
+      defaultSpawnPosRef.x = px;
+      defaultSpawnPosRef.y = py + Math.max(1.5, sy / 2 + 1);
+      defaultSpawnPosRef.z = pz;
+      spawnPad.position.set(px, py - sy / 2 + 0.2, pz);
+    }
+
+    const colorHex = parseColorFromProps(props, cls === "SpawnLocation" ? 0xd9dde2 : 0x00a2ff);
+    const { texUrl, meshUrl } = extractTextureOrMeshUrl(item, props);
+    const shape = getPartShape(item, props, cls);
+    const geomOrGroup = buildGeometryForPart(shape, sx, sy, sz);
+    const mat = materialPropsFromRoblox(props, colorHex, texUrl);
+
+    const partHolder = new THREE.Group();
+    if (geomOrGroup.isGroup) {
+      geomOrGroup.traverse((child) => {
+        if (child.isMesh) {
+          child.material = mat;
+        }
+      });
+      partHolder.add(geomOrGroup);
+    } else {
+      const mesh = new THREE.Mesh(geomOrGroup, mat);
+      partHolder.add(mesh);
+    }
+
+    const posVec = new THREE.Vector3();
+    const quat = new THREE.Quaternion();
+    const scaleVec = new THREE.Vector3();
+    matrix4.decompose(posVec, quat, scaleVec);
+    partHolder.position.copy(posVec);
+    partHolder.quaternion.copy(quat);
+
+    attachLightsFromItem(item, partHolder);
+    parentGroup.add(partHolder);
+
+    if (meshUrl && /^https?:\/\//i.test(meshUrl) && meshUrl.toLowerCase().endsWith(".glb")) {
+      gltfLoader.load(
+        meshUrl,
+        (gltf) => {
+          while (partHolder.children.length > 0) partHolder.remove(partHolder.children[0]);
+          const mScene = gltf.scene;
+          mScene.scale.set(sx / 2, sy / 2, sz / 2);
+          partHolder.add(mScene);
+        },
+        undefined,
+        () => {}
+      );
+    }
+  }
+
+  for (const child of Array.from(item.children)) {
+    if (child.tagName === "Item") {
+      processStudioItem(child, parentGroup, defaultSpawnPosRef);
+    }
+  }
 }
 
 function readXmlFromBrowser(xmlText) {
@@ -303,53 +807,25 @@ function readXmlFromBrowser(xmlText) {
   if (!xmlText || !String(xmlText).trim()) return;
 
   const doc = new DOMParser().parseFromString(String(xmlText), "text/xml");
-  const items = Array.from(doc.getElementsByTagName("Item"));
-
-  items.forEach((item) => {
-    const cls = item.getAttribute("class");
-    if (cls !== "Part" && cls !== "SpawnLocation" && cls !== "WedgePart" && cls !== "TrussPart") return;
-    const props = findPropElement(item, "Properties") || item.firstElementChild;
-    if (!props) return;
-
-    const name = readStr(props, "Name", cls);
-    if (name === "Baseplate") return;
-
-    const sizeEl = findPropElement(props, "size") || findPropElement(props, "Size");
-    const sx = sizeEl ? readNum(sizeEl, "X", 4) : 4;
-    const sy = sizeEl ? readNum(sizeEl, "Y", 2) : 2;
-    const sz = sizeEl ? readNum(sizeEl, "Z", 4) : 4;
-
-    const cfEl = findPropElement(props, "CFrame");
-    const px = cfEl ? readNum(cfEl, "X", 0) : 0;
-    const py = cfEl ? readNum(cfEl, "Y", 2) : 2;
-    const pz = cfEl ? readNum(cfEl, "Z", -12) : -12;
-
-    const texUrl = readStr(props, "TextureUrl", "") || readStr(props, "Texture", "") || readStr(props, "Image", "");
-    const colorStr = readStr(props, "Color", "") || readStr(props, "BrickColor", "");
-    let colorHex = 0x00a2ff;
-    if (colorStr) {
-      const parsedNum = Number(colorStr);
-      if (Number.isFinite(parsedNum) && parsedNum > 0) {
-        colorHex = parsedNum <= 0xffffff ? parsedNum : 0x00a2ff;
-      } else if (/^#?[0-9a-fA-F]{6}$/.test(colorStr.trim())) {
-        colorHex = parseInt(colorStr.trim().replace("#", ""), 16);
+  const rootItems = Array.from(doc.documentElement ? doc.documentElement.children : []).filter(
+    (el) => el.tagName === "Item"
+  );
+  if (rootItems.length === 0) {
+    Array.from(doc.getElementsByTagName("Item")).forEach((item) => {
+      if (item.parentElement && item.parentElement.tagName !== "Item") {
+        rootItems.push(item);
       }
-    }
+    });
+  }
 
-    const matOpts = { color: texUrl ? 0xffffff : colorHex };
-    if (texUrl) {
-      const tex = textureLoader.load(texUrl);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      matOpts.map = tex;
-    }
+  const spawnRef = { set: false, x: 0, y: 0.4, z: 0 };
+  rootItems.forEach((item) => processStudioItem(item, worldGroup, spawnRef));
 
-    const mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(Math.max(0.1, sx), Math.max(0.1, sy), Math.max(0.1, sz)),
-      new THREE.MeshStandardMaterial(matOpts)
-    );
-    mesh.position.set(px, py, pz);
-    worldGroup.add(mesh);
-  });
+  if (spawnRef.set) {
+    character.position.set(spawnRef.x, spawnRef.y, spawnRef.z);
+    velY = 0;
+    grounded = true;
+  }
 }
 
 const character = new THREE.Group();
