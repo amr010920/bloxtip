@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "novrex",
+  "name": "bloxtip",
   "main": "api/asset.js",
   "compatibility_date": "2026-11-26",
   "assets": {
