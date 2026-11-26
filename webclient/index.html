@@ -675,7 +675,74 @@ function attachLightsFromItem(item, targetGroup) {
   }
 }
 
-function processStudioItem(item, parentGroup, defaultSpawnPosRef) {
+const heldItemsGroup = new THREE.Group();
+const remoteHeldItems = new Map();
+
+function createVisualItemMesh(item, props) {
+  const name = readStr(props, "Name", "Item");
+  const colorHex = parseColorFromProps(props, 0x8d99ae);
+  const { texUrl, meshUrl } = extractTextureOrMeshUrl(item, props);
+
+  const itemRoot = new THREE.Group();
+  itemRoot.name = name;
+
+  let handlePart = null;
+  const childItems = Array.from(item.children).filter((c) => c.tagName === "Item");
+  for (const ch of childItems) {
+    const cCls = ch.getAttribute("class") || "";
+    const cProps = findPropElement(ch, "Properties") || ch.firstElementChild;
+    const cName = cProps ? readStr(cProps, "Name", "") : "";
+    if (cName === "Handle" || cCls === "Part" || cCls === "MeshPart" || cCls === "WedgePart" || cCls === "Cylinder") {
+      handlePart = { ch, cProps, cCls };
+      if (cName === "Handle") break;
+    }
+  }
+
+  if (handlePart && handlePart.cProps) {
+    const sEl = findPropElement(handlePart.cProps, "size") || findPropElement(handlePart.cProps, "Size");
+    const sx = sEl ? Math.max(0.2, readNum(sEl, "X", 0.5)) : 0.5;
+    const sy = sEl ? Math.max(0.2, readNum(sEl, "Y", 2.2)) : 2.2;
+    const sz = sEl ? Math.max(0.2, readNum(sEl, "Z", 0.5)) : 0.5;
+    const hColor = parseColorFromProps(handlePart.cProps, colorHex);
+    const hShape = getPartShape(handlePart.ch, handlePart.cProps, handlePart.cCls);
+    const hGeo = buildGeometryForPart(hShape, sx, sy, sz);
+    const hMat = materialPropsFromRoblox(handlePart.cProps, hColor, texUrl);
+    if (hGeo.isGroup) {
+      hGeo.traverse((m) => { if (m.isMesh) m.material = hMat; });
+      itemRoot.add(hGeo);
+    } else {
+      itemRoot.add(new THREE.Mesh(hGeo, hMat));
+    }
+  } else {
+    const gripMat = new THREE.MeshStandardMaterial({ color: 0x2b2d42, roughness: 0.5 });
+    const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 1.1, 12), gripMat);
+    grip.position.set(0, 0.4, 0);
+    itemRoot.add(grip);
+
+    const bladeMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3, metalness: 0.5 });
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.0, 0.35), bladeMat);
+    blade.position.set(0, 1.7, 0);
+    itemRoot.add(blade);
+  }
+
+  if (meshUrl && /^https?:\/\//i.test(meshUrl) && meshUrl.toLowerCase().endsWith(".glb")) {
+    gltfLoader.load(
+      meshUrl,
+      (gltf) => {
+        while (itemRoot.children.length > 0) itemRoot.remove(itemRoot.children[0]);
+        const sc = gltf.scene.clone(true);
+        sc.scale.set(1.2, 1.2, 1.2);
+        itemRoot.add(sc);
+      },
+      undefined,
+      () => {}
+    );
+  }
+
+  return itemRoot;
+}
+
+function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsCollector) {
   if (!item || item.tagName !== "Item") return;
   const cls = item.getAttribute("class") || "";
   const props = findPropElement(item, "Properties") || item.firstElementChild;
@@ -695,6 +762,42 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef) {
     const fogStart = readNum(props, "FogStart", null);
     if (fogEnd !== null && fogEnd > 0) {
       scene.fog = new THREE.Fog(scene.background.getHex(), fogStart !== null ? fogStart : 40, fogEnd);
+    }
+  }
+
+  const isToolOrItem = (
+    cls === "Tool" ||
+    cls === "HopperBin" ||
+    cls === "Accoutrement" ||
+    cls === "Hat" ||
+    cls === "Accessory"
+  );
+
+  if (isToolOrItem && props) {
+    const cfEl = findPropElement(props, "CFrame") || findPropElement(props, "Grip") || findPropElement(props, "CoordinateFrame");
+    const hasExplicitWorldPos = Boolean(
+      cfEl && (
+        cfEl.getElementsByTagName("X")[0] !== undefined ||
+        cfEl.getElementsByTagName("Y")[0] !== undefined ||
+        cfEl.getElementsByTagName("Z")[0] !== undefined
+      )
+    );
+    const visual = createVisualItemMesh(item, props);
+
+    if (hasExplicitWorldPos) {
+      const { x: ix, y: iy, z: iz, matrix4 } = parseCFrameMatrix(cfEl);
+      const posVec = new THREE.Vector3();
+      const quat = new THREE.Quaternion();
+      const scaleVec = new THREE.Vector3();
+      matrix4.decompose(posVec, quat, scaleVec);
+      visual.position.copy(posVec);
+      visual.quaternion.copy(quat);
+      parentGroup.add(visual);
+      if (worldItemsCollector) {
+        worldItemsCollector.push({ name, mesh: visual, pickupPos: posVec.clone(), collected: false });
+      }
+    } else if (worldItemsCollector && worldItemsCollector.length === 0) {
+      equipItemOnAvatar(name);
     }
   }
 
@@ -746,7 +849,7 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef) {
     if (cls === "SpawnLocation" && !defaultSpawnPosRef.set) {
       defaultSpawnPosRef.set = true;
       defaultSpawnPosRef.x = px;
-      defaultSpawnPosRef.y = py + Math.max(1.5, sy / 2 + 1);
+      defaultSpawnPosRef.y = py + Math.max(0.4, sy / 2 + 0.1);
       defaultSpawnPosRef.z = pz;
       spawnPad.position.set(px, py - sy / 2 + 0.2, pz);
     }
@@ -797,13 +900,31 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef) {
 
   for (const child of Array.from(item.children)) {
     if (child.tagName === "Item") {
-      processStudioItem(child, parentGroup, defaultSpawnPosRef);
+      processStudioItem(child, parentGroup, defaultSpawnPosRef, worldItemsCollector);
     }
   }
 }
 
+let pickupItems = [];
+let currentEquippedItemName = "";
+
+function equipItemOnAvatar(itemName) {
+  currentEquippedItemName = itemName || "Item";
+  while (heldItemsGroup.children.length > 0) {
+    heldItemsGroup.remove(heldItemsGroup.children[0]);
+  }
+  const gripMat = new THREE.MeshStandardMaterial({ color: 0x333842, roughness: 0.5 });
+  const bladeMat = new THREE.MeshStandardMaterial({ color: 0xc0c8d0, roughness: 0.25, metalness: 0.75 });
+  const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.9, 10), gripMat);
+  handle.position.set(0, 0.2, 0);
+  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.8, 0.3), bladeMat);
+  blade.position.set(0, 1.4, 0);
+  heldItemsGroup.add(handle, blade);
+}
+
 function readXmlFromBrowser(xmlText) {
   clearWorldGroup();
+  pickupItems = [];
   if (!xmlText || !String(xmlText).trim()) return;
 
   const doc = new DOMParser().parseFromString(String(xmlText), "text/xml");
@@ -818,8 +939,8 @@ function readXmlFromBrowser(xmlText) {
     });
   }
 
-  const spawnRef = { set: false, x: 0, y: 0.4, z: 0 };
-  rootItems.forEach((item) => processStudioItem(item, worldGroup, spawnRef));
+  const spawnRef = { set: false, x: 0, y: 0.2, z: 0 };
+  rootItems.forEach((item) => processStudioItem(item, worldGroup, spawnRef, pickupItems));
 
   if (spawnRef.set) {
     character.position.set(spawnRef.x, spawnRef.y, spawnRef.z);
@@ -835,20 +956,197 @@ const gltfLoader = new GLTFLoader();
 gltfLoader.setCrossOrigin("anonymous");
 let cachedNoobGlb = null;
 
-function createNoobAvatar(tintColor = null) {
+// Classic Roblox default walking animation keyframes (16-frame cycle normalized to [0..1])
+const ROBLOX_WALK_FRAMES = [
+  { t: 0.000, legL:  0.00, legR:  0.00, armL:  0.00, armR:  0.00, bobY: 0.00, torsoRoll:  0.00 },
+  { t: 0.125, legL:  0.42, legR: -0.38, armL: -0.35, armR:  0.35, bobY: 0.08, torsoRoll:  0.02 },
+  { t: 0.250, legL:  0.72, legR: -0.58, armL: -0.58, armR:  0.58, bobY: 0.02, torsoRoll:  0.03 },
+  { t: 0.375, legL:  0.34, legR: -0.22, armL: -0.26, armR:  0.26, bobY: -0.04, torsoRoll: 0.01 },
+  { t: 0.500, legL:  0.00, legR:  0.00, armL:  0.00, armR:  0.00, bobY: 0.00, torsoRoll:  0.00 },
+  { t: 0.625, legL: -0.38, legR:  0.42, armL:  0.35, armR: -0.35, bobY: 0.08, torsoRoll: -0.02 },
+  { t: 0.750, legL: -0.58, legR:  0.72, armL:  0.58, armR: -0.58, bobY: 0.02, torsoRoll: -0.03 },
+  { t: 0.875, legL: -0.22, legR:  0.34, armL:  0.26, armR: -0.26, bobY: -0.04, torsoRoll: -0.01 },
+  { t: 1.000, legL:  0.00, legR:  0.00, armL:  0.00, armR:  0.00, bobY: 0.00, torsoRoll:  0.00 }
+];
+
+function sampleRobloxWalkPose(phase) {
+  const p = ((phase % 1) + 1) % 1;
+  let a = ROBLOX_WALK_FRAMES[0];
+  let b = ROBLOX_WALK_FRAMES[ROBLOX_WALK_FRAMES.length - 1];
+  for (let i = 0; i < ROBLOX_WALK_FRAMES.length - 1; i++) {
+    if (p >= ROBLOX_WALK_FRAMES[i].t && p <= ROBLOX_WALK_FRAMES[i + 1].t) {
+      a = ROBLOX_WALK_FRAMES[i];
+      b = ROBLOX_WALK_FRAMES[i + 1];
+      break;
+    }
+  }
+  const span = Math.max(1e-6, b.t - a.t);
+  const alpha = (p - a.t) / span;
+  return {
+    legL: THREE.MathUtils.lerp(a.legL, b.legL, alpha),
+    legR: THREE.MathUtils.lerp(a.legR, b.legR, alpha),
+    armL: THREE.MathUtils.lerp(a.armL, b.armL, alpha),
+    armR: THREE.MathUtils.lerp(a.armR, b.armR, alpha),
+    bobY: THREE.MathUtils.lerp(a.bobY, b.bobY, alpha),
+    torsoRoll: THREE.MathUtils.lerp(a.torsoRoll, b.torsoRoll, alpha)
+  };
+}
+
+function buildRiggedAvatarFromGlb(glbScene, tintColor = null) {
+  const rigRoot = new THREE.Group();
+  const model = glbScene.clone(true);
+
+  model.updateMatrixWorld(true);
+  const rawBox = new THREE.Box3().setFromObject(model);
+  const rawSize = new THREE.Vector3();
+  rawBox.getSize(rawSize);
+  const targetHeight = 4.6;
+  const maxDim = Math.max(0.001, rawSize.y || Math.max(rawSize.x, rawSize.z));
+  const scaleFactor = targetHeight / maxDim;
+  model.scale.setScalar(scaleFactor);
+
+  model.traverse((child) => {
+    if (child.isMesh && child.material) {
+      const mat = child.material.clone();
+      mat.side = THREE.FrontSide;
+      mat.depthWrite = true;
+      mat.transparent = false;
+      mat.opacity = 1;
+      if (tintColor !== null) {
+        mat.color.setHex(tintColor);
+      }
+      child.material = mat;
+    }
+  });
+
+  model.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(model);
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+  model.position.set(-center.x, -box.min.y, -center.z);
+
+  const height = Math.max(2.0, box.max.y - box.min.y);
+  const hipY = height * 0.42;
+  const shoulderY = height * 0.78;
+
+  const torsoPivot = new THREE.Group();
+  torsoPivot.position.set(0, hipY, 0);
+
+  const legLPivot = new THREE.Group();
+  legLPivot.position.set(-0.45, hipY, 0);
+
+  const legRPivot = new THREE.Group();
+  legRPivot.position.set(0.45, hipY, 0);
+
+  const armLPivot = new THREE.Group();
+  armLPivot.position.set(-1.15, shoulderY, 0);
+
+  const armRPivot = new THREE.Group();
+  armRPivot.position.set(1.15, shoulderY, 0);
+
+  model.traverse((child) => {
+    if (!child.isMesh || !child.geometry) return;
+    const baseGeo = child.geometry.clone();
+    baseGeo.computeBoundingBox();
+    const gBox = baseGeo.boundingBox;
+    const gCenter = new THREE.Vector3();
+    gBox.getCenter(gCenter);
+
+    const relX = gCenter.x - center.x;
+    const relY = gCenter.y - box.min.y;
+
+    const partMesh = new THREE.Mesh(baseGeo, child.material);
+    partMesh.position.copy(model.position);
+    partMesh.scale.copy(model.scale);
+    partMesh.rotation.copy(model.rotation);
+
+    if (relY < hipY * 0.95) {
+      if (relX < 0) {
+        partMesh.position.x -= legLPivot.position.x;
+        partMesh.position.y -= legLPivot.position.y;
+        legLPivot.add(partMesh);
+      } else {
+        partMesh.position.x -= legRPivot.position.x;
+        partMesh.position.y -= legRPivot.position.y;
+        legRPivot.add(partMesh);
+      }
+    } else if (relY > shoulderY * 0.75 && Math.abs(relX) > 0.75) {
+      if (relX < 0) {
+        partMesh.position.x -= armLPivot.position.x;
+        partMesh.position.y -= armLPivot.position.y;
+        armLPivot.add(partMesh);
+      } else {
+        partMesh.position.x -= armRPivot.position.x;
+        partMesh.position.y -= armRPivot.position.y;
+        armRPivot.add(partMesh);
+      }
+    } else {
+      partMesh.position.x -= torsoPivot.position.x;
+      partMesh.position.y -= torsoPivot.position.y;
+      torsoPivot.add(partMesh);
+    }
+  });
+
+  rigRoot.add(torsoPivot, legLPivot, legRPivot, armLPivot, armRPivot);
+  rigRoot.userData.limbs = {
+    torsoPivot,
+    legLPivot,
+    legRPivot,
+    armLPivot,
+    armRPivot,
+    baseHipY: hipY,
+    baseShoulderY: shoulderY
+  };
+  return rigRoot;
+}
+
+function applyAvatarWalkAnimation(rigRoot, walkPhase, isMoving, isGrounded) {
+  if (!rigRoot || !rigRoot.userData || !rigRoot.userData.limbs) return;
+  const { torsoPivot, legLPivot, legRPivot, armLPivot, armRPivot, baseHipY, baseShoulderY } = rigRoot.userData.limbs;
+
+  if (!isGrounded) {
+    legLPivot.rotation.x = THREE.MathUtils.lerp(legLPivot.rotation.x, -0.35, 0.25);
+    legRPivot.rotation.x = THREE.MathUtils.lerp(legRPivot.rotation.x, 0.28, 0.25);
+    armLPivot.rotation.x = THREE.MathUtils.lerp(armLPivot.rotation.x, -0.55, 0.25);
+    armRPivot.rotation.x = THREE.MathUtils.lerp(armRPivot.rotation.x, -0.55, 0.25);
+    torsoPivot.rotation.z = THREE.MathUtils.lerp(torsoPivot.rotation.z, 0, 0.25);
+    torsoPivot.position.y = baseHipY;
+    return;
+  }
+
+  if (!isMoving) {
+    legLPivot.rotation.x = THREE.MathUtils.lerp(legLPivot.rotation.x, 0, 0.22);
+    legRPivot.rotation.x = THREE.MathUtils.lerp(legRPivot.rotation.x, 0, 0.22);
+    armLPivot.rotation.x = THREE.MathUtils.lerp(armLPivot.rotation.x, 0, 0.22);
+    armRPivot.rotation.x = THREE.MathUtils.lerp(armRPivot.rotation.x, currentEquippedItemName ? -0.45 : 0, 0.22);
+    torsoPivot.rotation.z = THREE.MathUtils.lerp(torsoPivot.rotation.z, 0, 0.22);
+    torsoPivot.position.y = THREE.MathUtils.lerp(torsoPivot.position.y, baseHipY, 0.22);
+    return;
+  }
+
+  const pose = sampleRobloxWalkPose(walkPhase);
+  legLPivot.rotation.x = pose.legL;
+  legRPivot.rotation.x = pose.legR;
+  armLPivot.rotation.x = pose.armL;
+  armRPivot.rotation.x = currentEquippedItemName ? -0.45 : pose.armR;
+  torsoPivot.rotation.z = pose.torsoRoll;
+  torsoPivot.position.y = baseHipY + pose.bobY;
+  armLPivot.position.y = baseShoulderY + pose.bobY;
+  armRPivot.position.y = baseShoulderY + pose.bobY;
+}
+
+function createNoobAvatar(tintColor = null, attachToolGroup = null) {
   const holder = new THREE.Group();
   if (!cachedNoobGlb) return holder;
-  const clone = cachedNoobGlb.clone(true);
-  clone.scale.set(1.8, 1.8, 1.8);
-  if (tintColor !== null) {
-    clone.traverse((child) => {
-      if (child.isMesh && child.material) {
-        child.material = child.material.clone();
-        child.material.color.setHex(tintColor);
-      }
-    });
+  const rig = buildRiggedAvatarFromGlb(cachedNoobGlb, tintColor);
+  holder.userData.rig = rig;
+  holder.add(rig);
+
+  if (attachToolGroup && rig.userData.limbs) {
+    attachToolGroup.position.set(0, -0.2, -0.5);
+    attachToolGroup.rotation.set(Math.PI / 3, 0, 0);
+    rig.userData.limbs.armRPivot.add(attachToolGroup);
   }
-  holder.add(clone);
   return holder;
 }
 
@@ -862,10 +1160,12 @@ function colorForPeer(id) {
 function refreshAvatarMeshes() {
   if (!cachedNoobGlb) return;
   while (character.children.length > 0) character.remove(character.children[0]);
-  character.add(createNoobAvatar(null));
+  character.add(createNoobAvatar(null, heldItemsGroup));
   remotePlayers.forEach((entry, id) => {
     while (entry.group.children.length > 0) entry.group.remove(entry.group.children[0]);
-    entry.group.add(createNoobAvatar(colorForPeer(id)));
+    const rTool = new THREE.Group();
+    remoteHeldItems.set(id, rTool);
+    entry.group.add(createNoobAvatar(colorForPeer(id), rTool));
   });
 }
 
@@ -940,18 +1240,36 @@ function clearAllRemotePlayers() {
   Array.from(remotePlayers.keys()).forEach(removeRemotePlayer);
 }
 
-function upsertRemotePlayer(id, name, x, y, z, rotY) {
+function upsertRemotePlayer(id, name, x, y, z, rotY, moving = false, phase = 0, equippedItem = "") {
   if (!id || id === peerId) return;
   let entry = remotePlayers.get(id);
   if (!entry) {
-    const group = createNoobAvatar(colorForPeer(id));
+    const rTool = new THREE.Group();
+    remoteHeldItems.set(id, rTool);
+    const group = createNoobAvatar(colorForPeer(id), rTool);
     remotePlayersGroup.add(group);
-    entry = { group, name: name || "Player" };
+    entry = { group, name: name || "Player", walkPhase: 0, equippedItem: "" };
     remotePlayers.set(id, entry);
     addChat("System", `${name || "Player"} joined the server.`);
   }
   entry.group.position.set(Number(x) || 0, Number(y) || 0, Number(z) || 0);
   entry.group.rotation.y = Number(rotY) || 0;
+  entry.walkPhase = Number(phase) || entry.walkPhase || 0;
+
+  if (equippedItem && equippedItem !== entry.equippedItem) {
+    entry.equippedItem = equippedItem;
+    const rTool = remoteHeldItems.get(id);
+    if (rTool) {
+      while (rTool.children.length > 0) rTool.remove(rTool.children[0]);
+      const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.9, 10), new THREE.MeshStandardMaterial({ color: 0x333842 }));
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.8, 0.3), new THREE.MeshStandardMaterial({ color: 0x00a2ff }));
+      blade.position.set(0, 1.2, 0);
+      rTool.add(grip, blade);
+    }
+  }
+
+  const rig = entry.group.userData?.rig || entry.group.children[0];
+  applyAvatarWalkAnimation(rig, entry.walkPhase, Boolean(moving), true);
 }
 
 async function resolveGameXml(gameRow) {
@@ -1021,7 +1339,17 @@ async function joinSelectedGame(selectedId) {
     })
     .on("broadcast", { event: "pos" }, ({ payload }) => {
       if (!payload || payload.peerId === peerId) return;
-      upsertRemotePlayer(payload.peerId, payload.username, payload.x, payload.y, payload.z, payload.rotY);
+      upsertRemotePlayer(
+        payload.peerId,
+        payload.username,
+        payload.x,
+        payload.y,
+        payload.z,
+        payload.rotY,
+        payload.moving,
+        payload.walkPhase,
+        payload.equippedItem
+      );
     })
     .on("broadcast", { event: "chat" }, ({ payload }) => {
       if (!payload || payload.peerId === peerId) return;
@@ -1059,28 +1387,81 @@ chatForm.addEventListener("submit", (e) => {
   chatInput.blur();
 });
 
+async function fetchAllGamesFromTable() {
+  const allRows = [];
+  const pageSize = 1000;
+  let from = 0;
+
+  while (true) {
+    const { data: batch, error } = await sb
+      .from("games")
+      .select("*")
+      .range(from, from + pageSize - 1);
+
+    if (error) {
+      throw error;
+    }
+
+    if (!Array.isArray(batch) || batch.length === 0) {
+      break;
+    }
+
+    allRows.push(...batch);
+    if (batch.length < pageSize) {
+      break;
+    }
+    from += pageSize;
+  }
+
+  // Deduplicate by id if present while preserving order
+  const seen = new Set();
+  const deduped = [];
+  for (const row of allRows) {
+    const key = row && row.id !== undefined && row.id !== null ? String(row.id) : JSON.stringify(row);
+    if (!seen.has(key)) {
+      seen.add(key);
+      deduped.push(row);
+    }
+  }
+
+  deduped.sort((a, b) => {
+    const idA = a?.id ?? "";
+    const idB = b?.id ?? "";
+    const numA = Number(idA);
+    const numB = Number(idB);
+    if (Number.isFinite(numA) && Number.isFinite(numB)) return numA - numB;
+    return String(idA).localeCompare(String(idB));
+  });
+
+  return deduped;
+}
+
 async function loadGamesTable() {
-  const { data: rows, error } = await sb
-    .from("games")
-    .select("*")
-    .order("id", { ascending: true });
+  try {
+    const rows = await fetchAllGamesFromTable();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      gameSelect.innerHTML = `<option value="">No games in games table</option>`;
+      return;
+    }
 
-  if (error || !Array.isArray(rows) || rows.length === 0) {
-    console.error("Failed to load games from Supabase games table:", error);
-    gameSelect.innerHTML = `<option value="">No games in games table</option>`;
-    return;
+    gamesCache = rows;
+    gameSelect.innerHTML = rows
+      .map((g, idx) => {
+        const val = g.id !== undefined && g.id !== null ? String(g.id) : String(idx);
+        const label = g.title || g.name || g.placeName || g.id || `Game ${idx + 1}`;
+        return `<option value="${escapeHtml(val)}">${escapeHtml(label)}</option>`;
+      })
+      .join("");
+
+    if (!placeId || !rows.some((g, idx) => String(g.id ?? idx) === String(placeId))) {
+      placeId = String(rows[0].id ?? 0);
+    }
+    gameSelect.value = placeId;
+    await joinSelectedGame(placeId);
+  } catch (error) {
+    console.error("Failed to load all games from Supabase games table:", error);
+    gameSelect.innerHTML = `<option value="">Error loading games</option>`;
   }
-
-  gamesCache = rows;
-  gameSelect.innerHTML = rows
-    .map((g) => `<option value="${escapeHtml(g.id)}">${escapeHtml(g.title || g.name || g.id)}</option>`)
-    .join("");
-
-  if (!placeId || !rows.some((g) => String(g.id) === String(placeId))) {
-    placeId = String(rows[0].id);
-  }
-  gameSelect.value = placeId;
-  await joinSelectedGame(placeId);
 }
 
 loadGameBtn.addEventListener("click", () => {
@@ -1131,7 +1512,7 @@ let velY = 0;
 let grounded = true;
 
 function resetCharacter() {
-  character.position.set(0, 0.4, 0);
+  character.position.set(0, 0.2, 0);
   velY = 0;
   grounded = true;
 }
@@ -1157,6 +1538,7 @@ loadGamesTable();
 
 let prev = performance.now();
 let lastSyncTime = 0;
+let walkPhase = 0;
 
 function animate(now) {
   const dt = Math.min(0.05, (now - prev) / 1000);
@@ -1169,7 +1551,8 @@ function animate(now) {
   if (keys["KeyA"] || keys["ArrowLeft"]) moveX -= 1;
   if (keys["KeyD"] || keys["ArrowRight"]) moveX += 1;
 
-  if (moveX !== 0 || moveZ !== 0) {
+  const isMoving = moveX !== 0 || moveZ !== 0;
+  if (isMoving) {
     const len = Math.hypot(moveX, moveZ);
     moveX /= len;
     moveZ /= len;
@@ -1180,6 +1563,7 @@ function animate(now) {
     character.position.x = Math.max(-62, Math.min(62, character.position.x + wx * 16 * dt));
     character.position.z = Math.max(-62, Math.min(62, character.position.z + wz * 16 * dt));
     character.rotation.y = Math.atan2(wx, wz);
+    walkPhase = (walkPhase + dt * 1.15) % 1;
   }
 
   if (keys["Space"] && grounded) {
@@ -1189,11 +1573,27 @@ function animate(now) {
 
   velY -= 48 * dt;
   character.position.y += velY * dt;
-  if (character.position.y <= 0.4) {
-    character.position.y = 0.4;
+  if (character.position.y <= 0.2) {
+    character.position.y = 0.2;
     velY = 0;
     grounded = true;
   }
+
+  for (const pItem of pickupItems) {
+    if (!pItem.collected && pItem.mesh) {
+      pItem.mesh.rotation.y += dt * 1.6;
+      const dist = character.position.distanceTo(pItem.pickupPos);
+      if (dist < 4.2) {
+        pItem.collected = true;
+        pItem.mesh.visible = false;
+        equipItemOnAvatar(pItem.name);
+        addChat("System", `Picked up ${pItem.name}.`);
+      }
+    }
+  }
+
+  const localRig = character.userData?.rig || character.children[0];
+  applyAvatarWalkAnimation(localRig, walkPhase, isMoving, grounded);
 
   if (activeChannel && now - lastSyncTime > 65) {
     lastSyncTime = now;
@@ -1206,7 +1606,10 @@ function animate(now) {
         x: Number(character.position.x.toFixed(2)),
         y: Number(character.position.y.toFixed(2)),
         z: Number(character.position.z.toFixed(2)),
-        rotY: Number(character.rotation.y.toFixed(2))
+        rotY: Number(character.rotation.y.toFixed(2)),
+        moving: isMoving,
+        walkPhase: Number(walkPhase.toFixed(3)),
+        equippedItem: currentEquippedItemName
       }
     });
   }
