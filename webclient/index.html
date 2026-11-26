@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="amr010920">
-<title>Bloxtip Web Player (Multiplayer)</title>
+<title>Bloxtip Webclient</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
 html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; color: #ffffff; }
@@ -371,6 +371,7 @@ scene.add(remotePlayersGroup);
 
 const remotePlayers = new Map();
 let activeChannel = null;
+let channelSubscribed = false;
 let isHost = false;
 let hostId = peerId;
 let gamesCache = [];
@@ -1526,16 +1527,22 @@ function loadPlaceXmlString(xmlText) {
 
 function extractXmlFromGameRow(place) {
   if (!place || typeof place !== "object") return "";
-  const directKeys = ["xml", "xml_content", "place_xml", "rbxlx", "data", "content", "code"];
-  for (const key of directKeys) {
+  const preferredKeys = ["xml", "xml_data", "xml_content", "place_xml", "rbxlx", "data", "content", "code"];
+  for (const key of preferredKeys) {
     const val = place[key];
-    if (typeof val === "string" && val.trim().startsWith("<")) {
-      return val.trim();
+    if (typeof val === "string") {
+      const trimmed = val.trim();
+      if (trimmed.includes("<roblox") || trimmed.startsWith("<Item") || trimmed.startsWith("<?xml")) {
+        return trimmed;
+      }
     }
   }
   for (const [k, val] of Object.entries(place)) {
-    if (typeof val === "string" && (val.includes("<roblox") || (val.trim().startsWith("<Item") && k !== "name"))) {
-      return val.trim();
+    if (typeof val === "string" && k !== "name" && k !== "title") {
+      const trimmed = val.trim();
+      if (trimmed.includes("<roblox") || trimmed.startsWith("<Item") || trimmed.startsWith("<?xml")) {
+        return trimmed;
+      }
     }
   }
   return "";
@@ -1545,20 +1552,28 @@ async function fetchPlaceXml(place) {
   const inlineXml = extractXmlFromGameRow(place);
   if (inlineXml) return inlineXml;
 
-  const candidates = [
+  if (place && place.id !== undefined && place.id !== null) {
+    try {
+      const { data, error } = await sb.from("games").select("*").eq("id", place.id).limit(1);
+      if (!error && Array.isArray(data) && data[0]) {
+        const dbXml = extractXmlFromGameRow(data[0]);
+        if (dbXml) return dbXml;
+      }
+    } catch (_) {}
+  }
+
+  const explicitUrls = [
     place && place.xml_url,
     place && place.place_url,
-    place && place.asset_url,
-    place && place.id ? `https://btip.cc.cd/places/${encodeURIComponent(place.id)}.rbxlx` : null,
-    place && place.id ? `https://btip.cc.cd/places/${encodeURIComponent(place.id)}.xml` : null
+    place && place.asset_url
   ].filter(Boolean);
 
-  for (const url of candidates) {
+  for (const url of explicitUrls) {
     try {
       const res = await fetch(url);
       if (res.ok) {
         const txt = await res.text();
-        if (txt && txt.includes("<roblox")) return txt;
+        if (txt && (txt.includes("<roblox") || txt.trim().startsWith("<Item"))) return txt;
       }
     } catch (_) {}
   }
@@ -1673,7 +1688,7 @@ function removeRemotePlayer(id) {
 }
 
 function broadcastSelfState() {
-  if (!activeChannel) return;
+  if (!activeChannel || !channelSubscribed) return;
   const equippedTool = equippedIndex >= 0 && backpackItems[equippedIndex] ? backpackItems[equippedIndex].name : "";
   const horizSpeed = Math.hypot(playerVel.x, playerVel.z);
   const speedRatio = Math.min(1, horizSpeed / Math.max(1, studioConfig.walkSpeed));
@@ -1698,6 +1713,7 @@ function broadcastSelfState() {
 
 async function discoverAndJoinMultiplayerServer(targetPlaceId) {
   if (activeChannel) {
+    channelSubscribed = false;
     try { await sb.removeChannel(activeChannel); } catch (_) {}
     activeChannel = null;
   }
@@ -1756,6 +1772,7 @@ async function discoverAndJoinMultiplayerServer(targetPlaceId) {
   activeServerId = chosenServerId;
   isHost = chosenIsHost;
   hostId = isHost ? peerId : "";
+  channelSubscribed = false;
 
   const ch = sb.channel(chosenServerId, {
     config: {
@@ -1812,6 +1829,7 @@ async function discoverAndJoinMultiplayerServer(targetPlaceId) {
   activeChannel = ch;
   ch.subscribe(async (status) => {
     if (status === "SUBSCRIBED") {
+      channelSubscribed = true;
       await ch.track({
         name: username,
         x: playerPos.x,
@@ -1822,6 +1840,8 @@ async function discoverAndJoinMultiplayerServer(targetPlaceId) {
       serverRoleLabel.textContent = isHost ? `Host (${chosenServerId})` : `Multiplayer (${chosenServerId})`;
       updateLeaderboard();
       broadcastSelfState();
+    } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
+      channelSubscribed = false;
     }
   });
 }
@@ -1908,6 +1928,7 @@ document.getElementById("reset-btn").addEventListener("click", () => {
 
 document.getElementById("leave-btn").addEventListener("click", async () => {
   if (activeChannel) {
+    channelSubscribed = false;
     try { await sb.removeChannel(activeChannel); } catch (_) {}
     activeChannel = null;
   }
@@ -1922,7 +1943,7 @@ chatForm.addEventListener("submit", (e) => {
   if (!txt) return;
   addChat(username, txt);
   chatInput.value = "";
-  if (activeChannel) {
+  if (activeChannel && channelSubscribed) {
     activeChannel.send({
       type: "broadcast",
       event: "chat",
@@ -2001,29 +2022,37 @@ window.addEventListener("resize", () => {
   }
 });
 
+let floorCacheTime = 0;
+let cachedFloorBoxes = [];
+
+function refreshFloorBoxes(now) {
+  if (now - floorCacheTime < 120 && cachedFloorBoxes.length > 0) return;
+  floorCacheTime = now;
+  const list = [];
+  const bpBox = new THREE.Box3().setFromObject(baseplate);
+  list.push(bpBox);
+  for (const child of worldGroup.children) {
+    list.push(new THREE.Box3().setFromObject(child));
+  }
+  cachedFloorBoxes = list;
+}
+
 function getFloorHeightAt(x, z, currentY) {
   let highestFloor = -Infinity;
-
-  const bpBox = new THREE.Box3().setFromObject(baseplate);
-  if (x >= bpBox.min.x && x <= bpBox.max.x && z >= bpBox.min.z && z <= bpBox.max.z) {
-    if (bpBox.max.y <= currentY + 1.5 && bpBox.max.y > highestFloor) {
-      highestFloor = bpBox.max.y;
-    }
-  }
-
-  for (const child of worldGroup.children) {
-    const box = new THREE.Box3().setFromObject(child);
+  for (let i = 0; i < cachedFloorBoxes.length; i++) {
+    const box = cachedFloorBoxes[i];
     if (x >= box.min.x - 0.5 && x <= box.max.x + 0.5 && z >= box.min.z - 0.5 && z <= box.max.z + 0.5) {
       if (box.max.y <= currentY + 1.5 && box.max.y > highestFloor) {
         highestFloor = box.max.y;
       }
     }
   }
-
   return highestFloor;
 }
 
-function updatePhysicsAndPlayer(dt) {
+function updatePhysicsAndPlayer(dt, now) {
+  refreshFloorBoxes(now);
+
   if (speedBoostTimer > 0) speedBoostTimer -= dt;
   if (attackTimer > 0) {
     attackTimer -= dt;
@@ -2141,7 +2170,7 @@ function animate(now) {
   const dt = Math.min(0.05, (now - lastFrameTime) / 1000);
   lastFrameTime = now;
 
-  updatePhysicsAndPlayer(dt);
+  updatePhysicsAndPlayer(dt, now);
 
   remotePlayers.forEach((rp) => {
     rp.avatarInst.container.position.lerp(rp.targetPos, Math.min(1, dt * 14));
