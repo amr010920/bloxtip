@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "bloxtip",
-  "main": "api/asset.js",
+  "main": "asset.js",
   "compatibility_date": "2026-11-26",
   "assets": {
     "directory": ".",
