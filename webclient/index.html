@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="amr010920">
-<title>Bloxtip Webclient</title>
+<title>Bloxtip Web Player (Multiplayer)</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
 html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; color: #ffffff; }
 #topbar {
   height: 36px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.35));
+  background: linear-gradient(rgba(255, 255, 255, 0.35));
   border-bottom: 1px solid #0e1013;
   display: flex;
   align-items: center;
@@ -320,6 +320,9 @@ scene.background = new THREE.Color(0x87c6ff);
 scene.fog = new THREE.Fog(0x87c6ff, 80, 260);
 
 const camera = new THREE.PerspectiveCamera(65, canvas.clientWidth / canvas.clientHeight, 0.1, 600);
+const cameraRig = new THREE.Group();
+scene.add(cameraRig);
+cameraRig.add(camera);
 
 const hemi = new THREE.HemisphereLight(0xffffff, 0x4b5563, 1.15);
 scene.add(hemi);
@@ -1475,6 +1478,8 @@ function syncLocalAvatarTransform() {
   if (!localAvatarInst) return;
   localAvatarInst.container.position.set(playerPos.x, playerPos.y + localAvatarInst.footOffset, playerPos.z);
   localAvatarInst.container.rotation.y = playerYaw;
+  cameraRig.position.copy(localAvatarInst.container.position);
+  cameraRig.rotation.y = playerYaw;
 }
 
 function respawnLocalPlayer() {
@@ -1527,8 +1532,8 @@ function loadPlaceXmlString(xmlText) {
 
 function extractXmlFromGameRow(place) {
   if (!place || typeof place !== "object") return "";
-  const preferredKeys = ["xml", "xml_data", "xml_content", "place_xml", "rbxlx", "data", "content", "code"];
-  for (const key of preferredKeys) {
+  const xmlColumnKeys = ["xml", "xml_file", "xml_data", "xml_content", "place_xml", "rbxlx", "data", "content", "code"];
+  for (const key of xmlColumnKeys) {
     const val = place[key];
     if (typeof val === "string") {
       const trimmed = val.trim();
@@ -1554,26 +1559,10 @@ async function fetchPlaceXml(place) {
 
   if (place && place.id !== undefined && place.id !== null) {
     try {
-      const { data, error } = await sb.from("games").select("*").eq("id", place.id).limit(1);
+      const { data, error } = await sb.from("games").select("xml").eq("id", place.id).limit(1);
       if (!error && Array.isArray(data) && data[0]) {
         const dbXml = extractXmlFromGameRow(data[0]);
         if (dbXml) return dbXml;
-      }
-    } catch (_) {}
-  }
-
-  const explicitUrls = [
-    place && place.xml_url,
-    place && place.place_url,
-    place && place.asset_url
-  ].filter(Boolean);
-
-  for (const url of explicitUrls) {
-    try {
-      const res = await fetch(url);
-      if (res.ok) {
-        const txt = await res.text();
-        if (txt && (txt.includes("<roblox") || txt.trim().startsWith("<Item"))) return txt;
       }
     } catch (_) {}
   }
@@ -1856,17 +1845,6 @@ async function loadGamesList() {
   } catch (_) {}
 
   if (rows.length === 0) {
-    try {
-      const res = await fetch("https://btip.cc.cd/games.json");
-      if (res.ok) {
-        const j = await res.json();
-        if (Array.isArray(j)) rows = j;
-        else if (Array.isArray(j.games)) rows = j.games;
-      }
-    } catch (_) {}
-  }
-
-  if (rows.length === 0) {
     rows = [
       { id: "classic_baseplate", name: "Classic Baseplate" },
       { id: "obby_arena", name: "Obby & Physics Arena" }
@@ -1900,7 +1878,7 @@ async function renderGamesModalList() {
     joinBtn.textContent = "Join";
     joinBtn.addEventListener("click", async () => {
       gamesModal.classList.remove("open");
-      await selectAndLaunchGame(gId);
+      await selectAndLaunchGame(g);
     });
 
     card.appendChild(titleEl);
@@ -1910,12 +1888,18 @@ async function renderGamesModalList() {
   });
 }
 
-async function selectAndLaunchGame(targetId) {
+async function selectAndLaunchGame(gameOrId) {
   if (!gamesCache || gamesCache.length === 0) {
     await loadGamesList();
   }
-  const chosen = gamesCache.find((g) => String(g.id) === String(targetId)) || gamesCache[0] || { id: targetId || "default", name: "Baseplate" };
-  placeId = String(chosen.id);
+  const targetId = typeof gameOrId === "object" && gameOrId !== null
+    ? String(gameOrId.id ?? "")
+    : String(gameOrId ?? "");
+  const chosen = (typeof gameOrId === "object" && gameOrId !== null)
+    ? gameOrId
+    : (gamesCache.find((g) => String(g.id) === targetId) || gamesCache[0] || { id: targetId || "default", name: "Baseplate" });
+
+  placeId = String(chosen.id ?? targetId ?? "default");
   activeServerId = "";
   const xml = await fetchPlaceXml(chosen);
   loadPlaceXmlString(xml);
@@ -2151,15 +2135,19 @@ function updatePhysicsAndPlayer(dt, now) {
     stepAvatarAnimation(localAvatarInst, dt, speedRatio, isGrounded, isJumping, isAttacking);
   }
 
-  const anchorY = playerPos.y + avatarHeight * 0.65;
-  const camOffset = new THREE.Vector3(
+  const anchorLocalY = avatarHeight * 0.65;
+  camera.position.set(
     Math.sin(playerYaw) * Math.cos(camPitch) * camDist,
-    Math.sin(camPitch) * camDist + 1.2,
+    anchorLocalY + Math.sin(camPitch) * camDist + 1.2,
     Math.cos(playerYaw) * Math.cos(camPitch) * camDist
   );
-  camera.position.set(playerPos.x + camOffset.x, anchorY + camOffset.y, playerPos.z + camOffset.z);
-  camera.lookAt(playerPos.x, anchorY, playerPos.z);
-  skyDome.position.copy(camera.position);
+  cameraRig.getWorldPosition(cameraRig.userData.worldPos || (cameraRig.userData.worldPos = new THREE.Vector3()));
+  camera.lookAt(
+    cameraRig.userData.worldPos.x,
+    cameraRig.userData.worldPos.y + anchorLocalY,
+    cameraRig.userData.worldPos.z
+  );
+  camera.getWorldPosition(skyDome.position);
 }
 
 let lastFrameTime = performance.now();
@@ -2195,8 +2183,10 @@ function animate(now) {
   updateLeaderboard();
 
   const rows = await loadGamesList();
-  const initialId = placeId || (rows[0] ? String(rows[0].id) : "default");
-  await selectAndLaunchGame(initialId);
+  const initialGame = placeId
+    ? (rows.find((g) => String(g.id) === String(placeId)) || { id: placeId, name: "Game" })
+    : (rows[0] || { id: "default", name: "Baseplate" });
+  await selectAndLaunchGame(initialGame);
   requestAnimationFrame(animate);
 })();
 </script>
