@@ -10,7 +10,7 @@
   html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; color: #ffffff; }
   #topbar {
     height: 36px;
-    background: linear-gradient(#ffffff8a);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.35));
     border-bottom: 1px solid #0e1013;
     display: flex;
     align-items: center;
@@ -155,6 +155,7 @@
     <div id="leaderboard-header"><span>Players</span><span id="player-count"></span></div>
     <div id="leaderboard-body"></div>
   </div>
+</div>
 
 <script type="importmap">
 {
@@ -187,7 +188,7 @@ const downloadRbxlBtn = document.getElementById("download-rbxl-btn");
 const leaderboardBody = document.getElementById("leaderboard-body");
 const playerCountEl = document.getElementById("player-count");
 
-placeLabel.textContent = "Place ID: " + placeId;
+if (placeLabel) placeLabel.textContent = "Place ID: " + placeId;
 document.getElementById("player-label").textContent = "Player: " + username;
 
 const chatLog = document.getElementById("chat-log");
@@ -580,7 +581,7 @@ function upsertRemotePlayer(id, name, x, y, z, rotY) {
 
 async function joinMultiplayerServerForGame(idToLoad) {
   placeId = String(idToLoad || "1");
-  placeLabel.textContent = "Place ID: " + placeId;
+  if (placeLabel) placeLabel.textContent = "Place ID: " + placeId;
 
   let gameObj = gamesCache.find((g) => String(g.id) === placeId);
   if (!gameObj && sb) {
@@ -722,15 +723,17 @@ loadGameBtn.addEventListener("click", () => {
   }
 });
 
-downloadRbxlBtn.addEventListener("click", () => {
-  if (!lastRbxlBlob) return;
-  const url = URL.createObjectURL(lastRbxlBlob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = lastRbxlFilename;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-});
+if (downloadRbxlBtn) {
+  downloadRbxlBtn.addEventListener("click", () => {
+    if (!lastRbxlBlob) return;
+    const url = URL.createObjectURL(lastRbxlBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = lastRbxlFilename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+}
 
 const keys = {};
 window.addEventListener("keydown", (e) => {
