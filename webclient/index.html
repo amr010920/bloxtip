@@ -293,8 +293,8 @@ canvas { display: block; width: 100%; height: 100%; }
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-const SUPABASE_URL = "https://vzkupnfktlyjmhjgzfli.supabase.co";
-const SUPABASE_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
+const SUPABASE_URL = "https://hdpxjesfeawnntjzttwj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX";
 const AVATAR_GLB_URL = "https://btip.cc.cd/roblox-noobt.glb";
 const MAX_SERVER_PLAYERS = 12;
 
@@ -385,9 +385,9 @@ scene.background = new THREE.Color(0x87c6ff);
 scene.fog = new THREE.Fog(0x87c6ff, 80, 260);
 
 const camera = new THREE.PerspectiveCamera(65, canvas.clientWidth / canvas.clientHeight, 0.1, 600);
-const cameraRig = new THREE.Group();
-scene.add(cameraRig);
-cameraRig.add(camera);
+const cameraMount = new THREE.Group();
+cameraMount.name = "GlbCameraMount";
+cameraMount.add(camera);
 
 const hemi = new THREE.HemisphereLight(0xffffff, 0x4b5563, 1.15);
 scene.add(hemi);
@@ -690,6 +690,7 @@ function createNameplateSprite(name, topY = 5.6) {
 function createAnimatedAvatarInstance(template, playerName) {
   const container = new THREE.Group();
   const cloned = template.scene.clone(true);
+  cloned.name = "AvatarGlbMesh";
   container.add(cloned);
 
   const parts = extractRigParts(cloned);
@@ -730,6 +731,22 @@ function createAnimatedAvatarInstance(template, playerName) {
     animTime: 0,
     equippedToolName: ""
   };
+}
+
+function attachCameraToGlbObject(avatarInst) {
+  if (!avatarInst) return;
+  const targetParent = avatarInst.parts?.headPivot || avatarInst.cloned || avatarInst.container;
+  if (cameraMount.parent !== targetParent) {
+    targetParent.add(cameraMount);
+  }
+  if (targetParent === avatarInst.parts?.headPivot) {
+    cameraMount.position.set(0, 0.35, 0);
+  } else if (targetParent === avatarInst.cloned) {
+    cameraMount.position.set(0, (avatarInst.height || 5.0) * 0.78, 0);
+  } else {
+    cameraMount.position.set(0, (avatarInst.height || 5.0) * 0.78, 0);
+  }
+  cameraMount.rotation.set(0, 0, 0);
 }
 
 function stepAvatarAnimation(avatarInst, dt, speedRatio, isGrounded, isJumping, isAttacking) {
@@ -819,15 +836,6 @@ function readStr(parent, propName, fallback = "") {
   for (const el of Array.from(parent.children)) {
     if (el.getAttribute("name") === propName) return el.textContent ?? fallback;
   }
-  return fallback;
-}
-
-function readBool(parent, propName, fallback = false) {
-  const raw = readStr(parent, propName, "");
-  if (!raw) return fallback;
-  const s = raw.trim().toLowerCase();
-  if (s === "true" || s === "1") return true;
-  if (s === "false" || s === "0") return false;
   return fallback;
 }
 
@@ -1187,7 +1195,6 @@ let backpackItems = [];
 let equippedIndex = -1;
 let pickupItems = [];
 let interactiveParts = [];
-let physicsParts = [];
 
 function renderHotbar() {
   hotbarEl.innerHTML = "";
@@ -1461,7 +1468,6 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
     const shape = getPartShape(item, props, cls);
     const geomOrGroup = buildGeometryForPart(shape, sx, sy, sz);
     const mat = materialPropsFromRoblox(props, colorHex, texUrl);
-    const anchored = readBool(props, "Anchored", true);
 
     const partHolder = new THREE.Group();
     if (geomOrGroup.isGroup) {
@@ -1497,14 +1503,6 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
       interactiveParts.push({ type: "jump", mesh: partHolder, halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2), boost: 85 });
     } else if (lowerName.includes("speed") || lowerName.includes("boost")) {
       interactiveParts.push({ type: "speed", mesh: partHolder, halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2), speed: 34 });
-    }
-
-    if (!anchored && cls !== "SpawnLocation") {
-      physicsParts.push({
-        mesh: partHolder,
-        vy: 0,
-        halfHeight: sy / 2
-      });
     }
 
     if (meshUrl && /^https?:\/\//i.test(meshUrl) && meshUrl.toLowerCase().endsWith(".glb")) {
@@ -1549,10 +1547,9 @@ function invalidateFloorCache() {
 
 function syncLocalAvatarTransform() {
   if (!localAvatarInst) return;
+  attachCameraToGlbObject(localAvatarInst);
   localAvatarInst.container.position.set(playerPos.x, playerPos.y + localAvatarInst.footOffset, playerPos.z);
   localAvatarInst.container.rotation.y = playerYaw;
-  cameraRig.position.copy(localAvatarInst.container.position);
-  cameraRig.rotation.y = playerYaw;
 }
 
 function respawnLocalPlayer() {
@@ -1571,7 +1568,6 @@ function loadPlaceXmlString(xmlText) {
   invalidateFloorCache();
   pickupItems = [];
   interactiveParts = [];
-  physicsParts = [];
   backpackItems = [];
   equippedIndex = -1;
   applyToolVisualToRig(localAvatarInst, "");
@@ -2076,8 +2072,8 @@ canvas.addEventListener("mousedown", (e) => {
 let isDraggingLook = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
-let camPitch = 0.22;
-let camDist = 8.5;
+let camPitch = 0.16;
+let camDist = 4.2;
 
 canvas.addEventListener("mousedown", (e) => {
   if (e.button === 2 || e.button === 1) {
@@ -2096,11 +2092,11 @@ window.addEventListener("mousemove", (e) => {
   lastMouseX = e.clientX;
   lastMouseY = e.clientY;
   playerYaw -= dx * 0.006;
-  camPitch = Math.max(-0.4, Math.min(1.15, camPitch + dy * 0.005));
+  camPitch = Math.max(-0.45, Math.min(1.05, camPitch + dy * 0.005));
 });
 canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 canvas.addEventListener("wheel", (e) => {
-  camDist = Math.max(3, Math.min(35, camDist + e.deltaY * 0.01));
+  camDist = Math.max(1.8, Math.min(14, camDist + e.deltaY * 0.006));
 });
 
 window.addEventListener("resize", () => {
@@ -2216,22 +2212,6 @@ function updatePhysicsAndPlayer(dt, now) {
     }
   }
 
-  for (let i = physicsParts.length - 1; i >= 0; i--) {
-    const pp = physicsParts[i];
-    pp.vy -= studioConfig.gravity * 0.12 * dt;
-    pp.mesh.position.y += pp.vy * dt;
-    const pFloor = getFloorHeightAt(pp.mesh.position.x, pp.mesh.position.z, pp.mesh.position.y);
-    if (pFloor > -Infinity && pp.mesh.position.y - pp.halfHeight <= pFloor && pp.vy <= 0) {
-      pp.mesh.position.y = pFloor + pp.halfHeight;
-      pp.vy = 0;
-    }
-    if (pp.mesh.position.y < studioConfig.fallenPartsDestroyHeight) {
-      worldGroup.remove(pp.mesh);
-      physicsParts.splice(i, 1);
-    }
-  }
-
-  const avatarHeight = localAvatarInst ? localAvatarInst.height : 5.0;
   if (localAvatarInst) {
     syncLocalAvatarTransform();
     const horizSpeed = Math.hypot(playerVel.x, playerVel.z);
@@ -2239,17 +2219,16 @@ function updatePhysicsAndPlayer(dt, now) {
     stepAvatarAnimation(localAvatarInst, dt, speedRatio, isGrounded, isJumping, isAttacking);
   }
 
-  const anchorLocalY = avatarHeight * 0.65;
   camera.position.set(
     Math.sin(playerYaw) * Math.cos(camPitch) * camDist,
-    anchorLocalY + Math.sin(camPitch) * camDist + 1.2,
+    Math.sin(camPitch) * camDist + 0.35,
     Math.cos(playerYaw) * Math.cos(camPitch) * camDist
   );
-  cameraRig.getWorldPosition(cameraRig.userData.worldPos || (cameraRig.userData.worldPos = new THREE.Vector3()));
+  cameraMount.getWorldPosition(cameraMount.userData.worldPos || (cameraMount.userData.worldPos = new THREE.Vector3()));
   camera.lookAt(
-    cameraRig.userData.worldPos.x,
-    cameraRig.userData.worldPos.y + anchorLocalY,
-    cameraRig.userData.worldPos.z
+    cameraMount.userData.worldPos.x,
+    cameraMount.userData.worldPos.y + 0.25,
+    cameraMount.userData.worldPos.z
   );
   camera.getWorldPosition(skyDome.position);
 }
@@ -2283,6 +2262,7 @@ function animate(now) {
   const tpl = await loadAvatarTemplate(AVATAR_GLB_URL);
   localAvatarInst = createAnimatedAvatarInstance(tpl, username);
   scene.add(localAvatarInst.container);
+  attachCameraToGlbObject(localAvatarInst);
   syncLocalAvatarTransform();
   renderHotbar();
   updateLeaderboard();
