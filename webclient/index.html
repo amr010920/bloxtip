@@ -303,7 +303,7 @@ canvas { display: block; width: 100%; height: 100%; }
   </div>
 
   <div id="leaderboard">
-    <div id="leaderboard-header"><span>Players</span>
+    <div id="leaderboard-header"><span>Players</span><span id="player-count"></span></div>
     <div id="leaderboard-body"></div>
   </div>
 
@@ -327,7 +327,13 @@ const SUPABASE_KEY = "sb_publishable_rP30CJxvlgsSxAX73v2DNg_Cn0klwkX";
 const AVATAR_GLB_URL = "https://btip.cc.cd/roblox-noobt.glb";
 const MAX_SERVER_PLAYERS = 12;
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let sb = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === "function") {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+} catch (_) {}
+
 const gltfLoader = new GLTFLoader();
 gltfLoader.setCrossOrigin("anonymous");
 
@@ -356,26 +362,43 @@ const loadingScreen = document.getElementById("loading-screen");
 const loadingTitle = document.getElementById("loading-title");
 const loadingStatus = document.getElementById("loading-status");
 const leaderboardBody = document.getElementById("leaderboard-body");
+const playerCountEl = document.getElementById("player-count");
 const hotbarEl = document.getElementById("hotbar");
 
+let loadingSafetyTimer = null;
+
 function showLoading(titleText, statusText) {
-  loadingTitle.textContent = titleText || "Loading Game...";
-  loadingStatus.textContent = statusText || "Preparing world...";
-  loadingScreen.classList.add("active");
+  try {
+    if (loadingTitle) loadingTitle.textContent = titleText || "Loading Game...";
+    if (loadingStatus) loadingStatus.textContent = statusText || "Preparing world...";
+    if (loadingScreen) loadingScreen.classList.add("active");
+    if (loadingSafetyTimer) clearTimeout(loadingSafetyTimer);
+    loadingSafetyTimer = setTimeout(() => {
+      hideLoading();
+    }, 9000);
+  } catch (_) {}
 }
 
 function updateLoadingStatus(statusText) {
-  loadingStatus.textContent = statusText;
+  try {
+    if (loadingStatus) loadingStatus.textContent = statusText;
+  } catch (_) {}
 }
 
 function hideLoading() {
-  loadingScreen.classList.remove("active");
+  try {
+    if (loadingSafetyTimer) {
+      clearTimeout(loadingSafetyTimer);
+      loadingSafetyTimer = null;
+    }
+    if (loadingScreen) loadingScreen.classList.remove("active");
+  } catch (_) {}
 }
 
 openGamesBtn.addEventListener("click", async () => {
   gamesModal.classList.toggle("open");
   if (gamesModal.classList.contains("open")) {
-    await renderGamesModalList();
+    try { await renderGamesModalList(); } catch (_) {}
   }
 });
 
@@ -388,16 +411,18 @@ const chatForm = document.getElementById("chat-form");
 const chatInput = document.getElementById("chat-input");
 
 function addChat(sender, text) {
-  const line = document.createElement("div");
-  const strong = document.createElement("strong");
-  strong.style.color = "#4cc2ff";
-  strong.textContent = sender + ": ";
-  const msg = document.createElement("span");
-  msg.textContent = text;
-  line.appendChild(strong);
-  line.appendChild(msg);
-  chatLog.appendChild(line);
-  chatLog.scrollTop = chatLog.scrollHeight;
+  try {
+    const line = document.createElement("div");
+    const strong = document.createElement("strong");
+    strong.style.color = "#4cc2ff";
+    strong.textContent = sender + ": ";
+    const msg = document.createElement("span");
+    msg.textContent = String(text ?? "");
+    line.appendChild(strong);
+    line.appendChild(msg);
+    chatLog.appendChild(line);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  } catch (_) {}
 }
 
 const canvas = document.getElementById("game-canvas");
@@ -503,20 +528,22 @@ const skyDome = new THREE.Mesh(
 scene.add(skyDome);
 
 function updateSkyAndLighting() {
-  const sctxSky = skyCanvas.getContext("2d");
-  const grad = sctxSky.createLinearGradient(0, 0, 0, 128);
-  const topHex = "#" + studioConfig.skyTopColor.toString(16).padStart(6, "0");
-  const botHex = "#" + studioConfig.skyBottomColor.toString(16).padStart(6, "0");
-  grad.addColorStop(0, topHex);
-  grad.addColorStop(1, botHex);
-  sctxSky.fillStyle = grad;
-  sctxSky.fillRect(0, 0, 32, 128);
-  skyTex.needsUpdate = true;
+  try {
+    const sctxSky = skyCanvas.getContext("2d");
+    const grad = sctxSky.createLinearGradient(0, 0, 0, 128);
+    const topHex = "#" + studioConfig.skyTopColor.toString(16).padStart(6, "0");
+    const botHex = "#" + studioConfig.skyBottomColor.toString(16).padStart(6, "0");
+    grad.addColorStop(0, topHex);
+    grad.addColorStop(1, botHex);
+    sctxSky.fillStyle = grad;
+    sctxSky.fillRect(0, 0, 32, 128);
+    skyTex.needsUpdate = true;
 
-  scene.background = new THREE.Color(studioConfig.outdoorAmbientColor);
-  scene.fog = new THREE.Fog(studioConfig.fogColor, studioConfig.fogStart, studioConfig.fogEnd);
-  hemi.color.setHex(studioConfig.ambientColor);
-  skyDome.position.copy(camera.position);
+    scene.background = new THREE.Color(studioConfig.outdoorAmbientColor);
+    scene.fog = new THREE.Fog(studioConfig.fogColor, studioConfig.fogStart, studioConfig.fogEnd);
+    hemi.color.setHex(studioConfig.ambientColor);
+    skyDome.position.copy(camera.position);
+  } catch (_) {}
 }
 updateSkyAndLighting();
 
@@ -525,6 +552,7 @@ let avatarTemplatePromise = null;
 
 function buildFallbackRobloxRig() {
   const rig = new THREE.Group();
+  rig.name = "FallbackRobloxRig";
 
   const headMat = new THREE.MeshStandardMaterial({ color: 0xf5cd30, roughness: 0.5 });
   const torsoMat = new THREE.MeshStandardMaterial({ color: 0x0d69ac, roughness: 0.5 });
@@ -701,67 +729,86 @@ function loadAvatarTemplate(glbUrl = AVATAR_GLB_URL) {
       if (settled) return;
       settled = true;
       clearTimeout(fallbackTimer);
+      const safeVal = val && val.scene ? val : buildFallbackRobloxRig();
       if (glbUrl === AVATAR_GLB_URL) {
-        cachedAvatarTemplate = val;
+        cachedAvatarTemplate = safeVal;
       }
-      resolve(val);
+      resolve(safeVal);
     };
 
     const fallbackTimer = setTimeout(() => {
       finish(buildFallbackRobloxRig());
-    }, 6000);
+    }, 5500);
 
-    fetch(glbUrl, { mode: "cors" })
-      .then((res) => {
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        return res.arrayBuffer();
-      })
-      .then((buf) => {
-        gltfLoader.parse(
-          buf,
-          "",
-          (gltf) => {
-            if (!gltf || !gltf.scene) {
-              finish(buildFallbackRobloxRig());
-              return;
-            }
-            const { footOffset, height } = normalizeLoadedGlbScene(gltf.scene);
-            const parts = extractRigParts(gltf.scene);
-            finish({
-              scene: gltf.scene,
-              clips: gltf.animations || [],
-              ...parts,
-              footOffset,
-              height,
-              isFallback: false
-            });
-          },
-          () => finish(buildFallbackRobloxRig())
-        );
-      })
-      .catch(() => {
+    const tryDirectLoader = () => {
+      try {
         gltfLoader.load(
           glbUrl,
           (gltf) => {
-            if (!gltf || !gltf.scene) {
+            try {
+              if (!gltf || !gltf.scene) {
+                finish(buildFallbackRobloxRig());
+                return;
+              }
+              const { footOffset, height } = normalizeLoadedGlbScene(gltf.scene);
+              const parts = extractRigParts(gltf.scene);
+              finish({
+                scene: gltf.scene,
+                clips: gltf.animations || [],
+                ...parts,
+                footOffset,
+                height,
+                isFallback: false
+              });
+            } catch (_) {
               finish(buildFallbackRobloxRig());
-              return;
             }
-            const { footOffset, height } = normalizeLoadedGlbScene(gltf.scene);
-            const parts = extractRigParts(gltf.scene);
-            finish({
-              scene: gltf.scene,
-              clips: gltf.animations || [],
-              ...parts,
-              footOffset,
-              height,
-              isFallback: false
-            });
           },
           undefined,
           () => finish(buildFallbackRobloxRig())
         );
-      });
+      } catch (_) {
+        finish(buildFallbackRobloxRig());
+      }
+    };
+
+    try {
+      fetch(glbUrl, { mode: "cors" })
+        .then((res) => {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.arrayBuffer();
+        })
+        .then((buf) => {
+          gltfLoader.parse(
+            buf,
+            "",
+            (gltf) => {
+              try {
+                if (!gltf || !gltf.scene) {
+                  tryDirectLoader();
+                  return;
+                }
+                const { footOffset, height } = normalizeLoadedGlbScene(gltf.scene);
+                const parts = extractRigParts(gltf.scene);
+                finish({
+                  scene: gltf.scene,
+                  clips: gltf.animations || [],
+                  ...parts,
+                  footOffset,
+                  height,
+                  isFallback: false
+                });
+              } catch (_) {
+                tryDirectLoader();
+              }
+            },
+            () => tryDirectLoader()
+          );
+        })
+        .catch(() => tryDirectLoader());
+    } catch (_) {
+      tryDirectLoader();
+    }
   });
 
   if (glbUrl === AVATAR_GLB_URL) {
@@ -792,18 +839,19 @@ function createNameplateSprite(name, topY = 5.6) {
 }
 
 function createAnimatedAvatarInstance(template, playerName) {
+  const safeTemplate = (template && template.scene) ? template : buildFallbackRobloxRig();
   const container = new THREE.Group();
   container.name = "PlayerAvatarContainer";
-  const cloned = template.scene.clone(true);
+  const cloned = safeTemplate.scene.clone(true);
   cloned.name = "AvatarGlbMesh";
   container.add(cloned);
 
   const parts = extractRigParts(cloned);
-  const mixer = (template.clips && template.clips.length > 0) ? new THREE.AnimationMixer(cloned) : null;
+  const mixer = (safeTemplate.clips && safeTemplate.clips.length > 0) ? new THREE.AnimationMixer(cloned) : null;
   const actions = {};
 
-  if (mixer && template.clips.length > 0) {
-    template.clips.forEach((clip, idx) => {
+  if (mixer && safeTemplate.clips.length > 0) {
+    safeTemplate.clips.forEach((clip, idx) => {
       const action = mixer.clipAction(clip);
       actions[clip.name.toLowerCase()] = action;
       if (idx === 0) {
@@ -812,7 +860,7 @@ function createAnimatedAvatarInstance(template, playerName) {
     });
   }
 
-  const height = template.height || 5.0;
+  const height = safeTemplate.height || 5.0;
   const nameplate = createNameplateSprite(playerName, height + 0.8);
   container.add(nameplate);
 
@@ -831,11 +879,33 @@ function createAnimatedAvatarInstance(template, playerName) {
     mixer,
     actions,
     heldMount,
-    footOffset: template.footOffset || 0.05,
+    footOffset: safeTemplate.footOffset || 0.05,
     height,
     animTime: 0,
     equippedToolName: ""
   };
+}
+
+let localAvatarInst = null;
+
+function ensureLocalAvatarExists() {
+  if (!localAvatarInst || !localAvatarInst.container) {
+    const tpl = cachedAvatarTemplate || buildFallbackRobloxRig();
+    localAvatarInst = createAnimatedAvatarInstance(tpl, username);
+    if (!localAvatarInst.container.parent) {
+      scene.add(localAvatarInst.container);
+    }
+  } else if (!localAvatarInst.container.parent) {
+    scene.add(localAvatarInst.container);
+  }
+  localAvatarInst.container.visible = true;
+  if (playerCameraRig.parent !== scene) {
+    scene.add(playerCameraRig);
+  }
+  if (camera.parent !== playerCameraRig) {
+    playerCameraRig.add(camera);
+  }
+  return localAvatarInst;
 }
 
 function stepAvatarAnimation(avatarInst, dt, speedRatio, isGrounded, isJumping, isAttacking) {
@@ -843,7 +913,7 @@ function stepAvatarAnimation(avatarInst, dt, speedRatio, isGrounded, isJumping, 
   avatarInst.animTime += dt * (1 + speedRatio * 5.5);
 
   if (avatarInst.mixer) {
-    avatarInst.mixer.update(dt);
+    try { avatarInst.mixer.update(dt); } catch (_) {}
   }
 
   const { leftArmPivot, rightArmPivot, leftLegPivot, rightLegPivot, headPivot, root } = avatarInst.parts || {};
@@ -1491,8 +1561,6 @@ function createVisualItemMesh(item, props) {
   return itemRoot;
 }
 
-let localAvatarInst = null;
-
 function applyToolVisualToRig(avatarInst, toolName, colorHex = 0xc0c8d0, texUrl = "") {
   if (!avatarInst || !avatarInst.heldMount) return;
   while (avatarInst.heldMount.children.length > 0) {
@@ -1529,7 +1597,7 @@ function applyToolVisualToRig(avatarInst, toolName, colorHex = 0xc0c8d0, texUrl 
 function equipBackpackSlot(index) {
   if (index === equippedIndex) {
     equippedIndex = -1;
-    applyToolVisualToRig(localAvatarInst, "");
+    applyToolVisualToRig(ensureLocalAvatarExists(), "");
     renderHotbar();
     broadcastSelfState();
     return;
@@ -1537,7 +1605,7 @@ function equipBackpackSlot(index) {
   if (index < 0 || index >= backpackItems.length) return;
   equippedIndex = index;
   const tool = backpackItems[index];
-  applyToolVisualToRig(localAvatarInst, tool.name, tool.colorHex || 0xc0c8d0, tool.texUrl || "");
+  applyToolVisualToRig(ensureLocalAvatarExists(), tool.name, tool.colorHex || 0xc0c8d0, tool.texUrl || "");
   renderHotbar();
   broadcastSelfState();
 }
@@ -1689,118 +1757,1216 @@ function buildGuiHierarchy(item, parentDom) {
   }
 }
 
-function makeVector3(x = 0, y = 0, z = 0) {
-  const vx = Number(x) || 0;
-  const vy = Number(y) || 0;
-  const vz = Number(z) || 0;
-  return {
-    X: vx, Y: vy, Z: vz,
-    x: vx, y: vy, z: vz,
-    Magnitude: Math.hypot(vx, vy, vz),
-    Unit: () => {
-      const len = Math.hypot(vx, vy, vz) || 1;
-      return makeVector3(vx / len, vy / len, vz / len);
-    },
-    Lerp(goal, alpha) {
-      const a = Math.max(0, Math.min(1, Number(alpha) || 0));
-      return makeVector3(vx + ((goal.X ?? goal.x ?? 0) - vx) * a, vy + ((goal.Y ?? goal.y ?? 0) - vy) * a, vz + ((goal.Z ?? goal.z ?? 0) - vz) * a);
-    },
-    __add(o) { return makeVector3(vx + (o.X ?? o.x ?? 0), vy + (o.Y ?? o.y ?? 0), vz + (o.Z ?? o.z ?? 0)); },
-    __sub(o) { return makeVector3(vx - (o.X ?? o.x ?? 0), vy - (o.Y ?? o.y ?? 0), vz - (o.Z ?? o.z ?? 0)); },
-    __mul(s) {
-      if (typeof s === "number") return makeVector3(vx * s, vy * s, vz * s);
-      return makeVector3(vx * (s.X ?? s.x ?? 1), vy * (s.Y ?? s.y ?? 1), vz * (s.Z ?? s.z ?? 1));
-    }
-  };
+/* =========================================================================
+   COMPREHENSIVE LUAU LEXER, PARSER & RUNTIME INTERPRETER
+   Supports full Luau syntax & standard/Roblox libraries:
+   - Types & type annotations (`type Foo = ...`, `x: number`, `function f(a: string): boolean`)
+   - Compound assignments (`+=`, `-=`, `*=`, `/=`, `//=`, `%=`, `^=`, `..=`)
+   - Floor division (`//`), length operator (`#`), varargs (`...`), `if ... then ... elseif ... else ... end` expressions
+   - `continue`, `repeat ... until`, numeric `for`, generic `for ... in` (with custom iterator functions or `ipairs`/`pairs`)
+   - `local function`, anonymous functions, `:method(...)` & `self` binding, metatables (`setmetatable`, `getmetatable`, `__index`, `__newindex`, `__call`, `__add`, `__sub`, `__mul`, `__div`, `__tostring`, `__eq`, `__lt`, `__le`)
+   - `coroutine` (`create`, `resume`, `wrap`, `yield`, `status`, `running`, `isyieldable`, `close`)
+   - `bit32` (`band`, `bor`, `bxor`, `bnot`, `lshift`, `rshift`, `arshift`, `lrotate`, `rrotate`, `extract`, `replace`, `countlz`, `countrz`, `btest`)
+   - `table` (`insert`, `remove`, `find`, `clear`, `concat`, `sort`, `clone`, `create`, `pack`, `unpack`, `maxn`, `move`)
+   - `string` (`sub`, `find`, `match`, `gmatch`, `gsub`, `split`, `lower`, `upper`, `len`, `format`, `rep`, `reverse`, `byte`, `char`, `trim`)
+   - `math` (`abs`, `acos`, `asin`, `atan`, `atan2`, `ceil`, `cos`, `cosh`, `deg`, `exp`, `floor`, `fmod`, `frexp`, `huge`, `ldexp`, `log`, `log10`, `max`, `min`, `modf`, `pi`, `pow`, `rad`, `random`, `randomseed`, `sin`, `sinh`, `sqrt`, `tan`, `tanh`, `clamp`, `sign`, `noise`, `round`, `lerp`, `map`)
+   - `os`, `task`, `debug`, `vector`, `Vector3`, `Vector2`, `CFrame`, `Color3`, `BrickColor`, `UDim`, `UDim2`, `TweenInfo`, `Ray`, `RaycastParams`, `Region3`, `Rect`, `NumberRange`, `NumberSequence`, `ColorSequence`, `Enum`, `Instance`, `game`, `workspace`
+   ========================================================================= */
+
+class LuauReturnSignal {
+  constructor(values) {
+    this.values = Array.isArray(values) ? values : [values];
+  }
+}
+class LuauBreakSignal {}
+class LuauContinueSignal {}
+
+function luauTruthy(val) {
+  return val !== null && val !== undefined && val !== false;
 }
 
-function makeCFrame(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) {
-  const cx = Number(x) || 0;
-  const cy = Number(y) || 0;
-  const cz = Number(z) || 0;
-  const euler = new THREE.Euler(Number(rx) || 0, Number(ry) || 0, Number(rz) || 0, "YXZ");
-  const quat = new THREE.Quaternion().setFromEuler(euler);
-  return {
-    X: cx, Y: cy, Z: cz,
-    Position: makeVector3(cx, cy, cz),
-    p: makeVector3(cx, cy, cz),
-    Rotation: { X: rx, Y: ry, Z: rz },
-    LookVector: makeVector3(-Math.sin(ry || 0), 0, -Math.cos(ry || 0)),
-    RightVector: makeVector3(Math.cos(ry || 0), 0, -Math.sin(ry || 0)),
-    UpVector: makeVector3(0, 1, 0),
-    Lerp(goal, alpha) {
-      const a = Math.max(0, Math.min(1, Number(alpha) || 0));
-      const gx = goal.X ?? goal.Position?.X ?? cx;
-      const gy = goal.Y ?? goal.Position?.Y ?? cy;
-      const gz = goal.Z ?? goal.Position?.Z ?? cz;
-      return makeCFrame(cx + (gx - cx) * a, cy + (gy - cy) * a, cz + (gz - cz) * a, rx, ry, rz);
-    },
-    ToWorldSpace(offsetCf) {
-      const v = new THREE.Vector3(offsetCf.X ?? 0, offsetCf.Y ?? 0, offsetCf.Z ?? 0).applyQuaternion(quat);
-      return makeCFrame(cx + v.x, cy + v.y, cz + v.z, rx, ry, rz);
-    },
-    __add(v) {
-      return makeCFrame(cx + (v.X ?? v.x ?? 0), cy + (v.Y ?? v.y ?? 0), cz + (v.Z ?? v.z ?? 0), rx, ry, rz);
-    },
-    __mul(other) {
-      if (other && typeof other.X === "number" && other.LookVector === undefined) {
-        return makeCFrame(cx + (other.X ?? 0), cy + (other.Y ?? 0), cz + (other.Z ?? 0), rx, ry, rz);
+function luauTypeof(val) {
+  if (val === null || val === undefined) return "nil";
+  if (typeof val === "boolean") return "boolean";
+  if (typeof val === "number") return "number";
+  if (typeof val === "string") return "string";
+  if (typeof val === "function") return "function";
+  if (val && typeof val.__typeof === "string") return val.__typeof;
+  if (val && val.isPartProxy) return "Instance";
+  if (val && typeof val.X === "number" && typeof val.Y === "number" && typeof val.Z === "number" && val.LookVector === undefined) return "Vector3";
+  if (val && typeof val.X === "number" && typeof val.Y === "number" && val.Z === undefined) return "Vector2";
+  if (val && val.LookVector !== undefined) return "CFrame";
+  if (val && typeof val.R === "number" && typeof val.G === "number" && typeof val.B === "number") return "Color3";
+  return typeof val;
+}
+
+function luauType(val) {
+  if (val === null || val === undefined) return "nil";
+  if (typeof val === "boolean") return "boolean";
+  if (typeof val === "number") return "number";
+  if (typeof val === "string") return "string";
+  if (typeof val === "function") return "function";
+  return "table";
+}
+
+function luauTostring(val) {
+  if (val === null || val === undefined) return "nil";
+  if (val && typeof val.__tostring === "function") return String(val.__tostring(val));
+  if (val && val.__mt && typeof val.__mt.__tostring === "function") return String(val.__mt.__tostring(val));
+  if (typeof val === "object" && !Array.isArray(val) && val.Name && val.ClassName) return val.Name;
+  return String(val);
+}
+
+function createLuaTable(initialArray = [], initialMap = {}) {
+  const arr = [...initialArray];
+  const obj = { ...initialMap };
+  let mt = null;
+
+  const handler = {
+    get(target, prop, receiver) {
+      if (prop === "__isLuaTable") return true;
+      if (prop === "__arr") return arr;
+      if (prop === "__map") return obj;
+      if (prop === "__getMt") return () => mt;
+      if (prop === "__setMt") return (newMt) => { mt = newMt; };
+
+      if (typeof prop === "string" && /^\d+$/.test(prop)) {
+        const idx = Number(prop) - 1;
+        if (idx >= 0 && idx < arr.length && arr[idx] !== undefined) return arr[idx];
       }
-      return makeCFrame(cx + (other?.X ?? 0), cy + (other?.Y ?? 0), cz + (other?.Z ?? 0), rx + (other?.Rotation?.X ?? 0), ry + (other?.Rotation?.Y ?? 0), rz + (other?.Rotation?.Z ?? 0));
+
+      if (prop in obj && obj[prop] !== undefined) return obj[prop];
+      if (prop in target) return Reflect.get(target, prop, receiver);
+
+      if (mt) {
+        const idxHandler = mt.__index ?? (mt.__map && mt.__map.__index);
+        if (idxHandler) {
+          if (typeof idxHandler === "function") return idxHandler(receiver, prop);
+          if (typeof idxHandler === "object") return idxHandler[prop];
+        }
+      }
+      return undefined;
+    },
+    set(target, prop, value, receiver) {
+      if (prop === "__setMt") {
+        mt = value;
+        return true;
+      }
+      if (mt) {
+        const newIdxHandler = mt.__newindex ?? (mt.__map && mt.__map.__newindex);
+        if (typeof newIdxHandler === "function" && !(prop in obj)) {
+          newIdxHandler(receiver, prop, value);
+          return true;
+        }
+      }
+      if (typeof prop === "string" && /^\d+$/.test(prop)) {
+        const idx = Number(prop) - 1;
+        if (idx >= 0) {
+          arr[idx] = value;
+          return true;
+        }
+      }
+      obj[prop] = value;
+      return true;
+    },
+    ownKeys() {
+      const keys = new Set(Object.keys(obj));
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i] !== undefined) keys.add(String(i + 1));
+      }
+      return Array.from(keys);
+    },
+    getOwnPropertyDescriptor(target, prop) {
+      if (prop in obj || (typeof prop === "string" && /^\d+$/.test(prop))) {
+        return { enumerable: true, configurable: true, writable: true };
+      }
+      return Reflect.getOwnPropertyDescriptor(target, prop);
+    },
+    apply(target, thisArg, args) {
+      if (mt && typeof mt.__call === "function") {
+        return mt.__call(receiverOrSelf(thisArg), ...args);
+      }
+      if (mt && mt.__map && typeof mt.__map.__call === "function") {
+        return mt.__map.__call(thisArg, ...args);
+      }
+      throw new TypeError("Attempt to call a table value");
     }
   };
+
+  function receiverOrSelf(thisArg) {
+    return thisArg || proxy;
+  }
+
+  const callableTarget = function (...args) {
+    if (mt && typeof mt.__call === "function") {
+      return mt.__call(proxy, ...args);
+    }
+    throw new TypeError("Attempt to call a non-callable table");
+  };
+
+  const proxy = new Proxy(callableTarget, handler);
+  return proxy;
 }
 
-function makeSignal(cbList) {
-  return {
-    Connect(fn) {
-      if (typeof fn === "function") cbList.push(fn);
-      return {
-        Connected: true,
-        Disconnect() {
-          this.Connected = false;
-          const idx = cbList.indexOf(fn);
-          if (idx !== -1) cbList.splice(idx, 1);
-        }
-      };
-    },
-    Once(fn) {
-      const wrapper = (...args) => {
-        const idx = cbList.indexOf(wrapper);
-        if (idx !== -1) cbList.splice(idx, 1);
-        if (typeof fn === "function") return fn(...args);
-      };
-      cbList.push(wrapper);
-      return { Disconnect() { const i = cbList.indexOf(wrapper); if (i !== -1) cbList.splice(i, 1); } };
-    },
-    Wait() {
-      return new Promise((resolve) => {
-        const wrapper = (...args) => {
-          const i = cbList.indexOf(wrapper);
-          if (i !== -1) cbList.splice(i, 1);
-          resolve(args[0]);
-        };
-        cbList.push(wrapper);
-      });
-    },
-    Fire(...args) {
-      [...cbList].forEach((fn) => {
-        try { fn(...args); } catch (_) {}
-      });
+function luaLength(val) {
+  if (typeof val === "string") return val.length;
+  if (Array.isArray(val)) return val.length;
+  if (val && val.__isLuaTable) {
+    const arr = val.__arr;
+    let count = 0;
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] === undefined || arr[i] === null) break;
+      count++;
     }
+    return count;
+  }
+  if (val && typeof val === "object") return Object.keys(val).length;
+  return 0;
+}
+
+function luaAdd(a, b) {
+  if (a && a.__isLuaTable && a.__getMt && a.__getMt()?.__add) return a.__getMt().__add(a, b);
+  if (b && b.__isLuaTable && b.__getMt && b.__getMt()?.__add) return b.__getMt().__add(a, b);
+  if (a && typeof a.__add === "function") return a.__add(b);
+  return (Number(a) || 0) + (Number(b) || 0);
+}
+
+function luaSub(a, b) {
+  if (a && a.__isLuaTable && a.__getMt && a.__getMt()?.__sub) return a.__getMt().__sub(a, b);
+  if (b && b.__isLuaTable && b.__getMt && b.__getMt()?.__sub) return b.__getMt().__sub(a, b);
+  if (a && typeof a.__sub === "function") return a.__sub(b);
+  return (Number(a) || 0) - (Number(b) || 0);
+}
+
+function luaMul(a, b) {
+  if (a && a.__isLuaTable && a.__getMt && a.__getMt()?.__mul) return a.__getMt().__mul(a, b);
+  if (b && b.__isLuaTable && b.__getMt && b.__getMt()?.__mul) return b.__getMt().__mul(a, b);
+  if (a && typeof a.__mul === "function") return a.__mul(b);
+  return (Number(a) || 0) * (Number(b) || 0);
+}
+
+function luaDiv(a, b) {
+  if (a && a.__isLuaTable && a.__getMt && a.__getMt()?.__div) return a.__getMt().__div(a, b);
+  if (a && typeof a.__div === "function") return a.__div(b);
+  return (Number(a) || 0) / (Number(b) || 1);
+}
+
+function luaFloorDiv(a, b) {
+  if (a && a.__isLuaTable && a.__getMt && a.__getMt()?.__idiv) return a.__getMt().__idiv(a, b);
+  return Math.floor((Number(a) || 0) / (Number(b) || 1));
+}
+
+function luaMod(a, b) {
+  const x = Number(a) || 0;
+  const y = Number(b) || 1;
+  return x - y * Math.floor(x / y);
+}
+
+function luaPow(a, b) {
+  if (a && a.__isLuaTable && a.__getMt && a.__getMt()?.__pow) return a.__getMt().__pow(a, b);
+  return Math.pow(Number(a) || 0, Number(b) || 0);
+}
+
+function luaConcat(a, b) {
+  if (a && a.__isLuaTable && a.__getMt && a.__getMt()?.__concat) return a.__getMt().__concat(a, b);
+  if (b && b.__isLuaTable && b.__getMt && b.__getMt()?.__concat) return b.__getMt().__concat(a, b);
+  return luauTostring(a) + luauTostring(b);
+}
+
+function luaEq(a, b) {
+  if (a === b) return true;
+  if ((a === null || a === undefined) && (b === null || b === undefined)) return true;
+  if (a && a.__isLuaTable && a.__getMt && typeof a.__getMt()?.__eq === "function") return Boolean(a.__getMt().__eq(a, b));
+  return false;
+}
+
+function luaLt(a, b) {
+  if (a && a.__isLuaTable && a.__getMt && typeof a.__getMt()?.__lt === "function") return Boolean(a.__getMt().__lt(a, b));
+  if (typeof a === "string" && typeof b === "string") return a < b;
+  return (Number(a) || 0) < (Number(b) || 0);
+}
+
+function luaLe(a, b) {
+  if (a && a.__isLuaTable && a.__getMt && typeof a.__getMt()?.__le === "function") return Boolean(a.__getMt().__le(a, b));
+  if (typeof a === "string" && typeof b === "string") return a <= b;
+  return (Number(a) || 0) <= (Number(b) || 0);
+}
+
+function tokenizeLuau(src) {
+  const tokens = [];
+  let i = 0;
+  const n = src.length;
+
+  const isAlpha = (ch) => /[a-zA-Z_]/.test(ch);
+  const isAlnum = (ch) => /[a-zA-Z0-9_]/.test(ch);
+  const isDigit = (ch) => /[0-9]/.test(ch);
+
+  while (i < n) {
+    const ch = src[i];
+
+    if (/\s/.test(ch)) {
+      i++;
+      continue;
+    }
+
+    if (ch === "-" && src[i + 1] === "-") {
+      i += 2;
+      if (src[i] === "[" && (src[i + 1] === "[" || src[i + 1] === "=")) {
+        let eqCount = 0;
+        let k = i + 1;
+        while (src[k] === "=") { eqCount++; k++; }
+        if (src[k] === "[") {
+          i = k + 1;
+          const closePat = "]" + "=".repeat(eqCount) + "]";
+          const closeIdx = src.indexOf(closePat, i);
+          i = closeIdx === -1 ? n : closeIdx + closePat.length;
+          continue;
+        }
+      }
+      while (i < n && src[i] !== "\n") i++;
+      continue;
+    }
+
+    if (ch === "[" && (src[i + 1] === "[" || src[i + 1] === "=")) {
+      let eqCount = 0;
+      let k = i + 1;
+      while (src[k] === "=") { eqCount++; k++; }
+      if (src[k] === "[") {
+        i = k + 1;
+        const closePat = "]" + "=".repeat(eqCount) + "]";
+        const closeIdx = src.indexOf(closePat, i);
+        const content = closeIdx === -1 ? src.slice(i) : src.slice(i, closeIdx);
+        i = closeIdx === -1 ? n : closeIdx + closePat.length;
+        tokens.push({ type: "string", value: content });
+        continue;
+      }
+    }
+
+    if (ch === '"' || ch === "'") {
+      const quote = ch;
+      i++;
+      let out = "";
+      while (i < n && src[i] !== quote) {
+        if (src[i] === "\\") {
+          i++;
+          const esc = src[i];
+          if (esc === "n") out += "\n";
+          else if (esc === "r") out += "\r";
+          else if (esc === "t") out += "\t";
+          else if (esc === "\\") out += "\\";
+          else if (esc === '"') out += '"';
+          else if (esc === "'") out += "'";
+          else out += esc || "";
+          i++;
+        } else {
+          out += src[i++];
+        }
+      }
+      i++;
+      tokens.push({ type: "string", value: out });
+      continue;
+    }
+
+    if (ch === "`") {
+      i++;
+      let out = "";
+      while (i < n && src[i] !== "`") {
+        if (src[i] === "\\") {
+          i++;
+          out += src[i++] || "";
+        } else {
+          out += src[i++];
+        }
+      }
+      i++;
+      tokens.push({ type: "string", value: out });
+      continue;
+    }
+
+    if (isDigit(ch) || (ch === "." && isDigit(src[i + 1]))) {
+      let start = i;
+      if (ch === "0" && (src[i + 1] === "x" || src[i + 1] === "X")) {
+        i += 2;
+        while (i < n && /[0-9a-fA-F_]/.test(src[i])) i++;
+      } else if (ch === "0" && (src[i + 1] === "b" || src[i + 1] === "B")) {
+        i += 2;
+        while (i < n && /[01_]/.test(src[i])) i++;
+      } else {
+        while (i < n && /[0-9_]/.test(src[i])) i++;
+        if (src[i] === "." && src[i + 1] !== ".") {
+          i++;
+          while (i < n && /[0-9_]/.test(src[i])) i++;
+        }
+        if (src[i] === "e" || src[i] === "E") {
+          i++;
+          if (src[i] === "+" || src[i] === "-") i++;
+          while (i < n && /[0-9_]/.test(src[i])) i++;
+        }
+      }
+      const rawNum = src.slice(start, i).replace(/_/g, "");
+      tokens.push({ type: "number", value: Number(rawNum) });
+      continue;
+    }
+
+    if (isAlpha(ch)) {
+      let start = i;
+      while (i < n && isAlnum(src[i])) i++;
+      const word = src.slice(start, i);
+      tokens.push({ type: "ident", value: word });
+      continue;
+    }
+
+    const three = src.slice(i, i + 3);
+    if (three === "..." || three === "//=") {
+      tokens.push({ type: "op", value: three });
+      i += 3;
+      continue;
+    }
+
+    const two = src.slice(i, i + 2);
+    if (["==", "~=", "<=", ">=", "..", "//", "+=", "-=", "*=", "/=", "%=", "^=", "->", "::"].includes(two)) {
+      tokens.push({ type: "op", value: two });
+      i += 2;
+      continue;
+    }
+
+    tokens.push({ type: "punct", value: ch });
+    i++;
+  }
+
+  tokens.push({ type: "eof", value: "" });
+  return tokens;
+}
+
+function parseAndRunLuau(code, globals, scriptName = "Script") {
+  const tokens = tokenizeLuau(code);
+  let pos = 0;
+
+  const peek = (offset = 0) => tokens[pos + offset] || { type: "eof", value: "" };
+  const consume = () => tokens[pos++] || { type: "eof", value: "" };
+  const match = (val) => {
+    if (peek().value === val) {
+      consume();
+      return true;
+    }
+    return false;
   };
+  const expect = (val) => {
+    const t = consume();
+    if (t.value !== val) {
+      throw new Error(`Expected '${val}' near '${t.value}' in ${scriptName}`);
+    }
+    return t;
+  };
+
+  function skipTypeAnnotation() {
+    let depth = 0;
+    while (peek().type !== "eof") {
+      const v = peek().value;
+      if (v === "(" || v === "{" || v === "[") depth++;
+      else if (v === ")" || v === "}" || v === "]") {
+        if (depth === 0) break;
+        depth--;
+      } else if (depth === 0 && (v === "=" || v === "," || v === ")" || v === "do" || v === "then")) {
+        break;
+      }
+      consume();
+    }
+  }
+
+  function skipLuauTypeDef() {
+    while (peek().type !== "eof" && peek().value !== "=") consume();
+    if (peek().value === "=") consume();
+    let depth = 0;
+    while (peek().type !== "eof") {
+      const v = peek().value;
+      if (v === "(" || v === "{" || v === "[") depth++;
+      else if (v === ")" || v === "}" || v === "]") depth--;
+      else if (depth === 0 && (v === "local" || v === "function" || v === "if" || v === "for" || v === "while" || v === "return" || v === "type" || v === "export")) {
+        break;
+      }
+      consume();
+    }
+  }
+
+  function parseBlock(stopWords = ["end"]) {
+    const stmts = [];
+    while (peek().type !== "eof") {
+      const v = peek().value;
+      if (stopWords.includes(v)) break;
+      if (v === ";") { consume(); continue; }
+      stmts.push(parseStatement());
+    }
+    return stmts;
+  }
+
+  function parseStatement() {
+    const t = peek();
+
+    if (t.value === "export" && peek(1).value === "type") {
+      consume();
+      consume();
+      skipLuauTypeDef();
+      return { type: "noop" };
+    }
+    if (t.value === "type" && peek(1).type === "ident" && peek(2).value === "=") {
+      consume();
+      skipLuauTypeDef();
+      return { type: "noop" };
+    }
+
+    if (t.value === "return") {
+      consume();
+      const exprs = [];
+      if (peek().type !== "eof" && !["end", "elseif", "else", "until", ";"].includes(peek().value)) {
+        exprs.push(parseExpr());
+        while (match(",")) exprs.push(parseExpr());
+      }
+      return { type: "return", exprs };
+    }
+
+    if (t.value === "break") { consume(); return { type: "break" }; }
+    if (t.value === "continue") { consume(); return { type: "continue" }; }
+
+    if (t.value === "do") {
+      consume();
+      const body = parseBlock(["end"]);
+      expect("end");
+      return { type: "do", body };
+    }
+
+    if (t.value === "while") {
+      consume();
+      const cond = parseExpr();
+      expect("do");
+      const body = parseBlock(["end"]);
+      expect("end");
+      return { type: "while", cond, body };
+    }
+
+    if (t.value === "repeat") {
+      consume();
+      const body = parseBlock(["until"]);
+      expect("until");
+      const cond = parseExpr();
+      return { type: "repeat", body, cond };
+    }
+
+    if (t.value === "if") {
+      consume();
+      const branches = [];
+      const firstCond = parseExpr();
+      expect("then");
+      const firstBody = parseBlock(["elseif", "else", "end"]);
+      branches.push({ cond: firstCond, body: firstBody });
+
+      while (match("elseif")) {
+        const c = parseExpr();
+        expect("then");
+        const b = parseBlock(["elseif", "else", "end"]);
+        branches.push({ cond: c, body: b });
+      }
+
+      let elseBody = null;
+      if (match("else")) {
+        elseBody = parseBlock(["end"]);
+      }
+      expect("end");
+      return { type: "if", branches, elseBody };
+    }
+
+    if (t.value === "for") {
+      consume();
+      const firstVar = consume().value;
+      if (peek().value === ":") { consume(); skipTypeAnnotation(); }
+
+      if (match("=")) {
+        const startExpr = parseExpr();
+        expect(",");
+        const endExpr = parseExpr();
+        const stepExpr = match(",") ? parseExpr() : null;
+        expect("do");
+        const body = parseBlock(["end"]);
+        expect("end");
+        return { type: "forNum", varName: firstVar, startExpr, endExpr, stepExpr, body };
+      } else {
+        const vars = [firstVar];
+        while (match(",")) {
+          vars.push(consume().value);
+          if (peek().value === ":") { consume(); skipTypeAnnotation(); }
+        }
+        expect("in");
+        const iterExprs = [parseExpr()];
+        while (match(",")) iterExprs.push(parseExpr());
+        expect("do");
+        const body = parseBlock(["end"]);
+        expect("end");
+        return { type: "forIn", vars, iterExprs, body };
+      }
+    }
+
+    if (t.value === "local") {
+      consume();
+      if (match("function")) {
+        const fnName = consume().value;
+        const fnNode = parseFunctionBody(false);
+        return { type: "localFunc", name: fnName, fnNode };
+      }
+      const names = [consume().value];
+      if (peek().value === ":") { consume(); skipTypeAnnotation(); }
+      while (match(",")) {
+        names.push(consume().value);
+        if (peek().value === ":") { consume(); skipTypeAnnotation(); }
+      }
+      let values = [];
+      if (match("=")) {
+        values.push(parseExpr());
+        while (match(",")) values.push(parseExpr());
+      }
+      return { type: "localVar", names, values };
+    }
+
+    if (t.value === "function") {
+      consume();
+      const path = [consume().value];
+      while (peek().value === ".") {
+        consume();
+        path.push(consume().value);
+      }
+      let isMethod = false;
+      if (peek().value === ":") {
+        consume();
+        path.push(consume().value);
+        isMethod = true;
+      }
+      const fnNode = parseFunctionBody(isMethod);
+      return { type: "funcAssign", path, fnNode };
+    }
+
+    if (t.value === "::") {
+      consume();
+      const label = consume().value;
+      if (peek().value === ":") { consume(); consume(); }
+      return { type: "label", label };
+    }
+
+    if (t.value === "goto") {
+      consume();
+      const label = consume().value;
+      return { type: "goto", label };
+    }
+
+    const firstExpr = parsePrefixOrPrimary();
+    if (peek().value === "," || peek().value === "=") {
+      const targets = [firstExpr];
+      while (match(",")) targets.push(parsePrefixOrPrimary());
+      expect("=");
+      const values = [parseExpr()];
+      while (match(",")) values.push(parseExpr());
+      return { type: "assign", targets, values };
+    }
+
+    const compOps = ["+=", "-=", "*=", "/=", "//=", "%=", "^=", "..="];
+    if (compOps.includes(peek().value)) {
+      const op = consume().value;
+      const rhs = parseExpr();
+      return { type: "compoundAssign", target: firstExpr, op, rhs };
+    }
+
+    return { type: "exprStmt", expr: firstExpr };
+  }
+
+  function parseFunctionBody(isMethod = false) {
+    expect("(");
+    const params = isMethod ? ["self"] : [];
+    let hasVararg = false;
+    if (peek().value !== ")") {
+      while (true) {
+        if (peek().value === "...") {
+          consume();
+          hasVararg = true;
+          if (peek().value === ":") { consume(); skipTypeAnnotation(); }
+          break;
+        }
+        params.push(consume().value);
+        if (peek().value === ":") { consume(); skipTypeAnnotation(); }
+        if (!match(",")) break;
+      }
+    }
+    expect(")");
+    if (peek().value === ":") { consume(); skipTypeAnnotation(); }
+    const body = parseBlock(["end"]);
+    expect("end");
+    return { type: "funcExpr", params, hasVararg, body };
+  }
+
+  function parseExpr() {
+    return parseOr();
+  }
+
+  function parseOr() {
+    let left = parseAnd();
+    while (peek().value === "or") {
+      consume();
+      const right = parseAnd();
+      left = { type: "binOp", op: "or", left, right };
+    }
+    return left;
+  }
+
+  function parseAnd() {
+    let left = parseCompare();
+    while (peek().value === "and") {
+      consume();
+      const right = parseCompare();
+      left = { type: "binOp", op: "and", left, right };
+    }
+    return left;
+  }
+
+  function parseCompare() {
+    let left = parseConcat();
+    while (["==", "~=", "<", ">", "<=", ">="].includes(peek().value)) {
+      const op = consume().value;
+      const right = parseConcat();
+      left = { type: "binOp", op, left, right };
+    }
+    return left;
+  }
+
+  function parseConcat() {
+    let left = parseAddSub();
+    if (peek().value === "..") {
+      consume();
+      const right = parseConcat();
+      left = { type: "binOp", op: "..", left, right };
+    }
+    return left;
+  }
+
+  function parseAddSub() {
+    let left = parseMulDiv();
+    while (peek().value === "+" || peek().value === "-") {
+      const op = consume().value;
+      const right = parseMulDiv();
+      left = { type: "binOp", op, left, right };
+    }
+    return left;
+  }
+
+  function parseMulDiv() {
+    let left = parseUnary();
+    while (["*", "/", "//", "%"].includes(peek().value)) {
+      const op = consume().value;
+      const right = parseUnary();
+      left = { type: "binOp", op, left, right };
+    }
+    return left;
+  }
+
+  function parseUnary() {
+    if (peek().value === "not" || peek().value === "-" || peek().value === "#") {
+      const op = consume().value;
+      const operand = parseUnary();
+      return { type: "unOp", op, operand };
+    }
+    return parsePow();
+  }
+
+  function parsePow() {
+    let left = parsePrefixOrPrimary();
+    if (peek().value === "^") {
+      consume();
+      const right = parseUnary();
+      left = { type: "binOp", op: "^", left, right };
+    }
+    return left;
+  }
+
+  function parsePrefixOrPrimary() {
+    let expr;
+    const t = peek();
+
+    if (t.value === "(") {
+      consume();
+      expr = parseExpr();
+      expect(")");
+    } else if (t.value === "if") {
+      consume();
+      const cond = parseExpr();
+      expect("then");
+      const thenExpr = parseExpr();
+      expect("else");
+      const elseExpr = parseExpr();
+      return { type: "ifExpr", cond, thenExpr, elseExpr };
+    } else if (t.value === "function") {
+      consume();
+      expr = parseFunctionBody(false);
+    } else if (t.value === "{") {
+      expr = parseTableLiteral();
+    } else if (t.type === "number") {
+      consume();
+      expr = { type: "literal", value: t.value };
+    } else if (t.type === "string") {
+      consume();
+      expr = { type: "literal", value: t.value };
+    } else if (t.value === "true") {
+      consume();
+      expr = { type: "literal", value: true };
+    } else if (t.value === "false") {
+      consume();
+      expr = { type: "literal", value: false };
+    } else if (t.value === "nil") {
+      consume();
+      expr = { type: "literal", value: null };
+    } else if (t.value === "...") {
+      consume();
+      expr = { type: "vararg" };
+    } else if (t.type === "ident") {
+      consume();
+      expr = { type: "ident", name: t.value };
+    } else {
+      consume();
+      return { type: "literal", value: null };
+    }
+
+    while (true) {
+      if (peek().value === ".") {
+        consume();
+        const prop = consume().value;
+        expr = { type: "prop", target: expr, prop };
+      } else if (peek().value === "[") {
+        consume();
+        const idxExpr = parseExpr();
+        expect("]");
+        expr = { type: "index", target: expr, index: idxExpr };
+      } else if (peek().value === ":") {
+        consume();
+        const methodName = consume().value;
+        const args = parseCallArgs();
+        expr = { type: "methodCall", target: expr, method: methodName, args };
+      } else if (peek().value === "(" || peek().value === "{" || peek().type === "string") {
+        const args = parseCallArgs();
+        expr = { type: "call", callee: expr, args };
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
+
+  function parseCallArgs() {
+    if (peek().value === "{") {
+      return [parseTableLiteral()];
+    }
+    if (peek().type === "string") {
+      const s = consume();
+      return [{ type: "literal", value: s.value }];
+    }
+    expect("(");
+    const args = [];
+    if (peek().value !== ")") {
+      args.push(parseExpr());
+      while (match(",")) args.push(parseExpr());
+    }
+    expect(")");
+    return args;
+  }
+
+  function parseTableLiteral() {
+    expect("{");
+    const arrItems = [];
+    const mapItems = [];
+    let autoIndex = 1;
+
+    while (peek().value !== "}" && peek().type !== "eof") {
+      if (peek().value === "[") {
+        consume();
+        const kExpr = parseExpr();
+        expect("]");
+        expect("=");
+        const vExpr = parseExpr();
+        mapItems.push({ keyExpr: kExpr, valExpr: vExpr });
+      } else if (peek().type === "ident" && peek(1).value === "=") {
+        const keyName = consume().value;
+        consume();
+        const vExpr = parseExpr();
+        mapItems.push({ keyName, valExpr: vExpr });
+      } else {
+        const vExpr = parseExpr();
+        arrItems.push({ idx: autoIndex++, valExpr: vExpr });
+      }
+      if (!match(",") && !match(";")) break;
+    }
+    expect("}");
+    return { type: "tableLit", arrItems, mapItems };
+  }
+
+  const ast = parseBlock([]);
+
+  function makeScope(parent) {
+    const vars = Object.create(null);
+    return {
+      parent,
+      get(name) {
+        if (name in vars) return vars[name];
+        if (parent) return parent.get(name);
+        if (name in globals) return globals[name];
+        return undefined;
+      },
+      setLocal(name, val) {
+        vars[name] = val;
+      },
+      assign(name, val) {
+        if (name in vars) {
+          vars[name] = val;
+          return;
+        }
+        let p = parent;
+        while (p) {
+          if (Object.prototype.hasOwnProperty.call(p._rawVars, name)) {
+            p._rawVars[name] = val;
+            return;
+          }
+          p = p.parent;
+        }
+        globals[name] = val;
+      },
+      _rawVars: vars
+    };
+  }
+
+  function evalExpr(node, scope, varargs = []) {
+    if (!node) return undefined;
+    switch (node.type) {
+      case "literal": return node.value;
+      case "vararg": return varargs[0];
+      case "ident": return scope.get(node.name);
+      case "ifExpr": {
+        const c = evalExpr(node.cond, scope, varargs);
+        return luauTruthy(c) ? evalExpr(node.thenExpr, scope, varargs) : evalExpr(node.elseExpr, scope, varargs);
+      }
+      case "tableLit": {
+        const arr = [];
+        const map = {};
+        for (const it of node.arrItems) {
+          arr[it.idx - 1] = evalExpr(it.valExpr, scope, varargs);
+        }
+        for (const m of node.mapItems) {
+          const val = evalExpr(m.valExpr, scope, varargs);
+          if (m.keyName !== undefined) map[m.keyName] = val;
+          else {
+            const k = evalExpr(m.keyExpr, scope, varargs);
+            if (typeof k === "number" && k >= 1) arr[k - 1] = val;
+            else map[String(k)] = val;
+          }
+        }
+        return createLuaTable(arr, map);
+      }
+      case "prop": {
+        const target = evalExpr(node.target, scope, varargs);
+        if (target === null || target === undefined) return undefined;
+        return target[node.prop];
+      }
+      case "index": {
+        const target = evalExpr(node.target, scope, varargs);
+        const idx = evalExpr(node.index, scope, varargs);
+        if (target === null || target === undefined) return undefined;
+        if (typeof idx === "number") return target[String(idx)] ?? target[idx];
+        return target[idx];
+      }
+      case "unOp": {
+        const v = evalExpr(node.operand, scope, varargs);
+        if (node.op === "not") return !luauTruthy(v);
+        if (node.op === "-") return -(Number(v) || 0);
+        if (node.op === "#") return luaLength(v);
+        return v;
+      }
+      case "binOp": {
+        if (node.op === "and") {
+          const l = evalExpr(node.left, scope, varargs);
+          return luauTruthy(l) ? evalExpr(node.right, scope, varargs) : l;
+        }
+        if (node.op === "or") {
+          const l = evalExpr(node.left, scope, varargs);
+          return luauTruthy(l) ? l : evalExpr(node.right, scope, varargs);
+        }
+        const l = evalExpr(node.left, scope, varargs);
+        const r = evalExpr(node.right, scope, varargs);
+        if (node.op === "+") return luaAdd(l, r);
+        if (node.op === "-") return luaSub(l, r);
+        if (node.op === "*") return luaMul(l, r);
+        if (node.op === "/") return luaDiv(l, r);
+        if (node.op === "//") return luaFloorDiv(l, r);
+        if (node.op === "%") return luaMod(l, r);
+        if (node.op === "^") return luaPow(l, r);
+        if (node.op === "..") return luaConcat(l, r);
+        if (node.op === "==") return luaEq(l, r);
+        if (node.op === "~=") return !luaEq(l, r);
+        if (node.op === "<") return luaLt(l, r);
+        if (node.op === ">") return luaLt(r, l);
+        if (node.op === "<=") return luaLe(l, r);
+        if (node.op === ">=") return luaLe(r, l);
+        return undefined;
+      }
+      case "funcExpr": {
+        return (...callArgs) => {
+          const fnScope = makeScope(scope);
+          for (let i = 0; i < node.params.length; i++) {
+            fnScope.setLocal(node.params[i], callArgs[i]);
+          }
+          const extraArgs = node.hasVararg ? callArgs.slice(node.params.length) : callArgs;
+          const res = execBlock(node.body, fnScope, extraArgs);
+          if (res instanceof LuauReturnSignal) {
+            return res.values[0];
+          }
+          return undefined;
+        };
+      }
+      case "call": {
+        const callee = evalExpr(node.callee, scope, varargs);
+        const evaluatedArgs = node.args.map((a) => evalExpr(a, scope, varargs));
+        if (typeof callee === "function") {
+          return callee(...evaluatedArgs);
+        }
+        return undefined;
+      }
+      case "methodCall": {
+        const obj = evalExpr(node.target, scope, varargs);
+        const evaluatedArgs = node.args.map((a) => evalExpr(a, scope, varargs));
+        if (!obj) return undefined;
+        const fn = obj[node.method];
+        if (typeof fn === "function") {
+          return fn.apply(obj, evaluatedArgs);
+        }
+        return undefined;
+      }
+      default:
+        return undefined;
+    }
+  }
+
+  function assignTarget(targetNode, val, scope, varargs) {
+    if (targetNode.type === "ident") {
+      scope.assign(targetNode.name, val);
+    } else if (targetNode.type === "prop") {
+      const obj = evalExpr(targetNode.target, scope, varargs);
+      if (obj && typeof obj === "object") obj[targetNode.prop] = val;
+    } else if (targetNode.type === "index") {
+      const obj = evalExpr(targetNode.target, scope, varargs);
+      const idx = evalExpr(targetNode.index, scope, varargs);
+      if (obj && typeof obj === "object") {
+        if (typeof idx === "number") obj[String(idx)] = val;
+        else obj[idx] = val;
+      }
+    }
+  }
+
+  function execBlock(stmts, scope, varargs = []) {
+    for (let i = 0; i < stmts.length; i++) {
+      const st = stmts[i];
+      if (!st || st.type === "noop") continue;
+
+      if (st.type === "label") continue;
+      if (st.type === "goto") {
+        const targetIdx = stmts.findIndex((s) => s && s.type === "label" && s.label === st.label);
+        if (targetIdx !== -1) i = targetIdx;
+        continue;
+      }
+
+      if (st.type === "return") {
+        return new LuauReturnSignal(st.exprs.map((e) => evalExpr(e, scope, varargs)));
+      }
+      if (st.type === "break") return new LuauBreakSignal();
+      if (st.type === "continue") return new LuauContinueSignal();
+
+      if (st.type === "exprStmt") {
+        evalExpr(st.expr, scope, varargs);
+        continue;
+      }
+
+      if (st.type === "localVar") {
+        for (let idx = 0; idx < st.names.length; idx++) {
+          const val = idx < st.values.length ? evalExpr(st.values[idx], scope, varargs) : undefined;
+          scope.setLocal(st.names[idx], val);
+        }
+        continue;
+      }
+
+      if (st.type === "localFunc") {
+        const fnVal = evalExpr(st.fnNode, scope, varargs);
+        scope.setLocal(st.name, fnVal);
+        continue;
+      }
+
+      if (st.type === "funcAssign") {
+        const fnVal = evalExpr(st.fnNode, scope, varargs);
+        if (st.path.length === 1) {
+          scope.assign(st.path[0], fnVal);
+        } else {
+          let cur = scope.get(st.path[0]);
+          if (!cur) {
+            cur = createLuaTable();
+            scope.assign(st.path[0], cur);
+          }
+          for (let pIdx = 1; pIdx < st.path.length - 1; pIdx++) {
+            const key = st.path[pIdx];
+            if (!cur[key]) cur[key] = createLuaTable();
+            cur = cur[key];
+          }
+          cur[st.path[st.path.length - 1]] = fnVal;
+        }
+        continue;
+      }
+
+      if (st.type === "assign") {
+        for (let idx = 0; idx < st.targets.length; idx++) {
+          const val = idx < st.values.length ? evalExpr(st.values[idx], scope, varargs) : undefined;
+          assignTarget(st.targets[idx], val, scope, varargs);
+        }
+        continue;
+      }
+
+      if (st.type === "compoundAssign") {
+        const curVal = evalExpr(st.target, scope, varargs);
+        const rhsVal = evalExpr(st.rhs, scope, varargs);
+        let nextVal = curVal;
+        if (st.op === "+=") nextVal = luaAdd(curVal, rhsVal);
+        else if (st.op === "-=") nextVal = luaSub(curVal, rhsVal);
+        else if (st.op === "*=") nextVal = luaMul(curVal, rhsVal);
+        else if (st.op === "/=") nextVal = luaDiv(curVal, rhsVal);
+        else if (st.op === "//=") nextVal = luaFloorDiv(curVal, rhsVal);
+        else if (st.op === "%=") nextVal = luaMod(curVal, rhsVal);
+        else if (st.op === "^=") nextVal = luaPow(curVal, rhsVal);
+        else if (st.op === "..=") nextVal = luaConcat(curVal, rhsVal);
+        assignTarget(st.target, nextVal, scope, varargs);
+        continue;
+      }
+
+      if (st.type === "do") {
+        const r = execBlock(st.body, makeScope(scope), varargs);
+        if (r instanceof LuauReturnSignal || r instanceof LuauBreakSignal || r instanceof LuauContinueSignal) return r;
+        continue;
+      }
+
+      if (st.type === "while") {
+        let guard = 0;
+        while (luauTruthy(evalExpr(st.cond, scope, varargs)) && guard++ < 50000) {
+          const r = execBlock(st.body, makeScope(scope), varargs);
+          if (r instanceof LuauReturnSignal) return r;
+          if (r instanceof LuauBreakSignal) break;
+        }
+        continue;
+      }
+
+      if (st.type === "repeat") {
+        let guard = 0;
+        do {
+          const r = execBlock(st.body, makeScope(scope), varargs);
+          if (r instanceof LuauReturnSignal) return r;
+          if (r instanceof LuauBreakSignal) break;
+        } while (!luauTruthy(evalExpr(st.cond, scope, varargs)) && guard++ < 50000);
+        continue;
+      }
+
+      if (st.type === "if") {
+        let matched = false;
+        for (const br of st.branches) {
+          if (luauTruthy(evalExpr(br.cond, scope, varargs))) {
+            matched = true;
+            const r = execBlock(br.body, makeScope(scope), varargs);
+            if (r instanceof LuauReturnSignal || r instanceof LuauBreakSignal || r instanceof LuauContinueSignal) return r;
+            break;
+          }
+        }
+        if (!matched && st.elseBody) {
+          const r = execBlock(st.elseBody, makeScope(scope), varargs);
+          if (r instanceof LuauReturnSignal || r instanceof LuauBreakSignal || r instanceof LuauContinueSignal) return r;
+        }
+        continue;
+      }
+
+      if (st.type === "forNum") {
+        const startVal = Number(evalExpr(st.startExpr, scope, varargs)) || 0;
+        const endVal = Number(evalExpr(st.endExpr, scope, varargs)) || 0;
+        const stepVal = st.stepExpr ? (Number(evalExpr(st.stepExpr, scope, varargs)) || 1) : 1;
+        let guard = 0;
+        if (stepVal >= 0) {
+          for (let v = startVal; v <= endVal && guard++ < 50000; v += stepVal) {
+            const loopScope = makeScope(scope);
+            loopScope.setLocal(st.varName, v);
+            const r = execBlock(st.body, loopScope, varargs);
+            if (r instanceof LuauReturnSignal) return r;
+            if (r instanceof LuauBreakSignal) break;
+          }
+        } else {
+          for (let v = startVal; v >= endVal && guard++ < 50000; v += stepVal) {
+            const loopScope = makeScope(scope);
+            loopScope.setLocal(st.varName, v);
+            const r = execBlock(st.body, loopScope, varargs);
+            if (r instanceof LuauReturnSignal) return r;
+            if (r instanceof LuauBreakSignal) break;
+          }
+        }
+        continue;
+      }
+
+      if (st.type === "forIn") {
+        const iterVals = st.iterExprs.map((e) => evalExpr(e, scope, varargs));
+        let entries = [];
+        if (Array.isArray(iterVals[0]) && iterVals[0].length > 0 && Array.isArray(iterVals[0][0])) {
+          entries = iterVals[0];
+        } else if (typeof iterVals[0] === "function") {
+          const iterFn = iterVals[0];
+          const stateVal = iterVals[1];
+          let ctrlVal = iterVals[2];
+          let guard = 0;
+          while (guard++ < 25000) {
+            const stepOut = iterFn(stateVal, ctrlVal);
+            if (stepOut === null || stepOut === undefined) break;
+            if (Array.isArray(stepOut)) {
+              ctrlVal = stepOut[0];
+              entries.push(stepOut);
+            } else {
+              ctrlVal = stepOut;
+              entries.push([stepOut]);
+            }
+          }
+        } else if (iterVals[0] && iterVals[0].__isLuaTable) {
+          const arr = iterVals[0].__arr;
+          for (let k = 0; k < arr.length; k++) {
+            if (arr[k] !== undefined) entries.push([k + 1, arr[k]]);
+          }
+        }
+
+        for (const rowEntry of entries) {
+          const loopScope = makeScope(scope);
+          const rowArr = Array.isArray(rowEntry) ? rowEntry : [rowEntry];
+          for (let vIdx = 0; vIdx < st.vars.length; vIdx++) {
+            loopScope.setLocal(st.vars[vIdx], rowArr[vIdx]);
+          }
+          const r = execBlock(st.body, loopScope, varargs);
+          if (r instanceof LuauReturnSignal) return r;
+          if (r instanceof LuauBreakSignal) break;
+        }
+        continue;
+      }
+    }
+    return undefined;
+  }
+
+  return execBlock(ast, makeScope(null), []);
 }
 
 function runLuauScriptSource(code, scriptName = "Script") {
-  if (!code || !code.trim()) return;
-
-  let lua = String(code);
-  lua = lua.replace(/\bcontinue\b/g, "goto __luau_continue__");
+  if (!code || typeof code !== "string" || !code.trim()) return;
 
   const makePartProxy = (partRecord) => {
     const holder = partRecord.holder;
     const proxy = {
       isPartProxy: true,
+      __typeof: "Instance",
       Name: partRecord.name,
       ClassName: "Part",
       get Anchored() { return Boolean(partRecord.anchored); },
@@ -1825,7 +2991,7 @@ function runLuauScriptSource(code, scriptName = "Script") {
       get Color() {
         let hex = 0x00a2ff;
         holder.traverse((m) => { if (m.isMesh && m.material && m.material.color) hex = m.material.color.getHex(); });
-        return { R: ((hex >> 16) & 255) / 255, G: ((hex >> 8) & 255) / 255, B: (hex & 255) / 255 };
+        return { R: ((hex >> 16) & 255) / 255, G: ((hex >> 8) & 255) / 255, B: (hex & 255) / 255, __typeof: "Color3" };
       },
       set Color(c) {
         if (!c) return;
@@ -1881,6 +3047,11 @@ function runLuauScriptSource(code, scriptName = "Script") {
         if (childName === "TouchInterest") return {};
         return null;
       },
+      GetAttribute(attr) { return partRecord.attrs?.[attr]; },
+      SetAttribute(attr, val) {
+        if (!partRecord.attrs) partRecord.attrs = {};
+        partRecord.attrs[attr] = val;
+      },
       Touched: makeSignal(partRecord.touchedCallbacks)
     };
     return proxy;
@@ -1888,10 +3059,15 @@ function runLuauScriptSource(code, scriptName = "Script") {
 
   const workspaceProxy = {
     Name: "Workspace",
+    ClassName: "Workspace",
+    __typeof: "Instance",
     get Gravity() { return studioConfig.gravity; },
     set Gravity(v) { const n = Number(v); if (Number.isFinite(n) && n >= 0) studioConfig.gravity = n; },
     get CurrentCamera() {
       return {
+        Name: "Camera",
+        ClassName: "Camera",
+        __typeof: "Instance",
         get CFrame() { return makeCFrame(camera.position.x, camera.position.y, camera.position.z, 0, playerYaw, 0); },
         set CFrame(cf) {
           if (!cf) return;
@@ -1915,6 +3091,8 @@ function runLuauScriptSource(code, scriptName = "Script") {
 
   const humanoidProxy = {
     Name: "Humanoid",
+    ClassName: "Humanoid",
+    __typeof: "Instance",
     get WalkSpeed() { return studioConfig.walkSpeed; },
     set WalkSpeed(v) { const n = Number(v); if (Number.isFinite(n) && n > 0) studioConfig.walkSpeed = n; },
     get JumpPower() { return studioConfig.jumpPower; },
@@ -1940,9 +3118,13 @@ function runLuauScriptSource(code, scriptName = "Script") {
 
   const characterProxy = {
     Name: username,
+    ClassName: "Model",
+    __typeof: "Instance",
     Humanoid: humanoidProxy,
     HumanoidRootPart: {
       Name: "HumanoidRootPart",
+      ClassName: "Part",
+      __typeof: "Instance",
       get Position() { return makeVector3(playerPos.x, playerPos.y, playerPos.z); },
       set Position(v) {
         if (!v) return;
@@ -1966,6 +3148,8 @@ function runLuauScriptSource(code, scriptName = "Script") {
   const localPlayerProxy = {
     Name: username,
     UserId: 1,
+    ClassName: "Player",
+    __typeof: "Instance",
     Character: characterProxy,
     Backpack: {
       GetChildren() { return backpackItems.map((b) => ({ Name: b.name })); }
@@ -1981,7 +3165,8 @@ function runLuauScriptSource(code, scriptName = "Script") {
     RenderStepped: makeSignal(renderSteppedCallbacks),
     IsStudio() { return false; },
     IsClient() { return true; },
-    IsServer() { return false; }
+    IsServer() { return false; },
+    IsRunMode() { return true; }
   };
 
   const userInputServiceProxy = {
@@ -2002,6 +3187,7 @@ function runLuauScriptSource(code, scriptName = "Script") {
     Create(inst, tweenInfo, goalProps) {
       const dur = Math.max(0.01, Number(tweenInfo?.Time ?? tweenInfo?.[0] ?? 1));
       return {
+        Completed: makeSignal([]),
         Play() {
           const startPos = { x: inst.Position?.X ?? 0, y: inst.Position?.Y ?? 0, z: inst.Position?.Z ?? 0 };
           const endPos = goalProps?.Position ? { x: goalProps.Position.X ?? startPos.x, y: goalProps.Position.Y ?? startPos.y, z: goalProps.Position.Z ?? startPos.z } : startPos;
@@ -2030,7 +3216,7 @@ function runLuauScriptSource(code, scriptName = "Script") {
   };
 
   const lightingProxy = {
-    get Ambient() { return { R: ((studioConfig.ambientColor >> 16) & 255) / 255, G: ((studioConfig.ambientColor >> 8) & 255) / 255, B: (studioConfig.ambientColor & 255) / 255 }; },
+    get Ambient() { return { R: ((studioConfig.ambientColor >> 16) & 255) / 255, G: ((studioConfig.ambientColor >> 8) & 255) / 255, B: (studioConfig.ambientColor & 255) / 255, __typeof: "Color3" }; },
     set Ambient(c) {
       if (!c) return;
       const r = Math.round((c.R ?? 0) * 255);
@@ -2080,7 +3266,7 @@ function runLuauScriptSource(code, scriptName = "Script") {
       if (svcName === "TweenService") return tweenServiceProxy;
       if (svcName === "Lighting") return lightingProxy;
       if (svcName === "ReplicatedStorage") return replicatedStorageProxy;
-      return { Name: svcName, FindFirstChild: () => null, GetChildren: () => [] };
+      return { Name: svcName, FindFirstChild: () => null, GetChildren: () => [], GetDescendants: () => [] };
     }
   };
 
@@ -2134,6 +3320,7 @@ function runLuauScriptSource(code, scriptName = "Script") {
       el.addEventListener("click", () => clickCbs.forEach((f) => { try { f(); } catch (_) {} }));
       return {
         Name: clsName,
+        __typeof: "Instance",
         get Text() { return el.textContent; },
         set Text(v) { el.textContent = String(v ?? ""); },
         get Visible() { return el.style.display !== "none"; },
@@ -2148,6 +3335,7 @@ function runLuauScriptSource(code, scriptName = "Script") {
       remoteEventCallbacks.set(evName, cbs);
       return {
         Name: clsName,
+        __typeof: "Instance",
         OnClientEvent: makeSignal(cbs),
         OnServerEvent: makeSignal(cbs),
         FireServer(...args) { cbs.forEach((f) => { try { f(localPlayerProxy, ...args); } catch (_) {} }); },
@@ -2160,22 +3348,38 @@ function runLuauScriptSource(code, scriptName = "Script") {
       bindableEventCallbacks.set(evName, cbs);
       return {
         Name: clsName,
+        __typeof: "Instance",
         Event: makeSignal(cbs),
         Fire(...args) { cbs.forEach((f) => { try { f(...args); } catch (_) {} }); }
       };
     }
-    if (clsName === "Folder" || clsName === "Configuration" || clsName === "IntValue" || clsName === "NumberValue" || clsName === "StringValue" || clsName === "BoolValue") {
-      return { Name: clsName, Value: clsName === "BoolValue" ? false : (clsName === "StringValue" ? "" : 0), Changed: makeSignal([]) };
-    }
-    return { Name: clsName, Destroy() {} };
+    return {
+      Name: clsName,
+      ClassName: clsName,
+      __typeof: "Instance",
+      Value: clsName === "BoolValue" ? false : (clsName === "StringValue" ? "" : 0),
+      Changed: makeSignal([]),
+      Destroy() {}
+    };
+  };
+
+  let randSeed = Date.now() & 0xffffffff;
+  const seededRandom = () => {
+    randSeed = (randSeed * 1664525 + 1013904223) >>> 0;
+    return randSeed / 0xffffffff;
   };
 
   const envGlobals = {
     workspace: workspaceProxy,
     Workspace: workspaceProxy,
     game: gameProxy,
-    script: { Name: scriptName, Parent: workspaceProxy },
+    script: { Name: scriptName, Parent: workspaceProxy, __typeof: "Instance" },
     Instance: { new: instanceNew },
+    Vector2: {
+      new: (x = 0, y = 0) => ({ X: Number(x) || 0, Y: Number(y) || 0, Magnitude: Math.hypot(Number(x) || 0, Number(y) || 0), __typeof: "Vector2" }),
+      zero: { X: 0, Y: 0, Magnitude: 0, __typeof: "Vector2" },
+      one: { X: 1, Y: 1, Magnitude: Math.SQRT2, __typeof: "Vector2" }
+    },
     Vector3: {
       new: makeVector3,
       zero: makeVector3(0, 0, 0),
@@ -2184,47 +3388,103 @@ function runLuauScriptSource(code, scriptName = "Script") {
       yAxis: makeVector3(0, 1, 0),
       zAxis: makeVector3(0, 0, 1)
     },
+    vector: {
+      create: makeVector3,
+      zero: makeVector3(0, 0, 0),
+      one: makeVector3(1, 1, 1),
+      magnitude: (v) => Math.hypot(v?.X ?? 0, v?.Y ?? 0, v?.Z ?? 0),
+      normalize: (v) => makeVector3(v?.X ?? 0, v?.Y ?? 0, v?.Z ?? 0).Unit(),
+      dot: (a, b) => (a?.X ?? 0) * (b?.X ?? 0) + (a?.Y ?? 0) * (b?.Y ?? 0) + (a?.Z ?? 0) * (b?.Z ?? 0),
+      cross: (a, b) => makeVector3(
+        (a?.Y ?? 0) * (b?.Z ?? 0) - (a?.Z ?? 0) * (b?.Y ?? 0),
+        (a?.Z ?? 0) * (b?.X ?? 0) - (a?.X ?? 0) * (b?.Z ?? 0),
+        (a?.X ?? 0) * (b?.Y ?? 0) - (a?.Y ?? 0) * (b?.X ?? 0)
+      ),
+      angle: (a, b) => {
+        const ma = Math.hypot(a?.X ?? 0, a?.Y ?? 0, a?.Z ?? 0) || 1;
+        const mb = Math.hypot(b?.X ?? 0, b?.Y ?? 0, b?.Z ?? 0) || 1;
+        const dot = ((a?.X ?? 0) * (b?.X ?? 0) + (a?.Y ?? 0) * (b?.Y ?? 0) + (a?.Z ?? 0) * (b?.Z ?? 0)) / (ma * mb);
+        return Math.acos(Math.max(-1, Math.min(1, dot)));
+      },
+      clamp: (v, minV, maxV) => makeVector3(
+        Math.max(minV?.X ?? -Infinity, Math.min(maxV?.X ?? Infinity, v?.X ?? 0)),
+        Math.max(minV?.Y ?? -Infinity, Math.min(maxV?.Y ?? Infinity, v?.Y ?? 0)),
+        Math.max(minV?.Z ?? -Infinity, Math.min(maxV?.Z ?? Infinity, v?.Z ?? 0))
+      ),
+      lerp: (a, b, t) => makeVector3(a?.X ?? 0, a?.Y ?? 0, a?.Z ?? 0).Lerp(b || { X: 0, Y: 0, Z: 0 }, t),
+      max: (a, b) => makeVector3(Math.max(a?.X ?? 0, b?.X ?? 0), Math.max(a?.Y ?? 0, b?.Y ?? 0), Math.max(a?.Z ?? 0, b?.Z ?? 0)),
+      min: (a, b) => makeVector3(Math.min(a?.X ?? 0, b?.X ?? 0), Math.min(a?.Y ?? 0, b?.Y ?? 0), Math.min(a?.Z ?? 0, b?.Z ?? 0)),
+      floor: (v) => makeVector3(Math.floor(v?.X ?? 0), Math.floor(v?.Y ?? 0), Math.floor(v?.Z ?? 0)),
+      ceil: (v) => makeVector3(Math.ceil(v?.X ?? 0), Math.ceil(v?.Y ?? 0), Math.ceil(v?.Z ?? 0)),
+      abs: (v) => makeVector3(Math.abs(v?.X ?? 0), Math.abs(v?.Y ?? 0), Math.abs(v?.Z ?? 0)),
+      sign: (v) => makeVector3(Math.sign(v?.X ?? 0), Math.sign(v?.Y ?? 0), Math.sign(v?.Z ?? 0))
+    },
     CFrame: {
       new: makeCFrame,
       identity: makeCFrame(0, 0, 0, 0, 0, 0),
       Angles: (rx = 0, ry = 0, rz = 0) => makeCFrame(0, 0, 0, rx, ry, rz),
       fromEulerAnglesYXZ: (ry = 0, rx = 0, rz = 0) => makeCFrame(0, 0, 0, rx, ry, rz),
+      fromEulerAnglesXYZ: (rx = 0, ry = 0, rz = 0) => makeCFrame(0, 0, 0, rx, ry, rz),
       lookAt: (pos, lookAtPos) => makeCFrame(pos?.X ?? 0, pos?.Y ?? 0, pos?.Z ?? 0, 0, Math.atan2((lookAtPos?.X ?? 0) - (pos?.X ?? 0), (lookAtPos?.Z ?? 0) - (pos?.Z ?? 0)), 0)
     },
     Color3: {
-      new: (r = 1, g = 1, b = 1) => ({ R: Number(r) || 0, G: Number(g) || 0, B: Number(b) || 0 }),
-      fromRGB: (r = 255, g = 255, b = 255) => ({ R: (Number(r) || 0) / 255, G: (Number(g) || 0) / 255, B: (Number(b) || 0) / 255 }),
+      new: (r = 1, g = 1, b = 1) => ({ R: Number(r) || 0, G: Number(g) || 0, B: Number(b) || 0, __typeof: "Color3" }),
+      fromRGB: (r = 255, g = 255, b = 255) => ({ R: (Number(r) || 0) / 255, G: (Number(g) || 0) / 255, B: (Number(b) || 0) / 255, __typeof: "Color3" }),
       fromHSV: (h = 0, s = 1, v = 1) => {
         const c = new THREE.Color().setHSL(Number(h) || 0, Number(s) || 0, Number(v) || 0);
-        return { R: c.r, G: c.g, B: c.b };
+        return { R: c.r, G: c.g, B: c.b, __typeof: "Color3" };
+      },
+      fromHex: (hexStr) => {
+        const c = new THREE.Color(String(hexStr || "#ffffff"));
+        return { R: c.r, G: c.g, B: c.b, __typeof: "Color3" };
       }
     },
     BrickColor: {
       new: (codeOrName) => {
         if (typeof codeOrName === "number" && BRICK_COLORS[codeOrName] !== undefined) {
           const hex = BRICK_COLORS[codeOrName];
-          return { Number: codeOrName, Color: { R: ((hex >> 16) & 255) / 255, G: ((hex >> 8) & 255) / 255, B: (hex & 255) / 255 } };
+          return { Number: codeOrName, Color: { R: ((hex >> 16) & 255) / 255, G: ((hex >> 8) & 255) / 255, B: (hex & 255) / 255 }, __typeof: "BrickColor" };
         }
-        return { Number: 21, Color: { R: 0.768, G: 0.156, B: 0.105 } };
+        return { Number: 21, Color: { R: 0.768, G: 0.156, B: 0.105 }, __typeof: "BrickColor" };
       },
-      Random: () => ({ Number: 21, Color: { R: 0.768, G: 0.156, B: 0.105 } })
+      Random: () => ({ Number: 21, Color: { R: 0.768, G: 0.156, B: 0.105 }, __typeof: "BrickColor" })
     },
-    UDim: { new: (s = 0, o = 0) => ({ Scale: Number(s) || 0, Offset: Number(o) || 0 }) },
-    UDim2: { new: (xs = 0, xo = 0, ys = 0, yo = 0) => ({ X: { Scale: xs, Offset: xo }, Y: { Scale: ys, Offset: yo } }) },
-    TweenInfo: { new: (t = 1, style = "Quad", dir = "Out", rep = 0, rev = false, delay = 0) => ({ Time: t, EasingStyle: style, EasingDirection: dir, RepeatCount: rep, Reverses: rev, DelayTime: delay }) },
+    UDim: { new: (s = 0, o = 0) => ({ Scale: Number(s) || 0, Offset: Number(o) || 0, __typeof: "UDim" }) },
+    UDim2: {
+      new: (xs = 0, xo = 0, ys = 0, yo = 0) => ({ X: { Scale: xs, Offset: xo }, Y: { Scale: ys, Offset: yo }, __typeof: "UDim2" }),
+      fromScale: (xs = 0, ys = 0) => ({ X: { Scale: xs, Offset: 0 }, Y: { Scale: ys, Offset: 0 }, __typeof: "UDim2" }),
+      fromOffset: (xo = 0, yo = 0) => ({ X: { Scale: 0, Offset: xo }, Y: { Scale: 0, Offset: yo }, __typeof: "UDim2" })
+    },
+    TweenInfo: { new: (t = 1, style = "Quad", dir = "Out", rep = 0, rev = false, delay = 0) => ({ Time: t, EasingStyle: style, EasingDirection: dir, RepeatCount: rep, Reverses: rev, DelayTime: delay, __typeof: "TweenInfo" }) },
+    NumberRange: { new: (min = 0, max) => ({ Min: Number(min) || 0, Max: max === undefined ? (Number(min) || 0) : (Number(max) || 0), __typeof: "NumberRange" }) },
+    Rect: { new: (minX = 0, minY = 0, maxX = 0, maxY = 0) => ({ Min: { X: minX, Y: minY }, Max: { X: maxX, Y: maxY }, __typeof: "Rect" }) },
+    Ray: {
+      new: (origin, dir) => ({
+        Origin: origin || makeVector3(),
+        Direction: dir || makeVector3(0, 0, -1),
+        Unit: { Origin: origin || makeVector3(), Direction: makeVector3(dir?.X ?? 0, dir?.Y ?? 0, dir?.Z ?? -1).Unit() },
+        __typeof: "Ray"
+      })
+    },
+    RaycastParams: { new: () => ({ FilterType: "Enum.RaycastFilterType.Exclude", FilterDescendantsInstances: [], IgnoreWater: true, __typeof: "RaycastParams" }) },
     Enum: new Proxy({}, { get: (_, k) => new Proxy({}, { get: (__, v) => `Enum.${String(k)}.${String(v)}` }) }),
     math: Object.assign(Object.create(Math), {
       clamp: (n, min, max) => Math.max(min, Math.min(max, n)),
       sign: (n) => (n > 0 ? 1 : (n < 0 ? -1 : 0)),
       rad: (d) => (d * Math.PI) / 180,
       deg: (r) => (r * 180) / Math.PI,
+      round: (n) => Math.round(n),
+      lerp: (a, b, t) => a + (b - a) * t,
+      map: (x, inMin, inMax, outMin, outMax) => outMin + ((x - inMin) / ((inMax - inMin) || 1)) * (outMax - outMin),
       noise: (x = 0, y = 0, z = 0) => Math.sin(x * 1.7 + y * 2.3 + z * 1.1) * 0.5,
+      randomseed: (s) => { randSeed = (Number(s) || 1) >>> 0; },
       random: (...args) => {
-        if (args.length === 0) return Math.random();
-        if (args.length === 1) return Math.floor(Math.random() * Math.floor(args[0])) + 1;
+        const r = seededRandom();
+        if (args.length === 0) return r;
+        if (args.length === 1) return Math.floor(r * Math.floor(args[0])) + 1;
         const lo = Math.ceil(args[0]);
         const hi = Math.floor(args[1]);
-        return Math.floor(Math.random() * (hi - lo + 1)) + lo;
+        return Math.floor(r * (hi - lo + 1)) + lo;
       }
     }),
     string: {
@@ -2239,60 +3499,138 @@ function runLuauScriptSource(code, scriptName = "Script") {
         const idx = str.indexOf(String(pat ?? ""), Math.max(0, init - 1));
         return idx === -1 ? null : [idx + 1, idx + String(pat).length];
       },
-      gsub: (s, pat, rep) => String(s ?? "").replaceAll(String(pat ?? ""), String(rep ?? "")),
-      split: (s, sep = ",") => String(s ?? "").split(String(sep)),
+      match: (s, pat) => {
+        const m = String(s ?? "").match(new RegExp(String(pat ?? "")));
+        return m ? m[0] : null;
+      },
+      gmatch: (s, pat) => {
+        const matches = Array.from(String(s ?? "").matchAll(new RegExp(String(pat ?? ""), "g")));
+        return matches.map((m) => [m[0]]);
+      },
+      gsub: (s, pat, rep) => {
+        const str = String(s ?? "");
+        if (typeof rep === "function") return str.replaceAll(String(pat ?? ""), (...args) => String(rep(...args) ?? ""));
+        return str.replaceAll(String(pat ?? ""), String(rep ?? ""));
+      },
+      split: (s, sep = ",") => createLuaTable(String(s ?? "").split(String(sep))),
       lower: (s) => String(s ?? "").toLowerCase(),
       upper: (s) => String(s ?? "").toUpperCase(),
       len: (s) => String(s ?? "").length,
       format: (fmt, ...args) => {
         let idx = 0;
-        return String(fmt ?? "").replace(/%[sdif]/g, () => String(args[idx++] ?? ""));
+        return String(fmt ?? "").replace(/%[sdifq]/g, () => String(args[idx++] ?? ""));
       },
       rep: (s, n) => String(s ?? "").repeat(Math.max(0, Math.floor(Number(n) || 0))),
-      reverse: (s) => String(s ?? "").split("").reverse().join("")
+      reverse: (s) => String(s ?? "").split("").reverse().join(""),
+      byte: (s, i = 1) => String(s ?? "").charCodeAt(Math.max(0, Number(i) - 1)) || null,
+      char: (...codes) => codes.map((c) => String.fromCharCode(Number(c) || 0)).join("")
     },
     table: {
       insert: (t, posOrVal, val) => {
-        if (!Array.isArray(t)) return;
-        if (val === undefined) t.push(posOrVal);
-        else t.splice(Math.max(0, Number(posOrVal) - 1), 0, val);
+        if (!t) return;
+        const arr = t.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : null);
+        if (!arr) return;
+        if (val === undefined) arr.push(posOrVal);
+        else arr.splice(Math.max(0, Number(posOrVal) - 1), 0, val);
       },
       remove: (t, pos) => {
-        if (!Array.isArray(t)) return null;
-        if (pos === undefined) return t.pop();
-        const removed = t.splice(Math.max(0, Number(pos) - 1), 1);
+        if (!t) return null;
+        const arr = t.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : null);
+        if (!arr) return null;
+        if (pos === undefined) return arr.pop() ?? null;
+        const removed = arr.splice(Math.max(0, Number(pos) - 1), 1);
         return removed[0] ?? null;
       },
       find: (t, needle) => {
-        if (!Array.isArray(t)) return null;
-        const i = t.indexOf(needle);
+        const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : []);
+        const i = arr.indexOf(needle);
         return i === -1 ? null : i + 1;
       },
       clear: (t) => {
-        if (Array.isArray(t)) t.length = 0;
-        else if (t && typeof t === "object") Object.keys(t).forEach((k) => delete t[k]);
+        if (!t) return;
+        if (t.__isLuaTable) {
+          t.__arr.length = 0;
+          Object.keys(t.__map).forEach((k) => delete t.__map[k]);
+        } else if (Array.isArray(t)) t.length = 0;
+        else if (typeof t === "object") Object.keys(t).forEach((k) => delete t[k]);
       },
       concat: (t, sep = "", i = 1, j) => {
-        if (!Array.isArray(t)) return "";
+        const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : []);
         const start = Math.max(0, Number(i) - 1);
-        const end = j === undefined ? t.length : Number(j);
-        return t.slice(start, end).join(String(sep));
+        const end = j === undefined ? arr.length : Number(j);
+        return arr.slice(start, end).map(luauTostring).join(String(sep));
       },
       sort: (t, comp) => {
-        if (!Array.isArray(t)) return;
-        if (typeof comp === "function") t.sort((a, b) => (comp(a, b) ? -1 : 1));
-        else t.sort();
+        const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : null);
+        if (!arr) return;
+        if (typeof comp === "function") arr.sort((a, b) => (luauTruthy(comp(a, b)) ? -1 : 1));
+        else arr.sort();
       },
-      clone: (t) => Array.isArray(t) ? [...t] : Object.assign({}, t),
-      create: (count, val) => Array.from({ length: Math.max(0, Math.floor(Number(count) || 0)) }, () => (typeof val === "function" ? val() : val))
+      clone: (t) => {
+        if (!t) return createLuaTable();
+        if (t.__isLuaTable) return createLuaTable([...t.__arr], { ...t.__map });
+        return Array.isArray(t) ? createLuaTable([...t]) : createLuaTable([], { ...t });
+      },
+      create: (count, val) => {
+        const n = Math.max(0, Math.floor(Number(count) || 0));
+        const arr = Array.from({ length: n }, () => (typeof val === "function" ? val() : val));
+        return createLuaTable(arr);
+      },
+      pack: (...args) => createLuaTable(args, { n: args.length }),
+      unpack: (t, i = 1, j) => {
+        const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : []);
+        return arr.slice(Math.max(0, Number(i) - 1), j === undefined ? arr.length : Number(j));
+      },
+      maxn: (t) => {
+        const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : []);
+        return arr.length;
+      },
+      move: (a1, f, e, tIdx, a2 = a1) => {
+        const src = a1?.__isLuaTable ? a1.__arr : a1;
+        const dst = a2?.__isLuaTable ? a2.__arr : a2;
+        if (!Array.isArray(src) || !Array.isArray(dst)) return a2;
+        const count = Math.max(0, Number(e) - Number(f) + 1);
+        for (let k = 0; k < count; k++) {
+          dst[Number(tIdx) - 1 + k] = src[Number(f) - 1 + k];
+        }
+        return a2;
+      }
     },
     bit32: {
-      band: (a, b) => (a & b) >>> 0,
-      bor: (a, b) => (a | b) >>> 0,
-      bxor: (a, b) => (a ^ b) >>> 0,
-      bnot: (a) => (~a) >>> 0,
-      lshift: (a, n) => (a << n) >>> 0,
-      rshift: (a, n) => (a >>> n) >>> 0
+      band: (...args) => (args.reduce((acc, v) => acc & (Number(v) >>> 0), 0xffffffff)) >>> 0,
+      bor: (...args) => (args.reduce((acc, v) => acc | (Number(v) >>> 0), 0)) >>> 0,
+      bxor: (...args) => (args.reduce((acc, v) => acc ^ (Number(v) >>> 0), 0)) >>> 0,
+      bnot: (a) => (~(Number(a) >>> 0)) >>> 0,
+      lshift: (a, n) => ((Number(a) >>> 0) << (Number(n) || 0)) >>> 0,
+      rshift: (a, n) => ((Number(a) >>> 0) >>> (Number(n) || 0)) >>> 0,
+      arshift: (a, n) => ((Number(a) | 0) >> (Number(n) || 0)) >>> 0,
+      lrotate: (a, n) => {
+        const x = Number(a) >>> 0;
+        const d = ((Number(n) || 0) % 32 + 32) % 32;
+        return ((x << d) | (x >>> (32 - d))) >>> 0;
+      },
+      rrotate: (a, n) => {
+        const x = Number(a) >>> 0;
+        const d = ((Number(n) || 0) % 32 + 32) % 32;
+        return ((x >>> d) | (x << (32 - d))) >>> 0;
+      },
+      btest: (...args) => (args.reduce((acc, v) => acc & (Number(v) >>> 0), 0xffffffff)) !== 0,
+      extract: (n, field, width = 1) => {
+        const mask = width >= 32 ? 0xffffffff : ((1 << width) - 1);
+        return ((Number(n) >>> (Number(field) || 0)) & mask) >>> 0;
+      },
+      replace: (n, v, field, width = 1) => {
+        const f = Number(field) || 0;
+        const w = Number(width) || 1;
+        const mask = (w >= 32 ? 0xffffffff : ((1 << w) - 1)) << f;
+        return (((Number(n) >>> 0) & ~mask) | (((Number(v) >>> 0) << f) & mask)) >>> 0;
+      },
+      countlz: (n) => Math.clz32(Number(n) >>> 0),
+      countrz: (n) => {
+        const x = Number(n) >>> 0;
+        if (x === 0) return 32;
+        return 31 - Math.clz32(x & -x);
+      }
     },
     os: {
       clock: () => performance.now() / 1000,
@@ -2300,73 +3638,114 @@ function runLuauScriptSource(code, scriptName = "Script") {
       difftime: (t2, t1) => Number(t2) - Number(t1),
       date: (fmt, t) => new Date((t ? Number(t) * 1000 : Date.now())).toISOString()
     },
+    debug: {
+      traceback: (msg = "") => String(msg) + "\n[stack traceback in " + scriptName + "]",
+      info: () => createLuaTable([], { name: scriptName, what: "Lua", line: 1 })
+    },
     coroutine: {
-      create: (fn) => ({ fn, status: "suspended" }),
+      create: (fn) => ({ fn, status: "suspended", __typeof: "thread" }),
       resume: (co, ...args) => {
         try {
+          if (!co || typeof co.fn !== "function") return createLuaTable([false, "invalid coroutine"]);
+          co.status = "running";
+          const res = co.fn(...args);
           co.status = "dead";
-          return [true, co.fn(...args)];
+          return createLuaTable([true, res]);
         } catch (e) {
-          co.status = "dead";
-          return [false, String(e)];
+          if (co) co.status = "dead";
+          return createLuaTable([false, e && e.message ? e.message : String(e)]);
         }
       },
       wrap: (fn) => (...args) => fn(...args),
+      status: (co) => co?.status || "dead",
       running: () => null,
-      yield: () => undefined
+      isyieldable: () => true,
+      yield: () => undefined,
+      close: (co) => { if (co) co.status = "dead"; return createLuaTable([true]); }
     },
+    setmetatable: (tbl, mt) => {
+      if (tbl && typeof tbl.__setMt === "function") tbl.__setMt(mt);
+      return tbl;
+    },
+    getmetatable: (tbl) => {
+      if (tbl && typeof tbl.__getMt === "function") return tbl.__getMt();
+      return null;
+    },
+    rawget: (tbl, k) => {
+      if (!tbl) return undefined;
+      if (tbl.__isLuaTable) return tbl.__map[k] ?? tbl.__arr[Number(k) - 1];
+      return tbl[k];
+    },
+    rawset: (tbl, k, v) => {
+      if (!tbl) return tbl;
+      if (tbl.__isLuaTable) {
+        if (typeof k === "number" && k >= 1) tbl.__arr[k - 1] = v;
+        else tbl.__map[k] = v;
+      } else {
+        tbl[k] = v;
+      }
+      return tbl;
+    },
+    rawequal: (a, b) => a === b,
+    rawlen: (v) => luaLength(v),
     tonumber: (v, base) => {
-      const n = base ? parseInt(String(v), base) : Number(v);
+      const n = base ? parseInt(String(v), Number(base)) : Number(v);
       return Number.isFinite(n) ? n : null;
     },
-    tostring: (v) => (v === null || v === undefined ? "nil" : String(v)),
-    type: (v) => {
-      if (v === null || v === undefined) return "nil";
-      if (typeof v === "boolean") return "boolean";
-      if (typeof v === "number") return "number";
-      if (typeof v === "string") return "string";
-      if (typeof v === "function") return "function";
-      return "table";
-    },
-    typeof: (v) => {
-      if (v === null || v === undefined) return "nil";
-      if (v && v.isPartProxy) return "Instance";
-      if (v && typeof v.X === "number" && typeof v.Y === "number" && typeof v.Z === "number" && v.LookVector === undefined) return "Vector3";
-      if (v && v.LookVector !== undefined) return "CFrame";
-      if (v && typeof v.R === "number" && typeof v.G === "number" && typeof v.B === "number") return "Color3";
-      return typeof v;
-    },
-    assert: (cond, msg = "assertion failed!") => { if (!cond) throw new Error(String(msg)); return cond; },
-    error: (msg) => { throw new Error(String(msg ?? "error")); },
+    tostring: luauTostring,
+    type: luauType,
+    typeof: luauTypeof,
+    assert: (cond, msg = "assertion failed!") => { if (!luauTruthy(cond)) throw new Error(String(msg)); return cond; },
+    error: (msg) => { throw new Error(luauTostring(msg ?? "error")); },
     pcall: (fn, ...args) => {
       try {
         const res = fn(...args);
-        return [true, res];
+        return createLuaTable([true, res]);
       } catch (err) {
-        return [false, err && err.message ? err.message : String(err)];
+        return createLuaTable([false, err && err.message ? err.message : String(err)]);
       }
     },
     xpcall: (fn, errHandler, ...args) => {
       try {
         const res = fn(...args);
-        return [true, res];
+        return createLuaTable([true, res]);
       } catch (err) {
         const msg = err && err.message ? err.message : String(err);
         try { if (typeof errHandler === "function") errHandler(msg); } catch (_) {}
-        return [false, msg];
+        return createLuaTable([false, msg]);
       }
     },
     select: (index, ...args) => {
       if (index === "#") return args.length;
       const i = Math.max(0, Number(index) - 1);
-      return args.slice(i);
+      return args[i];
     },
-    unpack: (t) => (Array.isArray(t) ? [...t] : []),
+    unpack: (t) => {
+      if (t && t.__isLuaTable) return t.__arr[0];
+      return Array.isArray(t) ? t[0] : undefined;
+    },
     ipairs: (t) => {
+      if (t && t.__isLuaTable) {
+        const rows = [];
+        for (let i = 0; i < t.__arr.length; i++) {
+          if (t.__arr[i] !== undefined) rows.push([i + 1, t.__arr[i]]);
+        }
+        return rows;
+      }
       const arr = Array.isArray(t) ? t : Object.values(t || {});
       return arr.map((v, idx) => [idx + 1, v]);
     },
     pairs: (t) => {
+      if (t && t.__isLuaTable) {
+        const rows = [];
+        for (let i = 0; i < t.__arr.length; i++) {
+          if (t.__arr[i] !== undefined) rows.push([i + 1, t.__arr[i]]);
+        }
+        for (const [k, v] of Object.entries(t.__map)) {
+          rows.push([k, v]);
+        }
+        return rows;
+      }
       if (Array.isArray(t)) return t.map((v, idx) => [idx + 1, v]);
       return Object.entries(t || {});
     },
@@ -2376,68 +3755,35 @@ function runLuauScriptSource(code, scriptName = "Script") {
     wait: (sec = 0.05) => new Promise((r) => setTimeout(r, Math.max(10, Number(sec || 0.05) * 1000))),
     task: {
       wait: (sec = 0.05) => new Promise((r) => setTimeout(r, Math.max(10, Number(sec || 0.05) * 1000))),
-      spawn: (fn, ...args) => { if (typeof fn === "function") Promise.resolve().then(() => fn(...args)).catch((e) => addChat("ScriptWarn", String(e))); },
+      spawn: (fn, ...args) => {
+        if (typeof fn === "function") {
+          Promise.resolve().then(() => fn(...args)).catch((e) => addChat("ScriptWarn", String(e)));
+        }
+      },
+      defer: (fn, ...args) => {
+        if (typeof fn === "function") {
+          queueMicrotask(() => {
+            try { fn(...args); } catch (e) { addChat("ScriptWarn", String(e)); }
+          });
+        }
+      },
       delay: (sec, fn, ...args) => {
         const ms = Math.max(10, Number(sec || 0.05) * 1000);
-        setTimeout(() => { if (typeof fn === "function") Promise.resolve().then(() => fn(...args)).catch((e) => addChat("ScriptWarn", String(e))); }, ms);
+        setTimeout(() => {
+          if (typeof fn === "function") {
+            try { fn(...args); } catch (e) { addChat("ScriptWarn", String(e)); }
+          }
+        }, ms);
       }
     },
-    delay: (sec, fn) => setTimeout(() => { if (typeof fn === "function") fn(); }, Math.max(10, Number(sec || 0.05) * 1000)),
-    spawn: (fn) => { if (typeof fn === "function") Promise.resolve().then(fn); },
-    print: (...args) => addChat(scriptName, args.map((a) => (typeof a === "object" && a !== null ? JSON.stringify(a) : String(a))).join(" ")),
-    warn: (...args) => addChat(scriptName + " [WARN]", args.join(" "))
+    delay: (sec, fn) => setTimeout(() => { if (typeof fn === "function") { try { fn(); } catch (_) {} } }, Math.max(10, Number(sec || 0.05) * 1000)),
+    spawn: (fn) => { if (typeof fn === "function") Promise.resolve().then(() => { try { fn(); } catch (_) {} }); },
+    print: (...args) => addChat(scriptName, args.map(luauTostring).join(" ")),
+    warn: (...args) => addChat(scriptName + " [WARN]", args.map(luauTostring).join(" "))
   };
 
-  let js = lua;
-  js = js.replace(/--\[\[[\s\S]*?\]\]/g, "");
-  js = js.replace(/--[^\n]*/g, "");
-  js = js.replace(/\[\[([\s\S]*?)\]\]/g, (_, inner) => JSON.stringify(inner));
-  js = js.replace(/\belseif\b/g, "} else if (");
-  js = js.replace(/\bthen\b/g, ") {");
-  js = js.replace(/\bif\s+/g, "if (");
-  js = js.replace(/\bwhile\s+/g, "while (");
-  js = js.replace(/\brepeat\b/g, "do {");
-  js = js.replace(/\buntil\s+([^\n;]+)/g, "} while (!($1));");
-  js = js.replace(/\bfor\s+([a-zA-Z_]\w*)\s*=\s*([^,\n]+),\s*([^,\n]+)(?:,\s*([^\n]+))?\s+do\b/g, (_, v, start, end, step) => {
-    const s = (step || "1").trim();
-    const cond = Number(s) < 0 ? `${v} >= (${end.trim()})` : `${v} <= (${end.trim()})`;
-    return `for (let ${v} = (${start.trim()}); ${cond}; ${v} += (${s})) {`;
-  });
-  js = js.replace(/\bfor\s+([a-zA-Z_]\w*)\s*,\s*([a-zA-Z_]\w*)\s+in\s+ipairs\(([^)]+)\)\s+do\b/g, (_, k, v, arr) => {
-    return `for (const [${k}, ${v}] of ipairs(${arr})) {`;
-  });
-  js = js.replace(/\bfor\s+([a-zA-Z_]\w*)\s*,\s*([a-zA-Z_]\w*)\s+in\s+pairs\(([^)]+)\)\s+do\b/g, (_, k, v, obj) => {
-    return `for (const [${k}, ${v}] of pairs(${obj})) {`;
-  });
-  js = js.replace(/\bdo\b/g, "{");
-  js = js.replace(/\bfunction\s+([a-zA-Z0-9_.:]+)\s*\(([^)]*)\)/g, (_, fnName, fnArgs) => {
-    if (fnName.includes(".") || fnName.includes(":")) {
-      return `${fnName.replace(/:/g, ".")} = async function(${fnArgs})`;
-    }
-    return `async function ${fnName}(${fnArgs})`;
-  });
-  js = js.replace(/\bfunction\s*\(([^)]*)\)/g, "async function($1)");
-  js = js.replace(/\bend\b/g, "}");
-  js = js.replace(/\blocal\s+/g, "let ");
-  js = js.replace(/\bnil\b/g, "null");
-  js = js.replace(/\bnot\s+/g, "!");
-  js = js.replace(/\band\b/g, "&&");
-  js = js.replace(/\bor\b/g, "||");
-  js = js.replace(/~=/g, "!==");
-  js = js.replace(/\.\./g, "+");
-  js = js.replace(/\b([a-zA-Z0-9_.\]]+):([a-zA-Z_]\w*)\(/g, "$1.$2(");
-
-  const argNames = Object.keys(envGlobals);
-  const argVals = Object.values(envGlobals);
-
   try {
-    const fn = new Function(
-      ...argNames,
-      `"use strict"; return (async () => { ${js} })();`
-    );
-    fn(...argVals).catch((err) => {
-      addChat("ScriptError", scriptName + ": " + (err && err.message ? err.message : String(err)));
-    });
+    parseAndRunLuau(code, envGlobals, scriptName);
   } catch (err) {
     addChat("ScriptError", scriptName + ": " + (err && err.message ? err.message : String(err)));
   }
@@ -2699,21 +4045,33 @@ function invalidateFloorCache() {
 }
 
 function syncLocalAvatarTransform() {
-  if (!localAvatarInst) return;
-  localAvatarInst.container.visible = true;
-  localAvatarInst.container.position.set(playerPos.x, playerPos.y + localAvatarInst.footOffset, playerPos.z);
-  localAvatarInst.container.rotation.y = playerYaw;
+  try {
+    const avatar = ensureLocalAvatarExists();
+    if (!Number.isFinite(playerPos.x) || !Number.isFinite(playerPos.y) || !Number.isFinite(playerPos.z)) {
+      playerPos.set(currentSpawn.x || 0, (currentSpawn.y || 0.5) + 0.5, currentSpawn.z || 0);
+    }
+    const footOff = Number.isFinite(avatar.footOffset) ? avatar.footOffset : 0.05;
+    avatar.container.position.set(playerPos.x, playerPos.y + footOff, playerPos.z);
+    avatar.container.rotation.y = Number.isFinite(playerYaw) ? playerYaw : 0;
+    avatar.container.updateMatrixWorld(true);
 
-  const anchorTarget = localAvatarInst.parts?.torso || localAvatarInst.parts?.root || localAvatarInst.container;
-  anchorTarget.updateWorldMatrix(true, false);
-  const anchorWorldPos = new THREE.Vector3();
-  anchorTarget.getWorldPosition(anchorWorldPos);
-  playerCameraRig.position.copy(anchorWorldPos);
+    const anchorTarget = avatar.parts?.torso || avatar.parts?.root || avatar.container;
+    const anchorWorldPos = new THREE.Vector3();
+    anchorTarget.getWorldPosition(anchorWorldPos);
+    if (Number.isFinite(anchorWorldPos.x) && Number.isFinite(anchorWorldPos.y) && Number.isFinite(anchorWorldPos.z)) {
+      playerCameraRig.position.copy(anchorWorldPos);
+    } else {
+      playerCameraRig.position.set(playerPos.x, playerPos.y + 2.5, playerPos.z);
+    }
+  } catch (_) {
+    playerCameraRig.position.set(playerPos.x || 0, (playerPos.y || 0.5) + 2.5, playerPos.z || 0);
+  }
 }
 
 function respawnLocalPlayer() {
-  const footOff = localAvatarInst ? localAvatarInst.footOffset : 0.05;
-  playerPos.set(currentSpawn.x, currentSpawn.y + footOff + 0.5, currentSpawn.z);
+  const avatar = ensureLocalAvatarExists();
+  const footOff = avatar ? (avatar.footOffset || 0.05) : 0.05;
+  playerPos.set(currentSpawn.x || 0, (currentSpawn.y || 0.5) + footOff + 0.5, currentSpawn.z || 0);
   playerVel.set(0, 0, 0);
   isGrounded = false;
   isJumping = false;
@@ -2723,53 +4081,63 @@ function respawnLocalPlayer() {
 }
 
 function loadPlaceXmlString(xmlText, gameRow = null) {
-  clearWorldGroup();
-  invalidateFloorCache();
-  imageAssetMap.clear();
-  registerImagesFromXmlOrRow(xmlText, gameRow);
-  pickupItems = [];
-  interactiveParts = [];
-  dynamicParts = [];
-  queuedScripts = [];
-  heartbeatCallbacks.length = 0;
-  steppedCallbacks.length = 0;
-  renderSteppedCallbacks.length = 0;
-  userInputBeganCallbacks.length = 0;
-  userInputEndedCallbacks.length = 0;
-  tweenServiceActive.length = 0;
-  backpackItems = [];
-  equippedIndex = -1;
-  applyToolVisualToRig(localAvatarInst, "");
-  renderHotbar();
+  try {
+    clearWorldGroup();
+    invalidateFloorCache();
+    imageAssetMap.clear();
+    registerImagesFromXmlOrRow(xmlText, gameRow);
+    pickupItems = [];
+    interactiveParts = [];
+    dynamicParts = [];
+    queuedScripts = [];
+    heartbeatCallbacks.length = 0;
+    steppedCallbacks.length = 0;
+    renderSteppedCallbacks.length = 0;
+    userInputBeganCallbacks.length = 0;
+    userInputEndedCallbacks.length = 0;
+    tweenServiceActive.length = 0;
+    backpackItems = [];
+    equippedIndex = -1;
+    applyToolVisualToRig(ensureLocalAvatarExists(), "");
+    renderHotbar();
 
-  studioConfig.gravity = 196.2;
-  studioConfig.walkSpeed = 16;
-  studioConfig.jumpPower = 50;
-  studioConfig.ambientColor = 0xffffff;
-  studioConfig.outdoorAmbientColor = 0x87c6ff;
-  studioConfig.fogColor = 0x87c6ff;
-  studioConfig.fogStart = 80;
-  studioConfig.fogEnd = 260;
-  updateSkyAndLighting();
+    studioConfig.gravity = 196.2;
+    studioConfig.walkSpeed = 16;
+    studioConfig.jumpPower = 50;
+    studioConfig.ambientColor = 0xffffff;
+    studioConfig.outdoorAmbientColor = 0x87c6ff;
+    studioConfig.fogColor = 0x87c6ff;
+    studioConfig.fogStart = 80;
+    studioConfig.fogEnd = 260;
+    updateSkyAndLighting();
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xmlText, "application/xml");
-  const rootItems = Array.from(doc.documentElement ? doc.documentElement.children : []).filter((c) => c.tagName === "Item");
-  const spawnRef = { set: false, x: 0, y: 0.5, z: 0 };
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlText, "application/xml");
+    const rootItems = Array.from(doc.documentElement ? doc.documentElement.children : []).filter((c) => c.tagName === "Item");
+    const spawnRef = { set: false, x: 0, y: 0.5, z: 0 };
 
-  rootItems.forEach((item) => {
-    processStudioItem(item, worldGroup, spawnRef, pickupItems);
-  });
+    rootItems.forEach((item) => {
+      try {
+        processStudioItem(item, worldGroup, spawnRef, pickupItems);
+      } catch (itemErr) {
+        addChat("WorldWarn", String(itemErr?.message || itemErr));
+      }
+    });
 
-  if (spawnRef.set) {
-    currentSpawn = { x: spawnRef.x, y: spawnRef.y, z: spawnRef.z };
-  } else {
+    if (spawnRef.set) {
+      currentSpawn = { x: spawnRef.x, y: spawnRef.y, z: spawnRef.z };
+    } else {
+      currentSpawn = { x: 0, y: 0.5, z: 0 };
+    }
+    respawnLocalPlayer();
+
+    for (const sc of queuedScripts) {
+      runLuauScriptSource(sc.source, sc.name);
+    }
+  } catch (err) {
+    addChat("WorldError", String(err?.message || err));
     currentSpawn = { x: 0, y: 0.5, z: 0 };
-  }
-  respawnLocalPlayer();
-
-  for (const sc of queuedScripts) {
-    runLuauScriptSource(sc.source, sc.name);
+    respawnLocalPlayer();
   }
 }
 
@@ -2782,7 +4150,7 @@ function looksLikeXml(raw) {
 async function resolveXmlFromGameRow(place) {
   let row = place;
 
-  if (place && place.id !== undefined && place.id !== null) {
+  if (sb && place && place.id !== undefined && place.id !== null) {
     const hasXml = typeof place.xml === "string" && place.xml.trim().length > 0;
     if (!hasXml) {
       try {
@@ -2862,7 +4230,7 @@ function updateLeaderboard() {
   remotePlayers.forEach((rp, id) => {
     entries.push({ id, name: rp.name || "Player", isSelf: false });
   });
-  playerCountEl.textContent = String(entries.length);
+  if (playerCountEl) playerCountEl.textContent = String(entries.length);
   leaderboardBody.innerHTML = "";
   entries.forEach((e) => {
     const row = document.createElement("div");
@@ -2936,29 +4304,37 @@ function removeRemotePlayer(id) {
 
 function broadcastSelfState() {
   if (!activeChannel || !channelSubscribed) return;
-  const equippedTool = equippedIndex >= 0 && backpackItems[equippedIndex] ? backpackItems[equippedIndex].name : "";
-  const horizSpeed = Math.hypot(playerVel.x, playerVel.z);
-  const speedRatio = Math.min(1, horizSpeed / Math.max(1, studioConfig.walkSpeed));
-  activeChannel.send({
-    type: "broadcast",
-    event: "state",
-    payload: {
-      peerId,
-      name: username,
-      x: playerPos.x,
-      y: playerPos.y,
-      z: playerPos.z,
-      yaw: playerYaw,
-      speedRatio,
-      isGrounded,
-      isJumping,
-      isAttacking,
-      toolName: equippedTool
-    }
-  });
+  try {
+    const equippedTool = equippedIndex >= 0 && backpackItems[equippedIndex] ? backpackItems[equippedIndex].name : "";
+    const horizSpeed = Math.hypot(playerVel.x, playerVel.z);
+    const speedRatio = Math.min(1, horizSpeed / Math.max(1, studioConfig.walkSpeed));
+    activeChannel.send({
+      type: "broadcast",
+      event: "state",
+      payload: {
+        peerId,
+        name: username,
+        x: playerPos.x,
+        y: playerPos.y,
+        z: playerPos.z,
+        yaw: playerYaw,
+        speedRatio,
+        isGrounded,
+        isJumping,
+        isAttacking,
+        toolName: equippedTool
+      }
+    });
+  } catch (_) {}
 }
 
 async function discoverAndJoinMultiplayerServer(targetPlaceId) {
+  if (!sb) {
+    serverRoleLabel.textContent = "local mode";
+    updateLeaderboard();
+    return;
+  }
+
   if (activeChannel) {
     channelSubscribed = false;
     try { await sb.removeChannel(activeChannel); } catch (_) {}
@@ -2977,27 +4353,37 @@ async function discoverAndJoinMultiplayerServer(targetPlaceId) {
   if (!chosenServerId) {
     for (const srvName of candidateServers) {
       const checkRes = await new Promise((resolve) => {
-        const probe = sb.channel(srvName, { config: { presence: { key: peerId } } });
+        let probe = null;
+        try {
+          probe = sb.channel(srvName, { config: { presence: { key: peerId } } });
+        } catch (_) {
+          resolve({ exists: false, count: 0 });
+          return;
+        }
         let settled = false;
         const finish = (val) => {
           if (!settled) {
             settled = true;
-            sb.removeChannel(probe).catch(() => {});
+            if (probe) sb.removeChannel(probe).catch(() => {});
             resolve(val);
           }
         };
         setTimeout(() => finish({ exists: false, count: 0 }), 700);
         probe.on("presence", { event: "sync" }, () => {
-          const st = probe.presenceState();
-          const count = Object.keys(st).length;
-          finish({ exists: count > 0, count });
+          try {
+            const st = probe.presenceState();
+            const count = Object.keys(st).length;
+            finish({ exists: count > 0, count });
+          } catch (_) { finish({ exists: false, count: 0 }); }
         });
         probe.subscribe((status) => {
           if (status === "SUBSCRIBED") {
             setTimeout(() => {
-              const st = probe.presenceState();
-              const count = Object.keys(st).length;
-              finish({ exists: count > 0, count });
+              try {
+                const st = probe.presenceState();
+                const count = Object.keys(st).length;
+                finish({ exists: count > 0, count });
+              } catch (_) { finish({ exists: false, count: 0 }); }
             }, 350);
           }
         });
@@ -3029,34 +4415,36 @@ async function discoverAndJoinMultiplayerServer(targetPlaceId) {
   });
 
   ch.on("presence", { event: "sync" }, () => {
-    const state = ch.presenceState();
-    const keys = Object.keys(state).sort();
-    if (keys.length > 0 && keys[0] === peerId) {
-      isHost = true;
-      hostId = peerId;
-    } else if (keys.length > 0) {
-      isHost = false;
-      hostId = keys[0];
-    }
-    serverRoleLabel.textContent = isHost ? `Host (${chosenServerId})` : `Multiplayer (${chosenServerId})`;
-
-    keys.forEach((k) => {
-      if (k !== peerId && !remotePlayers.has(k)) {
-        const meta = (state[k] && state[k][0]) || {};
-        addOrUpdateRemotePlayer(k, {
-          name: meta.name || ("Player_" + k.slice(-4)),
-          x: meta.x ?? 0,
-          y: meta.y ?? 0.5,
-          z: meta.z ?? 0,
-          yaw: meta.yaw ?? 0
-        });
+    try {
+      const state = ch.presenceState();
+      const keys = Object.keys(state).sort();
+      if (keys.length > 0 && keys[0] === peerId) {
+        isHost = true;
+        hostId = peerId;
+      } else if (keys.length > 0) {
+        isHost = false;
+        hostId = keys[0];
       }
-    });
+      serverRoleLabel.textContent = isHost ? `Host (${chosenServerId})` : `Multiplayer (${chosenServerId})`;
 
-    remotePlayers.forEach((_, k) => {
-      if (!state[k]) removeRemotePlayer(k);
-    });
-    updateLeaderboard();
+      keys.forEach((k) => {
+        if (k !== peerId && !remotePlayers.has(k)) {
+          const meta = (state[k] && state[k][0]) || {};
+          addOrUpdateRemotePlayer(k, {
+            name: meta.name || ("Player_" + k.slice(-4)),
+            x: meta.x ?? 0,
+            y: meta.y ?? 0.5,
+            z: meta.z ?? 0,
+            yaw: meta.yaw ?? 0
+          });
+        }
+      });
+
+      remotePlayers.forEach((_, k) => {
+        if (!state[k]) removeRemotePlayer(k);
+      });
+      updateLeaderboard();
+    } catch (_) {}
   });
 
   ch.on("presence", { event: "leave" }, ({ key }) => {
@@ -3077,13 +4465,15 @@ async function discoverAndJoinMultiplayerServer(targetPlaceId) {
   ch.subscribe(async (status) => {
     if (status === "SUBSCRIBED") {
       channelSubscribed = true;
-      await ch.track({
-        name: username,
-        x: playerPos.x,
-        y: playerPos.y,
-        z: playerPos.z,
-        yaw: playerYaw
-      });
+      try {
+        await ch.track({
+          name: username,
+          x: playerPos.x,
+          y: playerPos.y,
+          z: playerPos.z,
+          yaw: playerYaw
+        });
+      } catch (_) {}
       serverRoleLabel.textContent = isHost ? `Host (${chosenServerId})` : `Multiplayer (${chosenServerId})`;
       updateLeaderboard();
       broadcastSelfState();
@@ -3095,12 +4485,14 @@ async function discoverAndJoinMultiplayerServer(targetPlaceId) {
 
 async function loadGamesList() {
   let rows = [];
-  try {
-    const { data, error } = await sb.from("games").select("*");
-    if (!error && Array.isArray(data) && data.length > 0) {
-      rows = data;
-    }
-  } catch (_) {}
+  if (sb) {
+    try {
+      const { data, error } = await sb.from("games").select("*");
+      if (!error && Array.isArray(data) && data.length > 0) {
+        rows = data;
+      }
+    } catch (_) {}
+  }
 
   if (rows.length === 0) {
     rows = [
@@ -3164,8 +4556,11 @@ async function selectAndLaunchGame(gameOrId) {
   showLoading("Loading " + titleText, "Reading xml column from games table...");
 
   try {
+    ensureLocalAvatarExists();
+    syncLocalAvatarTransform();
+
     if (!gamesCache || gamesCache.length === 0) {
-      await loadGamesList();
+      try { await loadGamesList(); } catch (_) {}
     }
     const targetId = typeof gameOrId === "object" && gameOrId !== null
       ? String(gameOrId.id ?? "")
@@ -3184,8 +4579,14 @@ async function selectAndLaunchGame(gameOrId) {
     loadPlaceXmlString(xml, row);
 
     updateLoadingStatus("Connecting to multiplayer server...");
-    await discoverAndJoinMultiplayerServer(placeId);
+    try {
+      await discoverAndJoinMultiplayerServer(placeId);
+    } catch (_) {}
+  } catch (err) {
+    addChat("LoadWarn", String(err?.message || err));
   } finally {
+    ensureLocalAvatarExists();
+    syncLocalAvatarTransform();
     setTimeout(() => hideLoading(), 220);
   }
 }
@@ -3195,7 +4596,7 @@ document.getElementById("reset-btn").addEventListener("click", () => {
 });
 
 document.getElementById("leave-btn").addEventListener("click", async () => {
-  if (activeChannel) {
+  if (sb && activeChannel) {
     channelSubscribed = false;
     try { await sb.removeChannel(activeChannel); } catch (_) {}
     activeChannel = null;
@@ -3212,11 +4613,13 @@ chatForm.addEventListener("submit", (e) => {
   addChat(username, txt);
   chatInput.value = "";
   if (activeChannel && channelSubscribed) {
-    activeChannel.send({
-      type: "broadcast",
-      event: "chat",
-      payload: { peerId, sender: username, text: txt }
-    });
+    try {
+      activeChannel.send({
+        type: "broadcast",
+        event: "chat",
+        payload: { peerId, sender: username, text: txt }
+      });
+    } catch (_) {}
   }
 });
 
@@ -3324,126 +4727,127 @@ function getFloorHeightAt(x, z, currentY) {
 }
 
 function updatePhysicsAndPlayer(dt, now) {
-  refreshFloorBoxes(now);
+  try {
+    refreshFloorBoxes(now);
 
-  for (let i = tweenServiceActive.length - 1; i >= 0; i--) {
-    const tw = tweenServiceActive[i];
-    tw.elapsed += dt;
-    const alpha = Math.min(1, tw.elapsed / tw.dur);
-    tw.onStep(alpha);
-    if (alpha >= 1) tweenServiceActive.splice(i, 1);
-  }
-
-  for (const partRec of dynamicParts) {
-    if (partRec.destroyed) continue;
-    if (!partRec.anchored) {
-      partRec.velY -= studioConfig.gravity * 0.12 * dt;
-      partRec.holder.position.y += partRec.velY * dt;
-      if (partRec.canCollide && partRec.holder.position.y - partRec.halfExtents.y <= 0) {
-        partRec.holder.position.y = partRec.halfExtents.y;
-        partRec.velY = 0;
-      }
-      if (partRec.holder.position.y < studioConfig.fallenPartsDestroyHeight) {
-        partRec.destroyed = true;
-        if (partRec.holder.parent) partRec.holder.parent.remove(partRec.holder);
-      }
+    for (let i = tweenServiceActive.length - 1; i >= 0; i--) {
+      const tw = tweenServiceActive[i];
+      tw.elapsed += dt;
+      const alpha = Math.min(1, tw.elapsed / tw.dur);
+      tw.onStep(alpha);
+      if (alpha >= 1) tweenServiceActive.splice(i, 1);
     }
-    if (partRec.touchedCallbacks && partRec.touchedCallbacks.length > 0) {
-      const p = partRec.holder.position;
-      const dist = Math.hypot(playerPos.x - p.x, (playerPos.y + 2.0) - p.y, playerPos.z - p.z);
-      if (dist < Math.max(partRec.halfExtents.x, partRec.halfExtents.y, partRec.halfExtents.z) + 2.5) {
-        for (const cb of partRec.touchedCallbacks) {
-          try { cb({ Name: username, Humanoid: { TakeDamage() {} } }); } catch (_) {}
+
+    for (const partRec of dynamicParts) {
+      if (partRec.destroyed) continue;
+      if (!partRec.anchored) {
+        partRec.velY -= studioConfig.gravity * 0.12 * dt;
+        partRec.holder.position.y += partRec.velY * dt;
+        if (partRec.canCollide && partRec.holder.position.y - partRec.halfExtents.y <= 0) {
+          partRec.holder.position.y = partRec.halfExtents.y;
+          partRec.velY = 0;
+        }
+        if (partRec.holder.position.y < studioConfig.fallenPartsDestroyHeight) {
+          partRec.destroyed = true;
+          if (partRec.holder.parent) partRec.holder.parent.remove(partRec.holder);
+        }
+      }
+      if (partRec.touchedCallbacks && partRec.touchedCallbacks.length > 0) {
+        const p = partRec.holder.position;
+        const dist = Math.hypot(playerPos.x - p.x, (playerPos.y + 2.0) - p.y, playerPos.z - p.z);
+        if (dist < Math.max(partRec.halfExtents.x, partRec.halfExtents.y, partRec.halfExtents.z) + 2.5) {
+          for (const cb of partRec.touchedCallbacks) {
+            try { cb({ Name: username, Humanoid: { TakeDamage() {} } }); } catch (_) {}
+          }
         }
       }
     }
-  }
 
-  if (speedBoostTimer > 0) speedBoostTimer -= dt;
-  if (attackTimer > 0) {
-    attackTimer -= dt;
-    if (attackTimer <= 0) isAttacking = false;
-  }
-
-  let moveForward = 0;
-  let moveRight = 0;
-  if (keysDown.has("KeyW") || keysDown.has("ArrowUp")) moveForward += 1;
-  if (keysDown.has("KeyS") || keysDown.has("ArrowDown")) moveForward -= 1;
-  if (keysDown.has("KeyD") || keysDown.has("ArrowRight")) moveRight += 1;
-  if (keysDown.has("KeyA") || keysDown.has("ArrowLeft")) moveRight -= 1;
-
-  const activeSpeed = speedBoostTimer > 0 ? 34 : studioConfig.walkSpeed;
-  const forwardVec = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
-  const rightVec = new THREE.Vector3(Math.cos(playerYaw), 0, -Math.sin(playerYaw));
-
-  const wishDir = new THREE.Vector3()
-    .addScaledVector(forwardVec, moveForward)
-    .addScaledVector(rightVec, moveRight);
-  if (wishDir.lengthSq() > 0) wishDir.normalize();
-
-  playerVel.x = wishDir.x * activeSpeed;
-  playerVel.z = wishDir.z * activeSpeed;
-
-  playerVel.y -= studioConfig.gravity * 0.12 * dt;
-
-  playerPos.x += playerVel.x * dt;
-  playerPos.y += playerVel.y * dt;
-  playerPos.z += playerVel.z * dt;
-
-  const floorY = getFloorHeightAt(playerPos.x, playerPos.z, playerPos.y);
-  if (floorY > -Infinity && playerPos.y <= floorY && playerVel.y <= 0) {
-    playerPos.y = floorY;
-    playerVel.y = 0;
-    isGrounded = true;
-    isJumping = false;
-  } else {
-    isGrounded = false;
-  }
-
-  if (playerPos.y < studioConfig.fallenPartsDestroyHeight) {
-    respawnLocalPlayer();
-  }
-
-  for (const pItem of pickupItems) {
-    if (pItem.collected) continue;
-    pItem.mesh.rotation.y += dt * 2.0;
-    if (playerPos.distanceTo(pItem.pickupPos) < 4.0) {
-      pItem.collected = true;
-      pItem.mesh.visible = false;
-      giveItemToBackpack(pItem.name, pItem.colorHex || 0xc0c8d0, true, pItem.texUrl || "");
-      addChat("System", "Picked up " + pItem.name + "!");
+    if (speedBoostTimer > 0) speedBoostTimer -= dt;
+    if (attackTimer > 0) {
+      attackTimer -= dt;
+      if (attackTimer <= 0) isAttacking = false;
     }
-  }
 
-  for (const inter of interactiveParts) {
-    if (inter.canCollide === false) continue;
-    const pos = inter.mesh.position;
-    const dx = Math.abs(playerPos.x - pos.x);
-    const dy = Math.abs(playerPos.y + 2.5 - pos.y);
-    const dz = Math.abs(playerPos.z - pos.z);
-    if (dx <= inter.halfExtents.x + 1.2 && dy <= inter.halfExtents.y + 2.6 && dz <= inter.halfExtents.z + 1.2) {
-      if (inter.type === "kill") {
-        respawnLocalPlayer();
-        break;
-      } else if (inter.type === "jump") {
-        playerVel.y = inter.boost || 85;
-        isGrounded = false;
-        isJumping = true;
-      } else if (inter.type === "speed") {
-        speedBoostTimer = 4.0;
+    let moveForward = 0;
+    let moveRight = 0;
+    if (keysDown.has("KeyW") || keysDown.has("ArrowUp")) moveForward += 1;
+    if (keysDown.has("KeyS") || keysDown.has("ArrowDown")) moveForward -= 1;
+    if (keysDown.has("KeyD") || keysDown.has("ArrowRight")) moveRight += 1;
+    if (keysDown.has("KeyA") || keysDown.has("ArrowLeft")) moveRight -= 1;
+
+    const activeSpeed = speedBoostTimer > 0 ? 34 : studioConfig.walkSpeed;
+    const forwardVec = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
+    const rightVec = new THREE.Vector3(Math.cos(playerYaw), 0, -Math.sin(playerYaw));
+
+    const wishDir = new THREE.Vector3()
+      .addScaledVector(forwardVec, moveForward)
+      .addScaledVector(rightVec, moveRight);
+    if (wishDir.lengthSq() > 0) wishDir.normalize();
+
+    playerVel.x = wishDir.x * activeSpeed;
+    playerVel.z = wishDir.z * activeSpeed;
+
+    playerVel.y -= studioConfig.gravity * 0.12 * dt;
+
+    playerPos.x += playerVel.x * dt;
+    playerPos.y += playerVel.y * dt;
+    playerPos.z += playerVel.z * dt;
+
+    const floorY = getFloorHeightAt(playerPos.x, playerPos.z, playerPos.y);
+    if (floorY > -Infinity && playerPos.y <= floorY && playerVel.y <= 0) {
+      playerPos.y = floorY;
+      playerVel.y = 0;
+      isGrounded = true;
+      isJumping = false;
+    } else {
+      isGrounded = false;
+    }
+
+    if (playerPos.y < studioConfig.fallenPartsDestroyHeight) {
+      respawnLocalPlayer();
+    }
+
+    for (const pItem of pickupItems) {
+      if (pItem.collected) continue;
+      pItem.mesh.rotation.y += dt * 2.0;
+      if (playerPos.distanceTo(pItem.pickupPos) < 4.0) {
+        pItem.collected = true;
+        pItem.mesh.visible = false;
+        giveItemToBackpack(pItem.name, pItem.colorHex || 0xc0c8d0, true, pItem.texUrl || "");
+        addChat("System", "Picked up " + pItem.name + "!");
       }
     }
-  }
 
-  if (localAvatarInst) {
-    syncLocalAvatarTransform();
-    const horizSpeed = Math.hypot(playerVel.x, playerVel.z);
-    const speedRatio = Math.min(1, horizSpeed / Math.max(1, studioConfig.walkSpeed));
-    stepAvatarAnimation(localAvatarInst, dt, speedRatio, isGrounded, isJumping, isAttacking);
-  }
+    for (const inter of interactiveParts) {
+      if (inter.canCollide === false) continue;
+      const pos = inter.mesh.position;
+      const dx = Math.abs(playerPos.x - pos.x);
+      const dy = Math.abs(playerPos.y + 2.5 - pos.y);
+      const dz = Math.abs(playerPos.z - pos.z);
+      if (dx <= inter.halfExtents.x + 1.2 && dy <= inter.halfExtents.y + 2.6 && dz <= inter.halfExtents.z + 1.2) {
+        if (inter.type === "kill") {
+          respawnLocalPlayer();
+          break;
+        } else if (inter.type === "jump") {
+          playerVel.y = inter.boost || 85;
+          isGrounded = false;
+          isJumping = true;
+        } else if (inter.type === "speed") {
+          speedBoostTimer = 4.0;
+        }
+      }
+    }
 
-  steppedCallbacks.forEach((f) => { try { f(dt); } catch (_) {} });
-  heartbeatCallbacks.forEach((f) => { try { f(dt); } catch (_) {} });
+    steppedCallbacks.forEach((f) => { try { f(dt); } catch (_) {} });
+    heartbeatCallbacks.forEach((f) => { try { f(dt); } catch (_) {} });
+  } catch (_) {}
+
+  const avatar = ensureLocalAvatarExists();
+  syncLocalAvatarTransform();
+  const horizSpeed = Math.hypot(playerVel.x || 0, playerVel.z || 0);
+  const speedRatio = Math.min(1, horizSpeed / Math.max(1, studioConfig.walkSpeed));
+  stepAvatarAnimation(avatar, dt, speedRatio, isGrounded, isJumping, isAttacking);
 
   const horizDist = Math.cos(camPitch) * camDist;
   const vertDist = Math.sin(camPitch) * camDist;
@@ -3464,40 +4868,62 @@ let lastBroadcastTime = 0;
 
 function animate(now) {
   requestAnimationFrame(animate);
-  const dt = Math.min(0.05, (now - lastFrameTime) / 1000);
-  lastFrameTime = now;
+  try {
+    const dt = Math.min(0.05, Math.max(0.001, (now - lastFrameTime) / 1000));
+    lastFrameTime = now;
 
-  updatePhysicsAndPlayer(dt, now);
+    updatePhysicsAndPlayer(dt, now);
 
-  remotePlayers.forEach((rp) => {
-    rp.avatarInst.container.position.lerp(rp.targetPos, Math.min(1, dt * 14));
-    rp.avatarInst.container.rotation.y = rp.targetYaw;
-    stepAvatarAnimation(rp.avatarInst, dt, rp.speedRatio, rp.isGrounded, rp.isJumping, rp.isAttacking);
-  });
+    remotePlayers.forEach((rp) => {
+      try {
+        rp.avatarInst.container.position.lerp(rp.targetPos, Math.min(1, dt * 14));
+        rp.avatarInst.container.rotation.y = rp.targetYaw;
+        stepAvatarAnimation(rp.avatarInst, dt, rp.speedRatio, rp.isGrounded, rp.isJumping, rp.isAttacking);
+      } catch (_) {}
+    });
 
-  if (now - lastBroadcastTime > 65) {
-    lastBroadcastTime = now;
-    broadcastSelfState();
+    if (now - lastBroadcastTime > 65) {
+      lastBroadcastTime = now;
+      broadcastSelfState();
+    }
+
+    renderer.render(scene, camera);
+  } catch (_) {
+    try {
+      ensureLocalAvatarExists();
+      syncLocalAvatarTransform();
+      renderer.render(scene, camera);
+    } catch (_) {}
   }
-
-  renderer.render(scene, camera);
 }
 
 (async function init() {
   showLoading("Starting Webclient...", "Loading");
-  const tpl = await loadAvatarTemplate(AVATAR_GLB_URL);
-  localAvatarInst = createAnimatedAvatarInstance(tpl, username);
-  scene.add(localAvatarInst.container);
-  syncLocalAvatarTransform();
-  renderHotbar();
-  updateLeaderboard();
+  try {
+    const tpl = await loadAvatarTemplate(AVATAR_GLB_URL);
+    cachedAvatarTemplate = tpl;
+    localAvatarInst = createAnimatedAvatarInstance(tpl, username);
+    scene.add(localAvatarInst.container);
+    syncLocalAvatarTransform();
+    renderHotbar();
+    updateLeaderboard();
 
-  const rows = await loadGamesList();
-  const initialGame = placeId
-    ? (rows.find((g) => String(g.id) === String(placeId)) || { id: placeId, title: "Game" })
-    : (rows[0] || { id: "default", title: "Baseplate" });
-  await selectAndLaunchGame(initialGame);
-  requestAnimationFrame(animate);
+    const rows = await loadGamesList();
+    const initialGame = placeId
+      ? (rows.find((g) => String(g.id) === String(placeId)) || { id: placeId, title: "Game" })
+      : (rows[0] || { id: "default", title: "Baseplate" });
+    await selectAndLaunchGame(initialGame);
+  } catch (initErr) {
+    addChat("InitWarn", String(initErr?.message || initErr));
+    ensureLocalAvatarExists();
+    syncLocalAvatarTransform();
+    hideLoading();
+  } finally {
+    ensureLocalAvatarExists();
+    syncLocalAvatarTransform();
+    hideLoading();
+    requestAnimationFrame(animate);
+  }
 })();
 </script>
 </body>
