@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="amr010920">
-<title>Bloxtip web client</title>
+<title>Bloxtip Web Player (Multiplayer)</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; color: #ffffff; }
@@ -30,14 +30,6 @@
     font-size: 12px;
   }
   .tb-btn:hover { background: #00a2ff; border-color: #00a2ff; }
-  .tb-badge {
-    background: rgba(0, 162, 255, 0.2);
-    border: 1px solid #00a2ff;
-    padding: 2px 8px;
-    border-radius: 3px;
-    font-weight: 700;
-    font-size: 12px;
-  }
   #viewport { position: relative; width: 100%; height: calc(100% - 36px); }
   canvas { display: block; width: 100%; height: 100%; }
   #game-selector {
@@ -173,21 +165,19 @@ const SUPABASE_URL = "https://vzkupnfktlyjmhjgzfli.supabase.co";
 const SUPABASE_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
 const AVATAR_GLB_URL = "https://novrex.lol/roblox-noob.glb";
 
-const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const params = new URLSearchParams(window.location.search);
 let placeId = params.get("placeId") || params.get("id") || "";
 const peerId = "peer_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
 const username = params.get("user") || localStorage.getItem("bloxtip_username") || ("Guest_" + peerId.slice(-4));
 
-const placeLabel = document.getElementById("place-label");
 const serverRoleLabel = document.getElementById("server-role-label");
 const gameSelect = document.getElementById("game-select");
 const loadGameBtn = document.getElementById("load-game-btn");
 const leaderboardBody = document.getElementById("leaderboard-body");
 const playerCountEl = document.getElementById("player-count");
 
-if (placeLabel) placeLabel.textContent = "Place ID: " + placeId;
 document.getElementById("player-label").textContent = "Player: " + username;
 
 const chatLog = document.getElementById("chat-log");
@@ -295,29 +285,24 @@ function readNum(parent, tagName, fallback) {
 }
 
 function readStr(parent, propName, fallback = "") {
-  const children = Array.from(parent.children);
-  for (const el of children) {
-    if (el.getAttribute("name") === propName) {
-      return el.textContent ?? fallback;
-    }
+  for (const el of Array.from(parent.children)) {
+    if (el.getAttribute("name") === propName) return el.textContent ?? fallback;
   }
   return fallback;
 }
 
 function findPropElement(parent, propName) {
-  const children = Array.from(parent.children);
-  for (const el of children) {
+  for (const el of Array.from(parent.children)) {
     if (el.getAttribute("name") === propName) return el;
   }
   return null;
 }
 
-function applyXmlToScene(xmlText) {
+function readXmlFromBrowser(xmlText) {
   clearWorldGroup();
   if (!xmlText || !String(xmlText).trim()) return;
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(String(xmlText), "text/xml");
+  const doc = new DOMParser().parseFromString(String(xmlText), "text/xml");
   const items = Array.from(doc.getElementsByTagName("Item"));
 
   items.forEach((item) => {
@@ -372,59 +357,24 @@ scene.add(character);
 
 const gltfLoader = new GLTFLoader();
 gltfLoader.setCrossOrigin("anonymous");
-let cachedAvatarTemplate = null;
+let cachedNoobGlb = null;
 
-function createAvatarInstance(tintColor = null) {
+function createNoobAvatar(tintColor = null) {
   const holder = new THREE.Group();
-  if (cachedAvatarTemplate) {
-    const clone = cachedAvatarTemplate.clone(true);
-    clone.scale.set(1.8, 1.8, 1.8);
-    if (tintColor !== null) {
-      clone.traverse((child) => {
-        if (child.isMesh && child.material) {
-          child.material = child.material.clone();
-          child.material.color.setHex(tintColor);
-        }
-      });
-    }
-    holder.add(clone);
-    return holder;
+  if (!cachedNoobGlb) return holder;
+  const clone = cachedNoobGlb.clone(true);
+  clone.scale.set(1.8, 1.8, 1.8);
+  if (tintColor !== null) {
+    clone.traverse((child) => {
+      if (child.isMesh && child.material) {
+        child.material = child.material.clone();
+        child.material.color.setHex(tintColor);
+      }
+    });
   }
-  const head = new THREE.Mesh(
-    new THREE.BoxGeometry(1.2, 1.2, 1.2),
-    new THREE.MeshStandardMaterial({ color: tintColor ?? 0xf5cd30 })
-  );
-  head.position.y = 3.2;
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(2, 2.4, 1.2),
-    new THREE.MeshStandardMaterial({ color: tintColor ?? 0x0d69ac })
-  );
-  body.position.y = 1.4;
-  holder.add(head, body);
+  holder.add(clone);
   return holder;
 }
-
-function loadNoobAvatarGlb() {
-  gltfLoader.load(
-    AVATAR_GLB_URL,
-    (gltf) => {
-      cachedAvatarTemplate = gltf.scene;
-      while (character.children.length > 0) character.remove(character.children[0]);
-      character.add(createAvatarInstance(null));
-      remotePlayers.forEach((entry, id) => {
-        while (entry.group.children.length > 0) entry.group.remove(entry.group.children[0]);
-        entry.group.add(createAvatarInstance(colorForPeer(id)));
-      });
-    },
-    undefined,
-    (err) => {
-      console.error("Failed to load avatar GLB:", AVATAR_GLB_URL, err);
-      while (character.children.length > 0) character.remove(character.children[0]);
-      character.add(createAvatarInstance(null));
-    }
-  );
-}
-loadNoobAvatarGlb();
 
 function colorForPeer(id) {
   let h = 0;
@@ -432,6 +382,28 @@ function colorForPeer(id) {
   const palette = [0xff6b6b, 0x4ecdc4, 0xffe66d, 0xa8e6cf, 0xff9f1c, 0xc77dff];
   return palette[h % palette.length];
 }
+
+function refreshAvatarMeshes() {
+  if (!cachedNoobGlb) return;
+  while (character.children.length > 0) character.remove(character.children[0]);
+  character.add(createNoobAvatar(null));
+  remotePlayers.forEach((entry, id) => {
+    while (entry.group.children.length > 0) entry.group.remove(entry.group.children[0]);
+    entry.group.add(createNoobAvatar(colorForPeer(id)));
+  });
+}
+
+gltfLoader.load(
+  AVATAR_GLB_URL,
+  (gltf) => {
+    cachedNoobGlb = gltf.scene;
+    refreshAvatarMeshes();
+  },
+  undefined,
+  (err) => {
+    console.error("Failed to load avatar GLB:", AVATAR_GLB_URL, err);
+  }
+);
 
 function updateLeaderboard(presenceState) {
   const rows = [];
@@ -496,7 +468,7 @@ function upsertRemotePlayer(id, name, x, y, z, rotY) {
   if (!id || id === peerId) return;
   let entry = remotePlayers.get(id);
   if (!entry) {
-    const group = createAvatarInstance(colorForPeer(id));
+    const group = createNoobAvatar(colorForPeer(id));
     remotePlayersGroup.add(group);
     entry = { group, name: name || "Player" };
     remotePlayers.set(id, entry);
@@ -506,40 +478,47 @@ function upsertRemotePlayer(id, name, x, y, z, rotY) {
   entry.group.rotation.y = Number(rotY) || 0;
 }
 
-async function joinMultiplayerServerForGame(idToLoad) {
-  placeId = String(idToLoad || "");
-  if (placeLabel) placeLabel.textContent = "Place ID: " + placeId;
-
-  let gameObj = gamesCache.find((g) => String(g.id) === placeId);
-  if (!gameObj && sb && placeId) {
-    try {
-      const { data } = await sb
-        .from("games")
-        .select("*")
-        .eq("id", placeId)
-        .limit(1);
-      if (Array.isArray(data) && data[0]) gameObj = data[0];
-    } catch (err) {
-      console.error("Failed to fetch game from games table:", err);
+async function resolveGameXml(gameRow) {
+  const rawXml = gameRow?.xml;
+  if (typeof rawXml === "string" && rawXml.trim()) {
+    const trimmed = rawXml.trim();
+    if (trimmed.startsWith("<")) {
+      return trimmed;
+    }
+    if (/^https?:\/\//i.test(trimmed)) {
+      const res = await fetch(trimmed);
+      if (res.ok) return await res.text();
     }
   }
+  return "";
+}
 
-  const xmlContent = gameObj?.xml ?? "";
-  applyXmlToScene(xmlContent);
+async function joinSelectedGame(selectedId) {
+  placeId = String(selectedId || "");
+  if (!placeId) return;
+
+  let gameRow = gamesCache.find((g) => String(g.id) === placeId);
+  const { data: rows, error } = await sb
+    .from("games")
+    .select("*")
+    .eq("id", placeId)
+    .limit(1);
+
+  if (!error && Array.isArray(rows) && rows[0]) {
+    gameRow = rows[0];
+  }
+
+  const xmlText = await resolveGameXml(gameRow);
+  readXmlFromBrowser(xmlText);
 
   clearAllRemotePlayers();
   isHost = false;
   hostId = peerId;
   serverRoleLabel.textContent = "Server: Joining...";
 
-  if (activeChannel && sb) {
+  if (activeChannel) {
     await sb.removeChannel(activeChannel);
     activeChannel = null;
-  }
-
-  if (!sb || !placeId) {
-    serverRoleLabel.textContent = "Server: Hosting Locally";
-    return;
   }
 
   const roomChannel = sb.channel("bloxtip_server_place_" + placeId, {
@@ -581,7 +560,7 @@ async function joinMultiplayerServerForGame(idToLoad) {
           joinedAt: Date.now()
         });
         recomputeHostFromPresence(roomChannel.presenceState());
-        addChat("System", `Connected to server for "${gameObj?.title || ("Place #" + placeId)}".`);
+        addChat("System", `Connected to "${gameRow?.title || gameRow?.name || placeId}".`);
       }
     });
 
@@ -604,52 +583,36 @@ chatForm.addEventListener("submit", (e) => {
   chatInput.blur();
 });
 
-async function populateGamesFromSupabase() {
-  if (!sb) {
-    gameSelect.innerHTML = `<option value="">Supabase not available</option>`;
+async function loadGamesTable() {
+  const { data: rows, error } = await sb
+    .from("games")
+    .select("*")
+    .order("id", { ascending: true });
+
+  if (error || !Array.isArray(rows) || rows.length === 0) {
+    console.error("Failed to load games from Supabase games table:", error);
+    gameSelect.innerHTML = `<option value="">No games in games table</option>`;
     return;
   }
 
-  try {
-    const { data: rows, error } = await sb
-      .from("games")
-      .select("*")
-      .order("id", { ascending: true });
+  gamesCache = rows;
+  gameSelect.innerHTML = rows
+    .map((g) => `<option value="${escapeHtml(g.id)}">${escapeHtml(g.title || g.name || g.id)}</option>`)
+    .join("");
 
-    if (error) {
-      console.error("Supabase games table error:", error);
-      gameSelect.innerHTML = `<option value="">Failed to load games</option>`;
-      return;
-    }
-
-    if (Array.isArray(rows) && rows.length > 0) {
-      gamesCache = rows;
-      gameSelect.innerHTML = rows
-        .map((g) => `<option value="${escapeHtml(g.id)}">${escapeHtml(g.title || g.name || ("Game #" + g.id))}</option>`)
-        .join("");
-
-      if (!placeId || !rows.some((g) => String(g.id) === String(placeId))) {
-        placeId = String(rows[0].id);
-      }
-      gameSelect.value = placeId;
-      await joinMultiplayerServerForGame(placeId);
-      return;
-    }
-
-    gameSelect.innerHTML = `<option value="">No games found</option>`;
-  } catch (err) {
-    console.error("Error reading games table:", err);
-    gameSelect.innerHTML = `<option value="">Error loading games</option>`;
+  if (!placeId || !rows.some((g) => String(g.id) === String(placeId))) {
+    placeId = String(rows[0].id);
   }
+  gameSelect.value = placeId;
+  await joinSelectedGame(placeId);
 }
 
 loadGameBtn.addEventListener("click", () => {
-  if (gameSelect.value) {
-    const nextUrl = new URL(window.location.href);
-    nextUrl.searchParams.set("placeId", gameSelect.value);
-    window.history.replaceState({}, "", nextUrl.toString());
-    joinMultiplayerServerForGame(gameSelect.value);
-  }
+  if (!gameSelect.value) return;
+  const nextUrl = new URL(window.location.href);
+  nextUrl.searchParams.set("placeId", gameSelect.value);
+  window.history.replaceState({}, "", nextUrl.toString());
+  joinSelectedGame(gameSelect.value);
 });
 
 const keys = {};
@@ -700,7 +663,7 @@ resetCharacter();
 
 document.getElementById("reset-btn").addEventListener("click", resetCharacter);
 document.getElementById("leave-btn").addEventListener("click", async () => {
-  if (activeChannel && sb) {
+  if (activeChannel) {
     await sb.removeChannel(activeChannel);
   }
   window.location.href = "/home.html";
@@ -714,7 +677,7 @@ window.addEventListener("resize", () => {
   renderer.setSize(w, h, false);
 });
 
-populateGamesFromSupabase();
+loadGamesTable();
 
 let prev = performance.now();
 let lastSyncTime = 0;
