@@ -260,6 +260,20 @@ canvas { display: block; width: 100%; height: 100%; }
   border-color: #ffffff;
   font-weight: 700;
 }
+#shiftlock-reticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  margin-top: -5px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: rgba(0, 162, 255, 0.45);
+  pointer-events: none;
+  z-index: 18;
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -279,6 +293,7 @@ canvas { display: block; width: 100%; height: 100%; }
 
 <div id="viewport">
   <canvas id="game-canvas"></canvas>
+  <div id="shiftlock-reticle"></div>
   <div id="roblox-gui-layer"></div>
 
   <div id="loading-screen">
@@ -838,6 +853,28 @@ function createNameplateSprite(name, topY = 5.6) {
   return sprite;
 }
 
+function ensureLimbPivots(parts, clonedRoot) {
+  const box = new THREE.Box3().setFromObject(clonedRoot);
+  const size = new THREE.Vector3();
+  const center = new THREE.Vector3();
+  box.getSize(size);
+  box.getCenter(center);
+
+  const ensurePivot = (existing, fallbackPos, name) => {
+    if (existing && existing.rotation) return existing;
+    const piv = new THREE.Group();
+    piv.name = name;
+    piv.position.set(fallbackPos.x, fallbackPos.y, fallbackPos.z);
+    (parts.torso || parts.root || clonedRoot).add(piv);
+    return piv;
+  };
+
+  parts.leftArmPivot = ensurePivot(parts.leftArmPivot, { x: -Math.max(1.2, size.x * 0.45), y: center.y + size.y * 0.15, z: 0 }, "SynthLeftArmPivot");
+  parts.rightArmPivot = ensurePivot(parts.rightArmPivot, { x: Math.max(1.2, size.x * 0.45), y: center.y + size.y * 0.15, z: 0 }, "SynthRightArmPivot");
+  parts.leftLegPivot = ensurePivot(parts.leftLegPivot, { x: -Math.max(0.45, size.x * 0.18), y: center.y - size.y * 0.15, z: 0 }, "SynthLeftLegPivot");
+  parts.rightLegPivot = ensurePivot(parts.rightLegPivot, { x: Math.max(0.45, size.x * 0.18), y: center.y - size.y * 0.15, z: 0 }, "SynthRightLegPivot");
+}
+
 function createAnimatedAvatarInstance(template, playerName) {
   const safeTemplate = (template && template.scene) ? template : buildFallbackRobloxRig();
   const container = new THREE.Group();
@@ -847,16 +884,20 @@ function createAnimatedAvatarInstance(template, playerName) {
   container.add(cloned);
 
   const parts = extractRigParts(cloned);
+  ensureLimbPivots(parts, cloned);
+
   const mixer = (safeTemplate.clips && safeTemplate.clips.length > 0) ? new THREE.AnimationMixer(cloned) : null;
   const actions = {};
 
   if (mixer && safeTemplate.clips.length > 0) {
     safeTemplate.clips.forEach((clip, idx) => {
-      const action = mixer.clipAction(clip);
-      actions[clip.name.toLowerCase()] = action;
-      if (idx === 0) {
-        action.play();
-      }
+      try {
+        const action = mixer.clipAction(clip);
+        actions[clip.name.toLowerCase()] = action;
+        if (idx === 0) {
+          action.play();
+        }
+      } catch (_) {}
     });
   }
 
@@ -865,7 +906,8 @@ function createAnimatedAvatarInstance(template, playerName) {
   container.add(nameplate);
 
   const heldMount = new THREE.Group();
-  heldMount.position.set(0, -1.0, -0.4);
+  heldMount.name = "EquippedToolMount";
+  heldMount.position.set(0, -1.1, -0.55);
   if (parts.rightArmPivot) {
     parts.rightArmPivot.add(heldMount);
   } else {
@@ -953,8 +995,8 @@ function stepAvatarAnimation(avatarInst, dt, speedRatio, isGrounded, isJumping, 
   }
 
   if (avatarInst.equippedToolName && rightArmPivot) {
-    const targetArmX = isAttacking ? -0.35 : -1.35;
-    rightArmPivot.rotation.x = THREE.MathUtils.lerp(rightArmPivot.rotation.x, targetArmX, dt * 18);
+    const swingPulse = isAttacking ? (-0.25 + Math.sin(performance.now() * 0.035) * 0.65) : -1.35;
+    rightArmPivot.rotation.x = THREE.MathUtils.lerp(rightArmPivot.rotation.x, swingPulse, dt * 20);
   }
 
   if (headPivot) {
@@ -1561,13 +1603,30 @@ function createVisualItemMesh(item, props) {
   return itemRoot;
 }
 
-function applyToolVisualToRig(avatarInst, toolName, colorHex = 0xc0c8d0, texUrl = "") {
+function applyToolVisualToRig(avatarInst, toolName, colorHex = 0xc0c8d0, texUrl = "", meshUrl = "") {
   if (!avatarInst || !avatarInst.heldMount) return;
   while (avatarInst.heldMount.children.length > 0) {
     avatarInst.heldMount.remove(avatarInst.heldMount.children[0]);
   }
   avatarInst.equippedToolName = toolName || "";
   if (!toolName) return;
+
+  if (meshUrl && /^https?:\/\//i.test(meshUrl) && meshUrl.toLowerCase().endsWith(".glb")) {
+    gltfLoader.load(
+      meshUrl,
+      (gltf) => {
+        if (avatarInst.equippedToolName !== toolName) return;
+        while (avatarInst.heldMount.children.length > 0) {
+          avatarInst.heldMount.remove(avatarInst.heldMount.children[0]);
+        }
+        const mScene = gltf.scene.clone(true);
+        mScene.scale.setScalar(0.65);
+        avatarInst.heldMount.add(mScene);
+      },
+      undefined,
+      () => {}
+    );
+  }
 
   const resolvedTex = texUrl || resolveImageUrlFromAssets("", toolName);
   if (resolvedTex) {
@@ -1579,19 +1638,21 @@ function applyToolVisualToRig(avatarInst, toolName, colorHex = 0xc0c8d0, texUrl 
       side: THREE.DoubleSide,
       roughness: 0.4
     });
-    const badge = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.4), planeMat);
-    badge.position.set(0, 0.6, 0);
+    const badge = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.5), planeMat);
+    badge.position.set(0, 0.35, -0.2);
     avatarInst.heldMount.add(badge);
     return;
   }
 
-  const gripMat = new THREE.MeshStandardMaterial({ color: 0x333842, roughness: 0.5 });
+  const gripMat = new THREE.MeshStandardMaterial({ color: 0x2b2d42, roughness: 0.5 });
   const bladeMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.25, metalness: 0.75 });
-  const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.9, 10), gripMat);
-  handle.position.set(0, 0.2, 0);
-  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.8, 0.3), bladeMat);
-  blade.position.set(0, 1.4, 0);
-  avatarInst.heldMount.add(handle, blade);
+  const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 1.1, 12), gripMat);
+  handle.position.set(0, 0.0, 0);
+  const guard = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.14, 0.65), gripMat);
+  guard.position.set(0, 0.55, 0);
+  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.9, 0.36), bladeMat);
+  blade.position.set(0, 1.5, 0);
+  avatarInst.heldMount.add(handle, guard, blade);
 }
 
 function equipBackpackSlot(index) {
@@ -1605,22 +1666,31 @@ function equipBackpackSlot(index) {
   if (index < 0 || index >= backpackItems.length) return;
   equippedIndex = index;
   const tool = backpackItems[index];
-  applyToolVisualToRig(ensureLocalAvatarExists(), tool.name, tool.colorHex || 0xc0c8d0, tool.texUrl || "");
+  applyToolVisualToRig(
+    ensureLocalAvatarExists(),
+    tool.name,
+    tool.colorHex || 0xc0c8d0,
+    tool.texUrl || "",
+    tool.meshUrl || ""
+  );
   renderHotbar();
   broadcastSelfState();
 }
 
-function giveItemToBackpack(itemName, colorHex = 0xc0c8d0, autoEquip = false, texUrl = "") {
+function giveItemToBackpack(itemName, colorHex = 0xc0c8d0, autoEquip = false, texUrl = "", meshUrl = "") {
   const resolvedTex = texUrl || resolveImageUrlFromAssets("", itemName);
   const existingIdx = backpackItems.findIndex((t) => t.name === itemName);
   if (existingIdx !== -1) {
     if (resolvedTex && !backpackItems[existingIdx].texUrl) {
       backpackItems[existingIdx].texUrl = resolvedTex;
     }
+    if (meshUrl && !backpackItems[existingIdx].meshUrl) {
+      backpackItems[existingIdx].meshUrl = meshUrl;
+    }
     if (autoEquip) equipBackpackSlot(existingIdx);
     return;
   }
-  backpackItems.push({ name: itemName || "Item", colorHex, texUrl: resolvedTex });
+  backpackItems.push({ name: itemName || "Item", colorHex, texUrl: resolvedTex, meshUrl: meshUrl || "" });
   renderHotbar();
   if (autoEquip || backpackItems.length === 1) {
     equipBackpackSlot(backpackItems.length - 1);
@@ -1759,18 +1829,6 @@ function buildGuiHierarchy(item, parentDom) {
 
 /* =========================================================================
    COMPREHENSIVE LUAU LEXER, PARSER & RUNTIME INTERPRETER
-   Supports full Luau syntax & standard/Roblox libraries:
-   - Types & type annotations (`type Foo = ...`, `x: number`, `function f(a: string): boolean`)
-   - Compound assignments (`+=`, `-=`, `*=`, `/=`, `//=`, `%=`, `^=`, `..=`)
-   - Floor division (`//`), length operator (`#`), varargs (`...`), `if ... then ... elseif ... else ... end` expressions
-   - `continue`, `repeat ... until`, numeric `for`, generic `for ... in` (with custom iterator functions or `ipairs`/`pairs`)
-   - `local function`, anonymous functions, `:method(...)` & `self` binding, metatables (`setmetatable`, `getmetatable`, `__index`, `__newindex`, `__call`, `__add`, `__sub`, `__mul`, `__div`, `__tostring`, `__eq`, `__lt`, `__le`)
-   - `coroutine` (`create`, `resume`, `wrap`, `yield`, `status`, `running`, `isyieldable`, `close`)
-   - `bit32` (`band`, `bor`, `bxor`, `bnot`, `lshift`, `rshift`, `arshift`, `lrotate`, `rrotate`, `extract`, `replace`, `countlz`, `countrz`, `btest`)
-   - `table` (`insert`, `remove`, `find`, `clear`, `concat`, `sort`, `clone`, `create`, `pack`, `unpack`, `maxn`, `move`)
-   - `string` (`sub`, `find`, `match`, `gmatch`, `gsub`, `split`, `lower`, `upper`, `len`, `format`, `rep`, `reverse`, `byte`, `char`, `trim`)
-   - `math` (`abs`, `acos`, `asin`, `atan`, `atan2`, `ceil`, `cos`, `cosh`, `deg`, `exp`, `floor`, `fmod`, `frexp`, `huge`, `ldexp`, `log`, `log10`, `max`, `min`, `modf`, `pi`, `pow`, `rad`, `random`, `randomseed`, `sin`, `sinh`, `sqrt`, `tan`, `tanh`, `clamp`, `sign`, `noise`, `round`, `lerp`, `map`)
-   - `os`, `task`, `debug`, `vector`, `Vector3`, `Vector2`, `CFrame`, `Color3`, `BrickColor`, `UDim`, `UDim2`, `TweenInfo`, `Ray`, `RaycastParams`, `Region3`, `Rect`, `NumberRange`, `NumberSequence`, `ColorSequence`, `Enum`, `Instance`, `game`, `workspace`
    ========================================================================= */
 
 class LuauReturnSignal {
@@ -1822,7 +1880,14 @@ function createLuaTable(initialArray = [], initialMap = {}) {
   const obj = { ...initialMap };
   let mt = null;
 
-  const handler = {
+  const callableTarget = function (...args) {
+    if (mt && typeof mt.__call === "function") {
+      return mt.__call(proxy, ...args);
+    }
+    throw new TypeError("Attempt to call a non-callable table");
+  };
+
+  const proxy = new Proxy(callableTarget, {
     get(target, prop, receiver) {
       if (prop === "__isLuaTable") return true;
       if (prop === "__arr") return arr;
@@ -1881,30 +1946,9 @@ function createLuaTable(initialArray = [], initialMap = {}) {
         return { enumerable: true, configurable: true, writable: true };
       }
       return Reflect.getOwnPropertyDescriptor(target, prop);
-    },
-    apply(target, thisArg, args) {
-      if (mt && typeof mt.__call === "function") {
-        return mt.__call(receiverOrSelf(thisArg), ...args);
-      }
-      if (mt && mt.__map && typeof mt.__map.__call === "function") {
-        return mt.__map.__call(thisArg, ...args);
-      }
-      throw new TypeError("Attempt to call a table value");
     }
-  };
+  });
 
-  function receiverOrSelf(thisArg) {
-    return thisArg || proxy;
-  }
-
-  const callableTarget = function (...args) {
-    if (mt && typeof mt.__call === "function") {
-      return mt.__call(proxy, ...args);
-    }
-    throw new TypeError("Attempt to call a non-callable table");
-  };
-
-  const proxy = new Proxy(callableTarget, handler);
   return proxy;
 }
 
@@ -2003,17 +2047,12 @@ function tokenizeLuau(src) {
 
   while (i < n) {
     const ch = src[i];
-
-    if (/\s/.test(ch)) {
-      i++;
-      continue;
-    }
+    if (/\s/.test(ch)) { i++; continue; }
 
     if (ch === "-" && src[i + 1] === "-") {
       i += 2;
       if (src[i] === "[" && (src[i + 1] === "[" || src[i + 1] === "=")) {
-        let eqCount = 0;
-        let k = i + 1;
+        let eqCount = 0, k = i + 1;
         while (src[k] === "=") { eqCount++; k++; }
         if (src[k] === "[") {
           i = k + 1;
@@ -2028,8 +2067,7 @@ function tokenizeLuau(src) {
     }
 
     if (ch === "[" && (src[i + 1] === "[" || src[i + 1] === "=")) {
-      let eqCount = 0;
-      let k = i + 1;
+      let eqCount = 0, k = i + 1;
       while (src[k] === "=") { eqCount++; k++; }
       if (src[k] === "[") {
         i = k + 1;
@@ -2042,7 +2080,7 @@ function tokenizeLuau(src) {
       }
     }
 
-    if (ch === '"' || ch === "'") {
+    if (ch === '"' || ch === "'" || ch === "`") {
       const quote = ch;
       i++;
       let out = "";
@@ -2053,27 +2091,8 @@ function tokenizeLuau(src) {
           if (esc === "n") out += "\n";
           else if (esc === "r") out += "\r";
           else if (esc === "t") out += "\t";
-          else if (esc === "\\") out += "\\";
-          else if (esc === '"') out += '"';
-          else if (esc === "'") out += "'";
           else out += esc || "";
           i++;
-        } else {
-          out += src[i++];
-        }
-      }
-      i++;
-      tokens.push({ type: "string", value: out });
-      continue;
-    }
-
-    if (ch === "`") {
-      i++;
-      let out = "";
-      while (i < n && src[i] !== "`") {
-        if (src[i] === "\\") {
-          i++;
-          out += src[i++] || "";
         } else {
           out += src[i++];
         }
@@ -2103,16 +2122,14 @@ function tokenizeLuau(src) {
           while (i < n && /[0-9_]/.test(src[i])) i++;
         }
       }
-      const rawNum = src.slice(start, i).replace(/_/g, "");
-      tokens.push({ type: "number", value: Number(rawNum) });
+      tokens.push({ type: "number", value: Number(src.slice(start, i).replace(/_/g, "")) });
       continue;
     }
 
     if (isAlpha(ch)) {
       let start = i;
       while (i < n && isAlnum(src[i])) i++;
-      const word = src.slice(start, i);
-      tokens.push({ type: "ident", value: word });
+      tokens.push({ type: "ident", value: src.slice(start, i) });
       continue;
     }
 
@@ -2144,18 +2161,10 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
 
   const peek = (offset = 0) => tokens[pos + offset] || { type: "eof", value: "" };
   const consume = () => tokens[pos++] || { type: "eof", value: "" };
-  const match = (val) => {
-    if (peek().value === val) {
-      consume();
-      return true;
-    }
-    return false;
-  };
+  const match = (val) => { if (peek().value === val) { consume(); return true; } return false; };
   const expect = (val) => {
     const t = consume();
-    if (t.value !== val) {
-      throw new Error(`Expected '${val}' near '${t.value}' in ${scriptName}`);
-    }
+    if (t.value !== val) throw new Error(`Expected '${val}' near '${t.value}' in ${scriptName}`);
     return t;
   };
 
@@ -2167,9 +2176,7 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
       else if (v === ")" || v === "}" || v === "]") {
         if (depth === 0) break;
         depth--;
-      } else if (depth === 0 && (v === "=" || v === "," || v === ")" || v === "do" || v === "then")) {
-        break;
-      }
+      } else if (depth === 0 && (v === "=" || v === "," || v === ")" || v === "do" || v === "then")) break;
       consume();
     }
   }
@@ -2182,9 +2189,7 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
       const v = peek().value;
       if (v === "(" || v === "{" || v === "[") depth++;
       else if (v === ")" || v === "}" || v === "]") depth--;
-      else if (depth === 0 && (v === "local" || v === "function" || v === "if" || v === "for" || v === "while" || v === "return" || v === "type" || v === "export")) {
-        break;
-      }
+      else if (depth === 0 && (v === "local" || v === "function" || v === "if" || v === "for" || v === "while" || v === "return" || v === "type" || v === "export")) break;
       consume();
     }
   }
@@ -2203,17 +2208,8 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
   function parseStatement() {
     const t = peek();
 
-    if (t.value === "export" && peek(1).value === "type") {
-      consume();
-      consume();
-      skipLuauTypeDef();
-      return { type: "noop" };
-    }
-    if (t.value === "type" && peek(1).type === "ident" && peek(2).value === "=") {
-      consume();
-      skipLuauTypeDef();
-      return { type: "noop" };
-    }
+    if (t.value === "export" && peek(1).value === "type") { consume(); consume(); skipLuauTypeDef(); return { type: "noop" }; }
+    if (t.value === "type" && peek(1).type === "ident" && peek(2).value === "=") { consume(); skipLuauTypeDef(); return { type: "noop" }; }
 
     if (t.value === "return") {
       consume();
@@ -2228,49 +2224,15 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
     if (t.value === "break") { consume(); return { type: "break" }; }
     if (t.value === "continue") { consume(); return { type: "continue" }; }
 
-    if (t.value === "do") {
-      consume();
-      const body = parseBlock(["end"]);
-      expect("end");
-      return { type: "do", body };
-    }
-
-    if (t.value === "while") {
-      consume();
-      const cond = parseExpr();
-      expect("do");
-      const body = parseBlock(["end"]);
-      expect("end");
-      return { type: "while", cond, body };
-    }
-
-    if (t.value === "repeat") {
-      consume();
-      const body = parseBlock(["until"]);
-      expect("until");
-      const cond = parseExpr();
-      return { type: "repeat", body, cond };
-    }
+    if (t.value === "do") { consume(); const body = parseBlock(["end"]); expect("end"); return { type: "do", body }; }
+    if (t.value === "while") { consume(); const cond = parseExpr(); expect("do"); const body = parseBlock(["end"]); expect("end"); return { type: "while", cond, body }; }
+    if (t.value === "repeat") { consume(); const body = parseBlock(["until"]); expect("until"); const cond = parseExpr(); return { type: "repeat", body, cond }; }
 
     if (t.value === "if") {
       consume();
-      const branches = [];
-      const firstCond = parseExpr();
-      expect("then");
-      const firstBody = parseBlock(["elseif", "else", "end"]);
-      branches.push({ cond: firstCond, body: firstBody });
-
-      while (match("elseif")) {
-        const c = parseExpr();
-        expect("then");
-        const b = parseBlock(["elseif", "else", "end"]);
-        branches.push({ cond: c, body: b });
-      }
-
-      let elseBody = null;
-      if (match("else")) {
-        elseBody = parseBlock(["end"]);
-      }
+      const branches = [{ cond: parseExpr(), body: (expect("then"), parseBlock(["elseif", "else", "end"])) }];
+      while (match("elseif")) branches.push({ cond: parseExpr(), body: (expect("then"), parseBlock(["elseif", "else", "end"])) });
+      const elseBody = match("else") ? parseBlock(["end"]) : null;
       expect("end");
       return { type: "if", branches, elseBody };
     }
@@ -2279,28 +2241,18 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
       consume();
       const firstVar = consume().value;
       if (peek().value === ":") { consume(); skipTypeAnnotation(); }
-
       if (match("=")) {
-        const startExpr = parseExpr();
-        expect(",");
-        const endExpr = parseExpr();
+        const startExpr = parseExpr(); expect(","); const endExpr = parseExpr();
         const stepExpr = match(",") ? parseExpr() : null;
-        expect("do");
-        const body = parseBlock(["end"]);
-        expect("end");
+        expect("do"); const body = parseBlock(["end"]); expect("end");
         return { type: "forNum", varName: firstVar, startExpr, endExpr, stepExpr, body };
       } else {
         const vars = [firstVar];
-        while (match(",")) {
-          vars.push(consume().value);
-          if (peek().value === ":") { consume(); skipTypeAnnotation(); }
-        }
+        while (match(",")) { vars.push(consume().value); if (peek().value === ":") { consume(); skipTypeAnnotation(); } }
         expect("in");
         const iterExprs = [parseExpr()];
         while (match(",")) iterExprs.push(parseExpr());
-        expect("do");
-        const body = parseBlock(["end"]);
-        expect("end");
+        expect("do"); const body = parseBlock(["end"]); expect("end");
         return { type: "forIn", vars, iterExprs, body };
       }
     }
@@ -2309,52 +2261,27 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
       consume();
       if (match("function")) {
         const fnName = consume().value;
-        const fnNode = parseFunctionBody(false);
-        return { type: "localFunc", name: fnName, fnNode };
+        return { type: "localFunc", name: fnName, fnNode: parseFunctionBody(false) };
       }
       const names = [consume().value];
       if (peek().value === ":") { consume(); skipTypeAnnotation(); }
-      while (match(",")) {
-        names.push(consume().value);
-        if (peek().value === ":") { consume(); skipTypeAnnotation(); }
-      }
-      let values = [];
-      if (match("=")) {
-        values.push(parseExpr());
-        while (match(",")) values.push(parseExpr());
-      }
+      while (match(",")) { names.push(consume().value); if (peek().value === ":") { consume(); skipTypeAnnotation(); } }
+      const values = [];
+      if (match("=")) { values.push(parseExpr()); while (match(",")) values.push(parseExpr()); }
       return { type: "localVar", names, values };
     }
 
     if (t.value === "function") {
       consume();
       const path = [consume().value];
-      while (peek().value === ".") {
-        consume();
-        path.push(consume().value);
-      }
+      while (peek().value === ".") { consume(); path.push(consume().value); }
       let isMethod = false;
-      if (peek().value === ":") {
-        consume();
-        path.push(consume().value);
-        isMethod = true;
-      }
-      const fnNode = parseFunctionBody(isMethod);
-      return { type: "funcAssign", path, fnNode };
+      if (peek().value === ":") { consume(); path.push(consume().value); isMethod = true; }
+      return { type: "funcAssign", path, fnNode: parseFunctionBody(isMethod) };
     }
 
-    if (t.value === "::") {
-      consume();
-      const label = consume().value;
-      if (peek().value === ":") { consume(); consume(); }
-      return { type: "label", label };
-    }
-
-    if (t.value === "goto") {
-      consume();
-      const label = consume().value;
-      return { type: "goto", label };
-    }
+    if (t.value === "::") { consume(); const label = consume().value; if (peek().value === ":") { consume(); consume(); } return { type: "label", label }; }
+    if (t.value === "goto") { consume(); return { type: "goto", label: consume().value }; }
 
     const firstExpr = parsePrefixOrPrimary();
     if (peek().value === "," || peek().value === "=") {
@@ -2369,8 +2296,7 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
     const compOps = ["+=", "-=", "*=", "/=", "//=", "%=", "^=", "..="];
     if (compOps.includes(peek().value)) {
       const op = consume().value;
-      const rhs = parseExpr();
-      return { type: "compoundAssign", target: firstExpr, op, rhs };
+      return { type: "compoundAssign", target: firstExpr, op, rhs: parseExpr() };
     }
 
     return { type: "exprStmt", expr: firstExpr };
@@ -2382,12 +2308,7 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
     let hasVararg = false;
     if (peek().value !== ")") {
       while (true) {
-        if (peek().value === "...") {
-          consume();
-          hasVararg = true;
-          if (peek().value === ":") { consume(); skipTypeAnnotation(); }
-          break;
-        }
+        if (peek().value === "...") { consume(); hasVararg = true; if (peek().value === ":") { consume(); skipTypeAnnotation(); } break; }
         params.push(consume().value);
         if (peek().value === ":") { consume(); skipTypeAnnotation(); }
         if (!match(",")) break;
@@ -2400,176 +2321,47 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
     return { type: "funcExpr", params, hasVararg, body };
   }
 
-  function parseExpr() {
-    return parseOr();
-  }
-
-  function parseOr() {
-    let left = parseAnd();
-    while (peek().value === "or") {
-      consume();
-      const right = parseAnd();
-      left = { type: "binOp", op: "or", left, right };
-    }
-    return left;
-  }
-
-  function parseAnd() {
-    let left = parseCompare();
-    while (peek().value === "and") {
-      consume();
-      const right = parseCompare();
-      left = { type: "binOp", op: "and", left, right };
-    }
-    return left;
-  }
-
-  function parseCompare() {
-    let left = parseConcat();
-    while (["==", "~=", "<", ">", "<=", ">="].includes(peek().value)) {
-      const op = consume().value;
-      const right = parseConcat();
-      left = { type: "binOp", op, left, right };
-    }
-    return left;
-  }
-
-  function parseConcat() {
-    let left = parseAddSub();
-    if (peek().value === "..") {
-      consume();
-      const right = parseConcat();
-      left = { type: "binOp", op: "..", left, right };
-    }
-    return left;
-  }
-
-  function parseAddSub() {
-    let left = parseMulDiv();
-    while (peek().value === "+" || peek().value === "-") {
-      const op = consume().value;
-      const right = parseMulDiv();
-      left = { type: "binOp", op, left, right };
-    }
-    return left;
-  }
-
-  function parseMulDiv() {
-    let left = parseUnary();
-    while (["*", "/", "//", "%"].includes(peek().value)) {
-      const op = consume().value;
-      const right = parseUnary();
-      left = { type: "binOp", op, left, right };
-    }
-    return left;
-  }
-
-  function parseUnary() {
-    if (peek().value === "not" || peek().value === "-" || peek().value === "#") {
-      const op = consume().value;
-      const operand = parseUnary();
-      return { type: "unOp", op, operand };
-    }
-    return parsePow();
-  }
-
-  function parsePow() {
-    let left = parsePrefixOrPrimary();
-    if (peek().value === "^") {
-      consume();
-      const right = parseUnary();
-      left = { type: "binOp", op: "^", left, right };
-    }
-    return left;
-  }
+  function parseExpr() { return parseOr(); }
+  function parseOr() { let l = parseAnd(); while (peek().value === "or") { consume(); l = { type: "binOp", op: "or", left: l, right: parseAnd() }; } return l; }
+  function parseAnd() { let l = parseCompare(); while (peek().value === "and") { consume(); l = { type: "binOp", op: "and", left: l, right: parseCompare() }; } return l; }
+  function parseCompare() { let l = parseConcat(); while (["==", "~=", "<", ">", "<=", ">="].includes(peek().value)) { const op = consume().value; l = { type: "binOp", op, left: l, right: parseConcat() }; } return l; }
+  function parseConcat() { let l = parseAddSub(); if (peek().value === "..") { consume(); l = { type: "binOp", op: "..", left: l, right: parseConcat() }; } return l; }
+  function parseAddSub() { let l = parseMulDiv(); while (peek().value === "+" || peek().value === "-") { const op = consume().value; l = { type: "binOp", op, left: l, right: parseMulDiv() }; } return l; }
+  function parseMulDiv() { let l = parseUnary(); while (["*", "/", "//", "%"].includes(peek().value)) { const op = consume().value; l = { type: "binOp", op, left: l, right: parseUnary() }; } return l; }
+  function parseUnary() { if (peek().value === "not" || peek().value === "-" || peek().value === "#") { const op = consume().value; return { type: "unOp", op, operand: parseUnary() }; } return parsePow(); }
+  function parsePow() { let l = parsePrefixOrPrimary(); if (peek().value === "^") { consume(); l = { type: "binOp", op: "^", left: l, right: parseUnary() }; } return l; }
 
   function parsePrefixOrPrimary() {
     let expr;
     const t = peek();
-
-    if (t.value === "(") {
-      consume();
-      expr = parseExpr();
-      expect(")");
-    } else if (t.value === "if") {
-      consume();
-      const cond = parseExpr();
-      expect("then");
-      const thenExpr = parseExpr();
-      expect("else");
-      const elseExpr = parseExpr();
-      return { type: "ifExpr", cond, thenExpr, elseExpr };
-    } else if (t.value === "function") {
-      consume();
-      expr = parseFunctionBody(false);
-    } else if (t.value === "{") {
-      expr = parseTableLiteral();
-    } else if (t.type === "number") {
-      consume();
-      expr = { type: "literal", value: t.value };
-    } else if (t.type === "string") {
-      consume();
-      expr = { type: "literal", value: t.value };
-    } else if (t.value === "true") {
-      consume();
-      expr = { type: "literal", value: true };
-    } else if (t.value === "false") {
-      consume();
-      expr = { type: "literal", value: false };
-    } else if (t.value === "nil") {
-      consume();
-      expr = { type: "literal", value: null };
-    } else if (t.value === "...") {
-      consume();
-      expr = { type: "vararg" };
-    } else if (t.type === "ident") {
-      consume();
-      expr = { type: "ident", name: t.value };
-    } else {
-      consume();
-      return { type: "literal", value: null };
-    }
+    if (t.value === "(") { consume(); expr = parseExpr(); expect(")"); }
+    else if (t.value === "if") { consume(); const cond = parseExpr(); expect("then"); const thenExpr = parseExpr(); expect("else"); expr = { type: "ifExpr", cond, thenExpr, elseExpr: parseExpr() }; }
+    else if (t.value === "function") { consume(); expr = parseFunctionBody(false); }
+    else if (t.value === "{") { expr = parseTableLiteral(); }
+    else if (t.type === "number" || t.type === "string") { consume(); expr = { type: "literal", value: t.value }; }
+    else if (t.value === "true") { consume(); expr = { type: "literal", value: true }; }
+    else if (t.value === "false") { consume(); expr = { type: "literal", value: false }; }
+    else if (t.value === "nil") { consume(); expr = { type: "literal", value: null }; }
+    else if (t.value === "...") { consume(); expr = { type: "vararg" }; }
+    else if (t.type === "ident") { consume(); expr = { type: "ident", name: t.value }; }
+    else { consume(); return { type: "literal", value: null }; }
 
     while (true) {
-      if (peek().value === ".") {
-        consume();
-        const prop = consume().value;
-        expr = { type: "prop", target: expr, prop };
-      } else if (peek().value === "[") {
-        consume();
-        const idxExpr = parseExpr();
-        expect("]");
-        expr = { type: "index", target: expr, index: idxExpr };
-      } else if (peek().value === ":") {
-        consume();
-        const methodName = consume().value;
-        const args = parseCallArgs();
-        expr = { type: "methodCall", target: expr, method: methodName, args };
-      } else if (peek().value === "(" || peek().value === "{" || peek().type === "string") {
-        const args = parseCallArgs();
-        expr = { type: "call", callee: expr, args };
-      } else {
-        break;
-      }
+      if (peek().value === ".") { consume(); expr = { type: "prop", target: expr, prop: consume().value }; }
+      else if (peek().value === "[") { consume(); const idxExpr = parseExpr(); expect("]"); expr = { type: "index", target: expr, index: idxExpr }; }
+      else if (peek().value === ":") { consume(); const methodName = consume().value; expr = { type: "methodCall", target: expr, method: methodName, args: parseCallArgs() }; }
+      else if (peek().value === "(" || peek().value === "{" || peek().type === "string") { expr = { type: "call", callee: expr, args: parseCallArgs() }; }
+      else break;
     }
-
     return expr;
   }
 
   function parseCallArgs() {
-    if (peek().value === "{") {
-      return [parseTableLiteral()];
-    }
-    if (peek().type === "string") {
-      const s = consume();
-      return [{ type: "literal", value: s.value }];
-    }
+    if (peek().value === "{") return [parseTableLiteral()];
+    if (peek().type === "string") return [{ type: "literal", value: consume().value }];
     expect("(");
     const args = [];
-    if (peek().value !== ")") {
-      args.push(parseExpr());
-      while (match(",")) args.push(parseExpr());
-    }
+    if (peek().value !== ")") { args.push(parseExpr()); while (match(",")) args.push(parseExpr()); }
     expect(")");
     return args;
   }
@@ -2579,23 +2371,15 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
     const arrItems = [];
     const mapItems = [];
     let autoIndex = 1;
-
     while (peek().value !== "}" && peek().type !== "eof") {
       if (peek().value === "[") {
-        consume();
-        const kExpr = parseExpr();
-        expect("]");
-        expect("=");
-        const vExpr = parseExpr();
-        mapItems.push({ keyExpr: kExpr, valExpr: vExpr });
+        consume(); const kExpr = parseExpr(); expect("]"); expect("=");
+        mapItems.push({ keyExpr: kExpr, valExpr: parseExpr() });
       } else if (peek().type === "ident" && peek(1).value === "=") {
-        const keyName = consume().value;
-        consume();
-        const vExpr = parseExpr();
-        mapItems.push({ keyName, valExpr: vExpr });
+        const keyName = consume().value; consume();
+        mapItems.push({ keyName, valExpr: parseExpr() });
       } else {
-        const vExpr = parseExpr();
-        arrItems.push({ idx: autoIndex++, valExpr: vExpr });
+        arrItems.push({ idx: autoIndex++, valExpr: parseExpr() });
       }
       if (!match(",") && !match(";")) break;
     }
@@ -2615,20 +2399,12 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
         if (name in globals) return globals[name];
         return undefined;
       },
-      setLocal(name, val) {
-        vars[name] = val;
-      },
+      setLocal(name, val) { vars[name] = val; },
       assign(name, val) {
-        if (name in vars) {
-          vars[name] = val;
-          return;
-        }
+        if (name in vars) { vars[name] = val; return; }
         let p = parent;
         while (p) {
-          if (Object.prototype.hasOwnProperty.call(p._rawVars, name)) {
-            p._rawVars[name] = val;
-            return;
-          }
+          if (Object.prototype.hasOwnProperty.call(p._rawVars, name)) { p._rawVars[name] = val; return; }
           p = p.parent;
         }
         globals[name] = val;
@@ -2643,38 +2419,23 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
       case "literal": return node.value;
       case "vararg": return varargs[0];
       case "ident": return scope.get(node.name);
-      case "ifExpr": {
-        const c = evalExpr(node.cond, scope, varargs);
-        return luauTruthy(c) ? evalExpr(node.thenExpr, scope, varargs) : evalExpr(node.elseExpr, scope, varargs);
-      }
+      case "ifExpr": return luauTruthy(evalExpr(node.cond, scope, varargs)) ? evalExpr(node.thenExpr, scope, varargs) : evalExpr(node.elseExpr, scope, varargs);
       case "tableLit": {
-        const arr = [];
-        const map = {};
-        for (const it of node.arrItems) {
-          arr[it.idx - 1] = evalExpr(it.valExpr, scope, varargs);
-        }
+        const arr = [], map = {};
+        for (const it of node.arrItems) arr[it.idx - 1] = evalExpr(it.valExpr, scope, varargs);
         for (const m of node.mapItems) {
           const val = evalExpr(m.valExpr, scope, varargs);
           if (m.keyName !== undefined) map[m.keyName] = val;
-          else {
-            const k = evalExpr(m.keyExpr, scope, varargs);
-            if (typeof k === "number" && k >= 1) arr[k - 1] = val;
-            else map[String(k)] = val;
-          }
+          else { const k = evalExpr(m.keyExpr, scope, varargs); if (typeof k === "number" && k >= 1) arr[k - 1] = val; else map[String(k)] = val; }
         }
         return createLuaTable(arr, map);
       }
-      case "prop": {
-        const target = evalExpr(node.target, scope, varargs);
-        if (target === null || target === undefined) return undefined;
-        return target[node.prop];
-      }
+      case "prop": { const t = evalExpr(node.target, scope, varargs); return t == null ? undefined : t[node.prop]; }
       case "index": {
-        const target = evalExpr(node.target, scope, varargs);
+        const t = evalExpr(node.target, scope, varargs);
         const idx = evalExpr(node.index, scope, varargs);
-        if (target === null || target === undefined) return undefined;
-        if (typeof idx === "number") return target[String(idx)] ?? target[idx];
-        return target[idx];
+        if (t == null) return undefined;
+        return typeof idx === "number" ? (t[String(idx)] ?? t[idx]) : t[idx];
       }
       case "unOp": {
         const v = evalExpr(node.operand, scope, varargs);
@@ -2684,150 +2445,86 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
         return v;
       }
       case "binOp": {
-        if (node.op === "and") {
-          const l = evalExpr(node.left, scope, varargs);
-          return luauTruthy(l) ? evalExpr(node.right, scope, varargs) : l;
-        }
-        if (node.op === "or") {
-          const l = evalExpr(node.left, scope, varargs);
-          return luauTruthy(l) ? l : evalExpr(node.right, scope, varargs);
-        }
+        if (node.op === "and") { const l = evalExpr(node.left, scope, varargs); return luauTruthy(l) ? evalExpr(node.right, scope, varargs) : l; }
+        if (node.op === "or") { const l = evalExpr(node.left, scope, varargs); return luauTruthy(l) ? l : evalExpr(node.right, scope, varargs); }
         const l = evalExpr(node.left, scope, varargs);
         const r = evalExpr(node.right, scope, varargs);
-        if (node.op === "+") return luaAdd(l, r);
-        if (node.op === "-") return luaSub(l, r);
-        if (node.op === "*") return luaMul(l, r);
-        if (node.op === "/") return luaDiv(l, r);
-        if (node.op === "//") return luaFloorDiv(l, r);
-        if (node.op === "%") return luaMod(l, r);
-        if (node.op === "^") return luaPow(l, r);
-        if (node.op === "..") return luaConcat(l, r);
-        if (node.op === "==") return luaEq(l, r);
-        if (node.op === "~=") return !luaEq(l, r);
-        if (node.op === "<") return luaLt(l, r);
-        if (node.op === ">") return luaLt(r, l);
-        if (node.op === "<=") return luaLe(l, r);
-        if (node.op === ">=") return luaLe(r, l);
+        switch (node.op) {
+          case "+": return luaAdd(l, r);
+          case "-": return luaSub(l, r);
+          case "*": return luaMul(l, r);
+          case "/": return luaDiv(l, r);
+          case "//": return luaFloorDiv(l, r);
+          case "%": return luaMod(l, r);
+          case "^": return luaPow(l, r);
+          case "..": return luaConcat(l, r);
+          case "==": return luaEq(l, r);
+          case "~=": return !luaEq(l, r);
+          case "<": return luaLt(l, r);
+          case ">": return luaLt(r, l);
+          case "<=": return luaLe(l, r);
+          case ">=": return luaLe(r, l);
+        }
         return undefined;
       }
       case "funcExpr": {
         return (...callArgs) => {
           const fnScope = makeScope(scope);
-          for (let i = 0; i < node.params.length; i++) {
-            fnScope.setLocal(node.params[i], callArgs[i]);
-          }
-          const extraArgs = node.hasVararg ? callArgs.slice(node.params.length) : callArgs;
-          const res = execBlock(node.body, fnScope, extraArgs);
-          if (res instanceof LuauReturnSignal) {
-            return res.values[0];
-          }
-          return undefined;
+          for (let i = 0; i < node.params.length; i++) fnScope.setLocal(node.params[i], callArgs[i]);
+          const extra = node.hasVararg ? callArgs.slice(node.params.length) : callArgs;
+          const res = execBlock(node.body, fnScope, extra);
+          return res instanceof LuauReturnSignal ? res.values[0] : undefined;
         };
       }
       case "call": {
         const callee = evalExpr(node.callee, scope, varargs);
         const evaluatedArgs = node.args.map((a) => evalExpr(a, scope, varargs));
-        if (typeof callee === "function") {
-          return callee(...evaluatedArgs);
-        }
-        return undefined;
+        return typeof callee === "function" ? callee(...evaluatedArgs) : undefined;
       }
       case "methodCall": {
         const obj = evalExpr(node.target, scope, varargs);
         const evaluatedArgs = node.args.map((a) => evalExpr(a, scope, varargs));
         if (!obj) return undefined;
         const fn = obj[node.method];
-        if (typeof fn === "function") {
-          return fn.apply(obj, evaluatedArgs);
-        }
-        return undefined;
+        return typeof fn === "function" ? fn.apply(obj, evaluatedArgs) : undefined;
       }
-      default:
-        return undefined;
+      default: return undefined;
     }
   }
 
   function assignTarget(targetNode, val, scope, varargs) {
-    if (targetNode.type === "ident") {
-      scope.assign(targetNode.name, val);
-    } else if (targetNode.type === "prop") {
-      const obj = evalExpr(targetNode.target, scope, varargs);
-      if (obj && typeof obj === "object") obj[targetNode.prop] = val;
-    } else if (targetNode.type === "index") {
+    if (targetNode.type === "ident") scope.assign(targetNode.name, val);
+    else if (targetNode.type === "prop") { const obj = evalExpr(targetNode.target, scope, varargs); if (obj && typeof obj === "object") obj[targetNode.prop] = val; }
+    else if (targetNode.type === "index") {
       const obj = evalExpr(targetNode.target, scope, varargs);
       const idx = evalExpr(targetNode.index, scope, varargs);
-      if (obj && typeof obj === "object") {
-        if (typeof idx === "number") obj[String(idx)] = val;
-        else obj[idx] = val;
-      }
+      if (obj && typeof obj === "object") { if (typeof idx === "number") obj[String(idx)] = val; else obj[idx] = val; }
     }
   }
 
   function execBlock(stmts, scope, varargs = []) {
     for (let i = 0; i < stmts.length; i++) {
       const st = stmts[i];
-      if (!st || st.type === "noop") continue;
-
-      if (st.type === "label") continue;
-      if (st.type === "goto") {
-        const targetIdx = stmts.findIndex((s) => s && s.type === "label" && s.label === st.label);
-        if (targetIdx !== -1) i = targetIdx;
-        continue;
-      }
-
-      if (st.type === "return") {
-        return new LuauReturnSignal(st.exprs.map((e) => evalExpr(e, scope, varargs)));
-      }
+      if (!st || st.type === "noop" || st.type === "label") continue;
+      if (st.type === "goto") { const tIdx = stmts.findIndex((s) => s && s.type === "label" && s.label === st.label); if (tIdx !== -1) i = tIdx; continue; }
+      if (st.type === "return") return new LuauReturnSignal(st.exprs.map((e) => evalExpr(e, scope, varargs)));
       if (st.type === "break") return new LuauBreakSignal();
       if (st.type === "continue") return new LuauContinueSignal();
-
-      if (st.type === "exprStmt") {
-        evalExpr(st.expr, scope, varargs);
-        continue;
-      }
-
-      if (st.type === "localVar") {
-        for (let idx = 0; idx < st.names.length; idx++) {
-          const val = idx < st.values.length ? evalExpr(st.values[idx], scope, varargs) : undefined;
-          scope.setLocal(st.names[idx], val);
-        }
-        continue;
-      }
-
-      if (st.type === "localFunc") {
-        const fnVal = evalExpr(st.fnNode, scope, varargs);
-        scope.setLocal(st.name, fnVal);
-        continue;
-      }
-
+      if (st.type === "exprStmt") { evalExpr(st.expr, scope, varargs); continue; }
+      if (st.type === "localVar") { for (let idx = 0; idx < st.names.length; idx++) scope.setLocal(st.names[idx], idx < st.values.length ? evalExpr(st.values[idx], scope, varargs) : undefined); continue; }
+      if (st.type === "localFunc") { scope.setLocal(st.name, evalExpr(st.fnNode, scope, varargs)); continue; }
       if (st.type === "funcAssign") {
         const fnVal = evalExpr(st.fnNode, scope, varargs);
-        if (st.path.length === 1) {
-          scope.assign(st.path[0], fnVal);
-        } else {
+        if (st.path.length === 1) scope.assign(st.path[0], fnVal);
+        else {
           let cur = scope.get(st.path[0]);
-          if (!cur) {
-            cur = createLuaTable();
-            scope.assign(st.path[0], cur);
-          }
-          for (let pIdx = 1; pIdx < st.path.length - 1; pIdx++) {
-            const key = st.path[pIdx];
-            if (!cur[key]) cur[key] = createLuaTable();
-            cur = cur[key];
-          }
+          if (!cur) { cur = createLuaTable(); scope.assign(st.path[0], cur); }
+          for (let pIdx = 1; pIdx < st.path.length - 1; pIdx++) { const key = st.path[pIdx]; if (!cur[key]) cur[key] = createLuaTable(); cur = cur[key]; }
           cur[st.path[st.path.length - 1]] = fnVal;
         }
         continue;
       }
-
-      if (st.type === "assign") {
-        for (let idx = 0; idx < st.targets.length; idx++) {
-          const val = idx < st.values.length ? evalExpr(st.values[idx], scope, varargs) : undefined;
-          assignTarget(st.targets[idx], val, scope, varargs);
-        }
-        continue;
-      }
-
+      if (st.type === "assign") { for (let idx = 0; idx < st.targets.length; idx++) assignTarget(st.targets[idx], idx < st.values.length ? evalExpr(st.values[idx], scope, varargs) : undefined, scope, varargs); continue; }
       if (st.type === "compoundAssign") {
         const curVal = evalExpr(st.target, scope, varargs);
         const rhsVal = evalExpr(st.rhs, scope, varargs);
@@ -2843,110 +2540,41 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
         assignTarget(st.target, nextVal, scope, varargs);
         continue;
       }
-
-      if (st.type === "do") {
-        const r = execBlock(st.body, makeScope(scope), varargs);
-        if (r instanceof LuauReturnSignal || r instanceof LuauBreakSignal || r instanceof LuauContinueSignal) return r;
-        continue;
-      }
-
-      if (st.type === "while") {
-        let guard = 0;
-        while (luauTruthy(evalExpr(st.cond, scope, varargs)) && guard++ < 50000) {
-          const r = execBlock(st.body, makeScope(scope), varargs);
-          if (r instanceof LuauReturnSignal) return r;
-          if (r instanceof LuauBreakSignal) break;
-        }
-        continue;
-      }
-
-      if (st.type === "repeat") {
-        let guard = 0;
-        do {
-          const r = execBlock(st.body, makeScope(scope), varargs);
-          if (r instanceof LuauReturnSignal) return r;
-          if (r instanceof LuauBreakSignal) break;
-        } while (!luauTruthy(evalExpr(st.cond, scope, varargs)) && guard++ < 50000);
-        continue;
-      }
-
+      if (st.type === "do") { const r = execBlock(st.body, makeScope(scope), varargs); if (r instanceof LuauReturnSignal || r instanceof LuauBreakSignal || r instanceof LuauContinueSignal) return r; continue; }
+      if (st.type === "while") { let g = 0; while (luauTruthy(evalExpr(st.cond, scope, varargs)) && g++ < 50000) { const r = execBlock(st.body, makeScope(scope), varargs); if (r instanceof LuauReturnSignal) return r; if (r instanceof LuauBreakSignal) break; } continue; }
+      if (st.type === "repeat") { let g = 0; do { const r = execBlock(st.body, makeScope(scope), varargs); if (r instanceof LuauReturnSignal) return r; if (r instanceof LuauBreakSignal) break; } while (!luauTruthy(evalExpr(st.cond, scope, varargs)) && g++ < 50000); continue; }
       if (st.type === "if") {
         let matched = false;
-        for (const br of st.branches) {
-          if (luauTruthy(evalExpr(br.cond, scope, varargs))) {
-            matched = true;
-            const r = execBlock(br.body, makeScope(scope), varargs);
-            if (r instanceof LuauReturnSignal || r instanceof LuauBreakSignal || r instanceof LuauContinueSignal) return r;
-            break;
-          }
-        }
-        if (!matched && st.elseBody) {
-          const r = execBlock(st.elseBody, makeScope(scope), varargs);
-          if (r instanceof LuauReturnSignal || r instanceof LuauBreakSignal || r instanceof LuauContinueSignal) return r;
-        }
+        for (const br of st.branches) { if (luauTruthy(evalExpr(br.cond, scope, varargs))) { matched = true; const r = execBlock(br.body, makeScope(scope), varargs); if (r instanceof LuauReturnSignal || r instanceof LuauBreakSignal || r instanceof LuauContinueSignal) return r; break; } }
+        if (!matched && st.elseBody) { const r = execBlock(st.elseBody, makeScope(scope), varargs); if (r instanceof LuauReturnSignal || r instanceof LuauBreakSignal || r instanceof LuauContinueSignal) return r; }
         continue;
       }
-
       if (st.type === "forNum") {
-        const startVal = Number(evalExpr(st.startExpr, scope, varargs)) || 0;
-        const endVal = Number(evalExpr(st.endExpr, scope, varargs)) || 0;
-        const stepVal = st.stepExpr ? (Number(evalExpr(st.stepExpr, scope, varargs)) || 1) : 1;
-        let guard = 0;
-        if (stepVal >= 0) {
-          for (let v = startVal; v <= endVal && guard++ < 50000; v += stepVal) {
-            const loopScope = makeScope(scope);
-            loopScope.setLocal(st.varName, v);
-            const r = execBlock(st.body, loopScope, varargs);
-            if (r instanceof LuauReturnSignal) return r;
-            if (r instanceof LuauBreakSignal) break;
-          }
-        } else {
-          for (let v = startVal; v >= endVal && guard++ < 50000; v += stepVal) {
-            const loopScope = makeScope(scope);
-            loopScope.setLocal(st.varName, v);
-            const r = execBlock(st.body, loopScope, varargs);
-            if (r instanceof LuauReturnSignal) return r;
-            if (r instanceof LuauBreakSignal) break;
-          }
-        }
+        const sVal = Number(evalExpr(st.startExpr, scope, varargs)) || 0;
+        const eVal = Number(evalExpr(st.endExpr, scope, varargs)) || 0;
+        const stp = st.stepExpr ? (Number(evalExpr(st.stepExpr, scope, varargs)) || 1) : 1;
+        let g = 0;
+        if (stp >= 0) { for (let v = sVal; v <= eVal && g++ < 50000; v += stp) { const ls = makeScope(scope); ls.setLocal(st.varName, v); const r = execBlock(st.body, ls, varargs); if (r instanceof LuauReturnSignal) return r; if (r instanceof LuauBreakSignal) break; } }
+        else { for (let v = sVal; v >= eVal && g++ < 50000; v += stp) { const ls = makeScope(scope); ls.setLocal(st.varName, v); const r = execBlock(st.body, ls, varargs); if (r instanceof LuauReturnSignal) return r; if (r instanceof LuauBreakSignal) break; } }
         continue;
       }
-
       if (st.type === "forIn") {
         const iterVals = st.iterExprs.map((e) => evalExpr(e, scope, varargs));
         let entries = [];
-        if (Array.isArray(iterVals[0]) && iterVals[0].length > 0 && Array.isArray(iterVals[0][0])) {
-          entries = iterVals[0];
-        } else if (typeof iterVals[0] === "function") {
-          const iterFn = iterVals[0];
-          const stateVal = iterVals[1];
-          let ctrlVal = iterVals[2];
-          let guard = 0;
-          while (guard++ < 25000) {
-            const stepOut = iterFn(stateVal, ctrlVal);
-            if (stepOut === null || stepOut === undefined) break;
-            if (Array.isArray(stepOut)) {
-              ctrlVal = stepOut[0];
-              entries.push(stepOut);
-            } else {
-              ctrlVal = stepOut;
-              entries.push([stepOut]);
-            }
-          }
+        if (Array.isArray(iterVals[0]) && iterVals[0].length > 0 && Array.isArray(iterVals[0][0])) entries = iterVals[0];
+        else if (typeof iterVals[0] === "function") {
+          const iterFn = iterVals[0], stateVal = iterVals[1];
+          let ctrlVal = iterVals[2], g = 0;
+          while (g++ < 25000) { const stepOut = iterFn(stateVal, ctrlVal); if (stepOut === null || stepOut === undefined) break; if (Array.isArray(stepOut)) { ctrlVal = stepOut[0]; entries.push(stepOut); } else { ctrlVal = stepOut; entries.push([stepOut]); } }
         } else if (iterVals[0] && iterVals[0].__isLuaTable) {
           const arr = iterVals[0].__arr;
-          for (let k = 0; k < arr.length; k++) {
-            if (arr[k] !== undefined) entries.push([k + 1, arr[k]]);
-          }
+          for (let k = 0; k < arr.length; k++) if (arr[k] !== undefined) entries.push([k + 1, arr[k]]);
         }
-
         for (const rowEntry of entries) {
-          const loopScope = makeScope(scope);
+          const ls = makeScope(scope);
           const rowArr = Array.isArray(rowEntry) ? rowEntry : [rowEntry];
-          for (let vIdx = 0; vIdx < st.vars.length; vIdx++) {
-            loopScope.setLocal(st.vars[vIdx], rowArr[vIdx]);
-          }
-          const r = execBlock(st.body, loopScope, varargs);
+          for (let vIdx = 0; vIdx < st.vars.length; vIdx++) ls.setLocal(st.vars[vIdx], rowArr[vIdx]);
+          const r = execBlock(st.body, ls, varargs);
           if (r instanceof LuauReturnSignal) return r;
           if (r instanceof LuauBreakSignal) break;
         }
@@ -2959,12 +2587,64 @@ function parseAndRunLuau(code, globals, scriptName = "Script") {
   return execBlock(ast, makeScope(null), []);
 }
 
-function runLuauScriptSource(code, scriptName = "Script") {
+function makeVector3(x = 0, y = 0, z = 0) {
+  const vx = Number(x) || 0, vy = Number(y) || 0, vz = Number(z) || 0;
+  return {
+    X: vx, Y: vy, Z: vz, x: vx, y: vy, z: vz,
+    __typeof: "Vector3",
+    Magnitude: Math.hypot(vx, vy, vz),
+    Unit: () => { const len = Math.hypot(vx, vy, vz) || 1; return makeVector3(vx / len, vy / len, vz / len); },
+    Lerp(goal, alpha) { const a = Math.max(0, Math.min(1, Number(alpha) || 0)); return makeVector3(vx + ((goal.X ?? goal.x ?? 0) - vx) * a, vy + ((goal.Y ?? goal.y ?? 0) - vy) * a, vz + ((goal.Z ?? goal.z ?? 0) - vz) * a); },
+    __add(o) { return makeVector3(vx + (o.X ?? o.x ?? 0), vy + (o.Y ?? o.y ?? 0), vz + (o.Z ?? o.z ?? 0)); },
+    __sub(o) { return makeVector3(vx - (o.X ?? o.x ?? 0), vy - (o.Y ?? o.y ?? 0), vz - (o.Z ?? o.z ?? 0)); },
+    __mul(s) { if (typeof s === "number") return makeVector3(vx * s, vy * s, vz * s); return makeVector3(vx * (s.X ?? s.x ?? 1), vy * (s.Y ?? s.y ?? 1), vz * (s.Z ?? s.z ?? 1)); }
+  };
+}
+
+function makeCFrame(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) {
+  const cx = Number(x) || 0, cy = Number(y) || 0, cz = Number(z) || 0;
+  const euler = new THREE.Euler(Number(rx) || 0, Number(ry) || 0, Number(rz) || 0, "YXZ");
+  const quat = new THREE.Quaternion().setFromEuler(euler);
+  return {
+    X: cx, Y: cy, Z: cz,
+    __typeof: "CFrame",
+    Position: makeVector3(cx, cy, cz),
+    p: makeVector3(cx, cy, cz),
+    Rotation: { X: rx, Y: ry, Z: rz },
+    LookVector: makeVector3(-Math.sin(ry || 0), 0, -Math.cos(ry || 0)),
+    RightVector: makeVector3(Math.cos(ry || 0), 0, -Math.sin(ry || 0)),
+    UpVector: makeVector3(0, 1, 0),
+    Lerp(goal, alpha) { const a = Math.max(0, Math.min(1, Number(alpha) || 0)); const gx = goal.X ?? goal.Position?.X ?? cx; const gy = goal.Y ?? goal.Position?.Y ?? cy; const gz = goal.Z ?? goal.Position?.Z ?? cz; return makeCFrame(cx + (gx - cx) * a, cy + (gy - cy) * a, cz + (gz - cz) * a, rx, ry, rz); },
+    ToWorldSpace(offsetCf) { const v = new THREE.Vector3(offsetCf.X ?? 0, offsetCf.Y ?? 0, offsetCf.Z ?? 0).applyQuaternion(quat); return makeCFrame(cx + v.x, cy + v.y, cz + v.z, rx, ry, rz); },
+    __add(v) { return makeCFrame(cx + (v.X ?? v.x ?? 0), cy + (v.Y ?? v.y ?? 0), cz + (v.Z ?? v.z ?? 0), rx, ry, rz); },
+    __mul(other) { if (other && typeof other.X === "number" && other.LookVector === undefined) return makeCFrame(cx + (other.X ?? 0), cy + (other.Y ?? 0), cz + (other.Z ?? 0), rx, ry, rz); return makeCFrame(cx + (other?.X ?? 0), cy + (other?.Y ?? 0), cz + (other?.Z ?? 0), rx + (other?.Rotation?.X ?? 0), ry + (other?.Rotation?.Y ?? 0), rz + (other?.Rotation?.Z ?? 0)); }
+  };
+}
+
+function makeSignal(cbList) {
+  return {
+    Connect(fn) {
+      if (typeof fn === "function") cbList.push(fn);
+      return { Connected: true, Disconnect() { this.Connected = false; const idx = cbList.indexOf(fn); if (idx !== -1) cbList.splice(idx, 1); } };
+    },
+    Once(fn) {
+      const wrapper = (...args) => { const idx = cbList.indexOf(wrapper); if (idx !== -1) cbList.splice(idx, 1); if (typeof fn === "function") return fn(...args); };
+      cbList.push(wrapper);
+      return { Disconnect() { const i = cbList.indexOf(wrapper); if (i !== -1) cbList.splice(i, 1); } };
+    },
+    Wait() {
+      return new Promise((resolve) => { const wrapper = (...args) => { const i = cbList.indexOf(wrapper); if (i !== -1) cbList.splice(i, 1); resolve(args[0]); }; cbList.push(wrapper); });
+    },
+    Fire(...args) { [...cbList].forEach((fn) => { try { fn(...args); } catch (_) {} }); }
+  };
+}
+
+function runLuauScriptSource(code, scriptName = "Script", parentObj = null) {
   if (!code || typeof code !== "string" || !code.trim()) return;
 
   const makePartProxy = (partRecord) => {
     const holder = partRecord.holder;
-    const proxy = {
+    return {
       isPartProxy: true,
       __typeof: "Instance",
       Name: partRecord.name,
@@ -2980,13 +2660,7 @@ function runLuauScriptSource(code, scriptName = "Script") {
       },
       set Transparency(v) {
         const op = Math.max(0, Math.min(1, 1 - Number(v || 0)));
-        holder.traverse((m) => {
-          if (m.isMesh && m.material) {
-            m.material.transparent = op < 0.999;
-            m.material.opacity = op;
-            m.material.needsUpdate = true;
-          }
-        });
+        holder.traverse((m) => { if (m.isMesh && m.material) { m.material.transparent = op < 0.999; m.material.opacity = op; m.material.needsUpdate = true; } });
       },
       get Color() {
         let hex = 0x00a2ff;
@@ -2995,18 +2669,13 @@ function runLuauScriptSource(code, scriptName = "Script") {
       },
       set Color(c) {
         if (!c) return;
-        const r = Math.max(0, Math.min(1, Number(c.R ?? c.r ?? 0)));
-        const g = Math.max(0, Math.min(1, Number(c.G ?? c.g ?? 0)));
-        const b = Math.max(0, Math.min(1, Number(c.B ?? c.b ?? 0)));
-        const col = new THREE.Color(r, g, b);
+        const col = new THREE.Color(Math.max(0, Math.min(1, Number(c.R ?? c.r ?? 0))), Math.max(0, Math.min(1, Number(c.G ?? c.g ?? 0))), Math.max(0, Math.min(1, Number(c.B ?? c.b ?? 0))));
         holder.traverse((m) => { if (m.isMesh && m.material && m.material.color) m.material.color.copy(col); });
       },
       get Size() { return makeVector3(partRecord.halfExtents.x * 2, partRecord.halfExtents.y * 2, partRecord.halfExtents.z * 2); },
       set Size(v) {
         if (!v) return;
-        const sx = Math.max(0.05, Number(v.X ?? v.x ?? 4));
-        const sy = Math.max(0.05, Number(v.Y ?? v.y ?? 2));
-        const sz = Math.max(0.05, Number(v.Z ?? v.z ?? 4));
+        const sx = Math.max(0.05, Number(v.X ?? v.x ?? 4)), sy = Math.max(0.05, Number(v.Y ?? v.y ?? 2)), sz = Math.max(0.05, Number(v.Z ?? v.z ?? 4));
         partRecord.halfExtents.set(sx / 2, sy / 2, sz / 2);
         holder.scale.set(sx / 4, sy / 2, sz / 4);
         invalidateFloorCache();
@@ -3020,20 +2689,11 @@ function runLuauScriptSource(code, scriptName = "Script") {
       get CFrame() { return makeCFrame(holder.position.x, holder.position.y, holder.position.z, holder.rotation.x, holder.rotation.y, holder.rotation.z); },
       set CFrame(cf) {
         if (!cf) return;
-        const px = cf.X ?? cf.Position?.X ?? holder.position.x;
-        const py = cf.Y ?? cf.Position?.Y ?? holder.position.y;
-        const pz = cf.Z ?? cf.Position?.Z ?? holder.position.z;
-        holder.position.set(Number(px), Number(py), Number(pz));
-        if (cf.Rotation) {
-          holder.rotation.set(Number(cf.Rotation.X || 0), Number(cf.Rotation.Y || 0), Number(cf.Rotation.Z || 0));
-        }
+        holder.position.set(Number(cf.X ?? cf.Position?.X ?? holder.position.x), Number(cf.Y ?? cf.Position?.Y ?? holder.position.y), Number(cf.Z ?? cf.Position?.Z ?? holder.position.z));
+        if (cf.Rotation) holder.rotation.set(Number(cf.Rotation.X || 0), Number(cf.Rotation.Y || 0), Number(cf.Rotation.Z || 0));
         invalidateFloorCache();
       },
-      Destroy() {
-        if (holder.parent) holder.parent.remove(holder);
-        partRecord.destroyed = true;
-        invalidateFloorCache();
-      },
+      Destroy() { if (holder.parent) holder.parent.remove(holder); partRecord.destroyed = true; invalidateFloorCache(); },
       Clone() {
         const cloneHolder = holder.clone(true);
         cloneHolder.position.copy(holder.position);
@@ -3043,135 +2703,71 @@ function runLuauScriptSource(code, scriptName = "Script") {
         invalidateFloorCache();
         return makePartProxy(cloneRec);
       },
-      FindFirstChild(childName) {
-        if (childName === "TouchInterest") return {};
-        return null;
-      },
+      FindFirstChild(childName) { return childName === "TouchInterest" ? {} : null; },
       GetAttribute(attr) { return partRecord.attrs?.[attr]; },
-      SetAttribute(attr, val) {
-        if (!partRecord.attrs) partRecord.attrs = {};
-        partRecord.attrs[attr] = val;
-      },
+      SetAttribute(attr, val) { if (!partRecord.attrs) partRecord.attrs = {}; partRecord.attrs[attr] = val; },
       Touched: makeSignal(partRecord.touchedCallbacks)
     };
-    return proxy;
   };
 
   const workspaceProxy = {
-    Name: "Workspace",
-    ClassName: "Workspace",
-    __typeof: "Instance",
+    Name: "Workspace", ClassName: "Workspace", __typeof: "Instance",
     get Gravity() { return studioConfig.gravity; },
     set Gravity(v) { const n = Number(v); if (Number.isFinite(n) && n >= 0) studioConfig.gravity = n; },
     get CurrentCamera() {
       return {
-        Name: "Camera",
-        ClassName: "Camera",
-        __typeof: "Instance",
+        Name: "Camera", ClassName: "Camera", __typeof: "Instance",
         get CFrame() { return makeCFrame(camera.position.x, camera.position.y, camera.position.z, 0, playerYaw, 0); },
-        set CFrame(cf) {
-          if (!cf) return;
-          camera.position.set(Number(cf.X ?? cf.Position?.X ?? camera.position.x), Number(cf.Y ?? cf.Position?.Y ?? camera.position.y), Number(cf.Z ?? cf.Position?.Z ?? camera.position.z));
-        },
+        set CFrame(cf) { if (!cf) return; camera.position.set(Number(cf.X ?? cf.Position?.X ?? camera.position.x), Number(cf.Y ?? cf.Position?.Y ?? camera.position.y), Number(cf.Z ?? cf.Position?.Z ?? camera.position.z)); },
         get FieldOfView() { return camera.fov; },
-        set FieldOfView(v) { camera.fov = Number(v) || 65; camera.updateProjectionMatrix(); }
+        set FieldOfView(v) { camera.fov = Math.max(20, Math.min(120, Number(v) || 65)); camera.updateProjectionMatrix(); }
       };
     },
-    FindFirstChild(name) {
-      const found = dynamicParts.find((p) => !p.destroyed && p.name === name);
-      return found ? makePartProxy(found) : null;
-    },
-    GetChildren() {
-      return dynamicParts.filter((p) => !p.destroyed).map((p) => makePartProxy(p));
-    },
-    GetDescendants() {
-      return workspaceProxy.GetChildren();
-    }
+    FindFirstChild(name) { const found = dynamicParts.find((p) => !p.destroyed && p.name === name); return found ? makePartProxy(found) : null; },
+    GetChildren() { return dynamicParts.filter((p) => !p.destroyed).map((p) => makePartProxy(p)); },
+    GetDescendants() { return workspaceProxy.GetChildren(); }
   };
 
   const humanoidProxy = {
-    Name: "Humanoid",
-    ClassName: "Humanoid",
-    __typeof: "Instance",
+    Name: "Humanoid", ClassName: "Humanoid", __typeof: "Instance",
     get WalkSpeed() { return studioConfig.walkSpeed; },
     set WalkSpeed(v) { const n = Number(v); if (Number.isFinite(n) && n > 0) studioConfig.walkSpeed = n; },
     get JumpPower() { return studioConfig.jumpPower; },
     set JumpPower(v) { const n = Number(v); if (Number.isFinite(n) && n > 0) studioConfig.jumpPower = n; },
     get Jump() { return isJumping; },
     set Jump(v) { if (v && isGrounded) { playerVel.y = studioConfig.jumpPower; isGrounded = false; isJumping = true; } },
-    Health: 100,
-    MaxHealth: 100,
-    MoveTo(targetVec) {
-      if (!targetVec) return;
-      playerPos.x = Number(targetVec.X ?? targetVec.x ?? playerPos.x);
-      playerPos.z = Number(targetVec.Z ?? targetVec.z ?? playerPos.z);
-      syncLocalAvatarTransform();
-    },
-    TakeDamage(dmg) {
-      humanoidProxy.Health = Math.max(0, humanoidProxy.Health - Number(dmg || 0));
-      if (humanoidProxy.Health <= 0) {
-        humanoidProxy.Health = humanoidProxy.MaxHealth;
-        respawnLocalPlayer();
-      }
-    }
+    Health: 100, MaxHealth: 100,
+    MoveTo(targetVec) { if (!targetVec) return; playerPos.x = Number(targetVec.X ?? targetVec.x ?? playerPos.x); playerPos.z = Number(targetVec.Z ?? targetVec.z ?? playerPos.z); syncLocalAvatarTransform(); },
+    TakeDamage(dmg) { humanoidProxy.Health = Math.max(0, humanoidProxy.Health - Number(dmg || 0)); if (humanoidProxy.Health <= 0) { humanoidProxy.Health = humanoidProxy.MaxHealth; respawnLocalPlayer(); } }
   };
 
   const characterProxy = {
-    Name: username,
-    ClassName: "Model",
-    __typeof: "Instance",
+    Name: username, ClassName: "Model", __typeof: "Instance",
     Humanoid: humanoidProxy,
     HumanoidRootPart: {
-      Name: "HumanoidRootPart",
-      ClassName: "Part",
-      __typeof: "Instance",
+      Name: "HumanoidRootPart", ClassName: "Part", __typeof: "Instance",
       get Position() { return makeVector3(playerPos.x, playerPos.y, playerPos.z); },
-      set Position(v) {
-        if (!v) return;
-        playerPos.set(Number(v.X ?? v.x ?? playerPos.x), Number(v.Y ?? v.y ?? playerPos.y), Number(v.Z ?? v.z ?? playerPos.z));
-        syncLocalAvatarTransform();
-      },
+      set Position(v) { if (!v) return; playerPos.set(Number(v.X ?? v.x ?? playerPos.x), Number(v.Y ?? v.y ?? playerPos.y), Number(v.Z ?? v.z ?? playerPos.z)); syncLocalAvatarTransform(); },
       get CFrame() { return makeCFrame(playerPos.x, playerPos.y, playerPos.z, 0, playerYaw, 0); },
-      set CFrame(cf) {
-        if (!cf) return;
-        playerPos.set(Number(cf.X ?? cf.Position?.X ?? playerPos.x), Number(cf.Y ?? cf.Position?.Y ?? playerPos.y), Number(cf.Z ?? cf.Position?.Z ?? playerPos.z));
-        syncLocalAvatarTransform();
-      }
+      set CFrame(cf) { if (!cf) return; playerPos.set(Number(cf.X ?? cf.Position?.X ?? playerPos.x), Number(cf.Y ?? cf.Position?.Y ?? playerPos.y), Number(cf.Z ?? cf.Position?.Z ?? playerPos.z)); syncLocalAvatarTransform(); }
     },
-    FindFirstChild(n) {
-      if (n === "Humanoid") return humanoidProxy;
-      if (n === "HumanoidRootPart") return characterProxy.HumanoidRootPart;
-      return null;
-    }
+    FindFirstChild(n) { if (n === "Humanoid") return humanoidProxy; if (n === "HumanoidRootPart") return characterProxy.HumanoidRootPart; return null; }
   };
 
   const localPlayerProxy = {
-    Name: username,
-    UserId: 1,
-    ClassName: "Player",
-    __typeof: "Instance",
+    Name: username, UserId: 1, ClassName: "Player", __typeof: "Instance",
     Character: characterProxy,
-    Backpack: {
-      GetChildren() { return backpackItems.map((b) => ({ Name: b.name })); }
-    },
-    leaderstats: {
-      FindFirstChild(statName) { return this[statName] || null; }
-    }
+    Backpack: { GetChildren() { return backpackItems.map((b) => ({ Name: b.name })); } },
+    leaderstats: { FindFirstChild(statName) { return this[statName] || null; } }
   };
 
   const runServiceProxy = {
-    Heartbeat: makeSignal(heartbeatCallbacks),
-    Stepped: makeSignal(steppedCallbacks),
-    RenderStepped: makeSignal(renderSteppedCallbacks),
-    IsStudio() { return false; },
-    IsClient() { return true; },
-    IsServer() { return false; },
-    IsRunMode() { return true; }
+    Heartbeat: makeSignal(heartbeatCallbacks), Stepped: makeSignal(steppedCallbacks), RenderStepped: makeSignal(renderSteppedCallbacks),
+    IsStudio() { return false; }, IsClient() { return true; }, IsServer() { return false; }, IsRunMode() { return true; }
   };
 
   const userInputServiceProxy = {
-    InputBegan: makeSignal(userInputBeganCallbacks),
-    InputEnded: makeSignal(userInputEndedCallbacks),
+    InputBegan: makeSignal(userInputBeganCallbacks), InputEnded: makeSignal(userInputEndedCallbacks),
     IsKeyDown(keyCode) {
       const k = String(keyCode || "").replace(/^Enum\.KeyCode\./, "");
       if (k === "W") return keysDown.has("KeyW");
@@ -3194,19 +2790,10 @@ function runLuauScriptSource(code, scriptName = "Script") {
           const startTr = Number(inst.Transparency ?? 0);
           const endTr = goalProps?.Transparency !== undefined ? Number(goalProps.Transparency) : startTr;
           tweenServiceActive.push({
-            elapsed: 0,
-            dur,
+            elapsed: 0, dur,
             onStep(alpha) {
-              if (goalProps?.Position) {
-                inst.Position = makeVector3(
-                  startPos.x + (endPos.x - startPos.x) * alpha,
-                  startPos.y + (endPos.y - startPos.y) * alpha,
-                  startPos.z + (endPos.z - startPos.z) * alpha
-                );
-              }
-              if (goalProps?.Transparency !== undefined) {
-                inst.Transparency = startTr + (endTr - startTr) * alpha;
-              }
+              if (goalProps?.Position) inst.Position = makeVector3(startPos.x + (endPos.x - startPos.x) * alpha, startPos.y + (endPos.y - startPos.y) * alpha, startPos.z + (endPos.z - startPos.z) * alpha);
+              if (goalProps?.Transparency !== undefined) inst.Transparency = startTr + (endTr - startTr) * alpha;
             }
           });
         },
@@ -3217,14 +2804,7 @@ function runLuauScriptSource(code, scriptName = "Script") {
 
   const lightingProxy = {
     get Ambient() { return { R: ((studioConfig.ambientColor >> 16) & 255) / 255, G: ((studioConfig.ambientColor >> 8) & 255) / 255, B: (studioConfig.ambientColor & 255) / 255, __typeof: "Color3" }; },
-    set Ambient(c) {
-      if (!c) return;
-      const r = Math.round((c.R ?? 0) * 255);
-      const g = Math.round((c.G ?? 0) * 255);
-      const b = Math.round((c.B ?? 0) * 255);
-      studioConfig.ambientColor = (r << 16) | (g << 8) | b;
-      updateSkyAndLighting();
-    },
+    set Ambient(c) { if (!c) return; studioConfig.ambientColor = (Math.round((c.R ?? 0) * 255) << 16) | (Math.round((c.G ?? 0) * 255) << 8) | Math.round((c.B ?? 0) * 255); updateSkyAndLighting(); },
     get FogEnd() { return studioConfig.fogEnd; },
     set FogEnd(v) { studioConfig.fogEnd = Number(v) || 260; updateSkyAndLighting(); },
     get FogStart() { return studioConfig.fogStart; },
@@ -3233,31 +2813,15 @@ function runLuauScriptSource(code, scriptName = "Script") {
     set ClockTime(v) { studioConfig.dayTimeMinutes = (Number(v) || 14) * 60; updateSkyAndLighting(); }
   };
 
-  const replicatedStorageProxy = {
-    Name: "ReplicatedStorage",
-    FindFirstChild() { return null; },
-    GetChildren() { return []; }
-  };
-
+  const replicatedStorageProxy = { Name: "ReplicatedStorage", FindFirstChild() { return null; }, GetChildren() { return []; } };
   const playersServiceProxy = {
-    Name: "Players",
-    LocalPlayer: localPlayerProxy,
-    PlayerAdded: makeSignal([]),
-    PlayerRemoving: makeSignal([]),
-    GetPlayers() {
-      const arr = [localPlayerProxy];
-      remotePlayers.forEach((rp) => arr.push({ Name: rp.name || "Player", Character: null }));
-      return arr;
-    },
+    Name: "Players", LocalPlayer: localPlayerProxy, PlayerAdded: makeSignal([]), PlayerRemoving: makeSignal([]),
+    GetPlayers() { const arr = [localPlayerProxy]; remotePlayers.forEach((rp) => arr.push({ Name: rp.name || "Player", Character: null })); return arr; },
     GetPlayerFromCharacter() { return localPlayerProxy; }
   };
 
   const gameProxy = {
-    PlaceId: Number(placeId) || 0,
-    Workspace: workspaceProxy,
-    Players: playersServiceProxy,
-    Lighting: lightingProxy,
-    ReplicatedStorage: replicatedStorageProxy,
+    PlaceId: Number(placeId) || 0, Workspace: workspaceProxy, Players: playersServiceProxy, Lighting: lightingProxy, ReplicatedStorage: replicatedStorageProxy,
     GetService(svcName) {
       if (svcName === "Workspace") return workspaceProxy;
       if (svcName === "Players") return playersServiceProxy;
@@ -3274,327 +2838,85 @@ function runLuauScriptSource(code, scriptName = "Script") {
     if (clsName === "Part" || clsName === "WedgePart" || clsName === "Cylinder" || clsName === "Ball") {
       const sx = 4, sy = 2, sz = 4;
       const shape = clsName === "WedgePart" ? "Wedge" : clsName === "Cylinder" ? "Cylinder" : clsName === "Ball" ? "Ball" : "Block";
-      const geo = buildGeometryForPart(shape, sx, sy, sz);
-      const mat = new THREE.MeshStandardMaterial({ color: 0x00a2ff, roughness: 0.5 });
       const holder = new THREE.Group();
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      holder.add(mesh);
-      holder.position.set(0, 4, -8);
-      worldGroup.add(holder);
-
-      const rec = {
-        name: clsName,
-        holder,
-        anchored: true,
-        canCollide: true,
-        velY: 0,
-        halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2),
-        touchedCallbacks: [],
-        destroyed: false
-      };
-      dynamicParts.push(rec);
-      invalidateFloorCache();
+      const mesh = new THREE.Mesh(buildGeometryForPart(shape, sx, sy, sz), new THREE.MeshStandardMaterial({ color: 0x00a2ff, roughness: 0.5 }));
+      mesh.castShadow = true; mesh.receiveShadow = true; holder.add(mesh); holder.position.set(0, 4, -8); worldGroup.add(holder);
+      const rec = { name: clsName, holder, anchored: true, canCollide: true, velY: 0, halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2), touchedCallbacks: [], destroyed: false };
+      dynamicParts.push(rec); invalidateFloorCache();
       return makePartProxy(rec);
     }
     if (clsName === "TextLabel" || clsName === "TextButton" || clsName === "Frame" || clsName === "ImageLabel" || clsName === "ImageButton") {
       let sg = robloxGuiLayer.querySelector(".rblx-screengui");
-      if (!sg) {
-        sg = document.createElement("div");
-        sg.className = "rblx-screengui";
-        robloxGuiLayer.appendChild(sg);
-      }
+      if (!sg) { sg = document.createElement("div"); sg.className = "rblx-screengui"; robloxGuiLayer.appendChild(sg); }
       const el = document.createElement(clsName === "TextButton" || clsName === "ImageButton" ? "button" : "div");
       el.className = "rblx-el " + (clsName === "TextButton" || clsName === "ImageButton" ? "rblx-button" : clsName === "TextLabel" ? "rblx-label" : "rblx-frame");
-      el.style.left = "20px";
-      el.style.top = "180px";
-      el.style.width = "160px";
-      el.style.height = "34px";
-      el.style.backgroundColor = "rgba(30, 36, 46, 0.85)";
-      el.style.color = "#ffffff";
-      el.style.borderRadius = "4px";
-      el.textContent = clsName;
+      el.style.left = "20px"; el.style.top = "180px"; el.style.width = "160px"; el.style.height = "34px";
+      el.style.backgroundColor = "rgba(30, 36, 46, 0.85)"; el.style.color = "#ffffff"; el.style.borderRadius = "4px"; el.textContent = clsName;
       sg.appendChild(el);
       const clickCbs = [];
       el.addEventListener("click", () => clickCbs.forEach((f) => { try { f(); } catch (_) {} }));
-      return {
-        Name: clsName,
-        __typeof: "Instance",
-        get Text() { return el.textContent; },
-        set Text(v) { el.textContent = String(v ?? ""); },
-        get Visible() { return el.style.display !== "none"; },
-        set Visible(v) { el.style.display = v ? "flex" : "none"; },
-        MouseButton1Click: makeSignal(clickCbs),
-        Activated: makeSignal(clickCbs)
-      };
+      return { Name: clsName, __typeof: "Instance", get Text() { return el.textContent; }, set Text(v) { el.textContent = String(v ?? ""); }, get Visible() { return el.style.display !== "none"; }, set Visible(v) { el.style.display = v ? "flex" : "none"; }, MouseButton1Click: makeSignal(clickCbs), Activated: makeSignal(clickCbs) };
     }
-    if (clsName === "RemoteEvent") {
-      const cbs = [];
-      const evName = "ev_" + Math.random().toString(36).slice(2, 8);
-      remoteEventCallbacks.set(evName, cbs);
-      return {
-        Name: clsName,
-        __typeof: "Instance",
-        OnClientEvent: makeSignal(cbs),
-        OnServerEvent: makeSignal(cbs),
-        FireServer(...args) { cbs.forEach((f) => { try { f(localPlayerProxy, ...args); } catch (_) {} }); },
-        FireAllClients(...args) { cbs.forEach((f) => { try { f(...args); } catch (_) {} }); }
-      };
-    }
-    if (clsName === "BindableEvent") {
-      const cbs = [];
-      const evName = "bev_" + Math.random().toString(36).slice(2, 8);
-      bindableEventCallbacks.set(evName, cbs);
-      return {
-        Name: clsName,
-        __typeof: "Instance",
-        Event: makeSignal(cbs),
-        Fire(...args) { cbs.forEach((f) => { try { f(...args); } catch (_) {} }); }
-      };
-    }
-    return {
-      Name: clsName,
-      ClassName: clsName,
-      __typeof: "Instance",
-      Value: clsName === "BoolValue" ? false : (clsName === "StringValue" ? "" : 0),
-      Changed: makeSignal([]),
-      Destroy() {}
-    };
+    if (clsName === "RemoteEvent") { const cbs = []; remoteEventCallbacks.set("ev_" + Math.random().toString(36).slice(2, 8), cbs); return { Name: clsName, __typeof: "Instance", OnClientEvent: makeSignal(cbs), OnServerEvent: makeSignal(cbs), FireServer(...args) { cbs.forEach((f) => { try { f(localPlayerProxy, ...args); } catch (_) {} }); }, FireAllClients(...args) { cbs.forEach((f) => { try { f(...args); } catch (_) {} }); } }; }
+    if (clsName === "BindableEvent") { const cbs = []; bindableEventCallbacks.set("bev_" + Math.random().toString(36).slice(2, 8), cbs); return { Name: clsName, __typeof: "Instance", Event: makeSignal(cbs), Fire(...args) { cbs.forEach((f) => { try { f(...args); } catch (_) {} }); } }; }
+    return { Name: clsName, ClassName: clsName, __typeof: "Instance", Value: clsName === "BoolValue" ? false : (clsName === "StringValue" ? "" : 0), Changed: makeSignal([]), Destroy() {} };
   };
 
   let randSeed = Date.now() & 0xffffffff;
-  const seededRandom = () => {
-    randSeed = (randSeed * 1664525 + 1013904223) >>> 0;
-    return randSeed / 0xffffffff;
-  };
+  const seededRandom = () => { randSeed = (randSeed * 1664525 + 1013904223) >>> 0; return randSeed / 0xffffffff; };
 
+  const parentProxy = parentObj || workspaceProxy;
   const envGlobals = {
-    workspace: workspaceProxy,
-    Workspace: workspaceProxy,
-    game: gameProxy,
-    script: { Name: scriptName, Parent: workspaceProxy, __typeof: "Instance" },
+    workspace: workspaceProxy, Workspace: workspaceProxy, game: gameProxy,
+    script: { Name: scriptName, Parent: parentProxy, __typeof: "Instance" },
     Instance: { new: instanceNew },
-    Vector2: {
-      new: (x = 0, y = 0) => ({ X: Number(x) || 0, Y: Number(y) || 0, Magnitude: Math.hypot(Number(x) || 0, Number(y) || 0), __typeof: "Vector2" }),
-      zero: { X: 0, Y: 0, Magnitude: 0, __typeof: "Vector2" },
-      one: { X: 1, Y: 1, Magnitude: Math.SQRT2, __typeof: "Vector2" }
-    },
-    Vector3: {
-      new: makeVector3,
-      zero: makeVector3(0, 0, 0),
-      one: makeVector3(1, 1, 1),
-      xAxis: makeVector3(1, 0, 0),
-      yAxis: makeVector3(0, 1, 0),
-      zAxis: makeVector3(0, 0, 1)
-    },
-    vector: {
-      create: makeVector3,
-      zero: makeVector3(0, 0, 0),
-      one: makeVector3(1, 1, 1),
-      magnitude: (v) => Math.hypot(v?.X ?? 0, v?.Y ?? 0, v?.Z ?? 0),
-      normalize: (v) => makeVector3(v?.X ?? 0, v?.Y ?? 0, v?.Z ?? 0).Unit(),
-      dot: (a, b) => (a?.X ?? 0) * (b?.X ?? 0) + (a?.Y ?? 0) * (b?.Y ?? 0) + (a?.Z ?? 0) * (b?.Z ?? 0),
-      cross: (a, b) => makeVector3(
-        (a?.Y ?? 0) * (b?.Z ?? 0) - (a?.Z ?? 0) * (b?.Y ?? 0),
-        (a?.Z ?? 0) * (b?.X ?? 0) - (a?.X ?? 0) * (b?.Z ?? 0),
-        (a?.X ?? 0) * (b?.Y ?? 0) - (a?.Y ?? 0) * (b?.X ?? 0)
-      ),
-      angle: (a, b) => {
-        const ma = Math.hypot(a?.X ?? 0, a?.Y ?? 0, a?.Z ?? 0) || 1;
-        const mb = Math.hypot(b?.X ?? 0, b?.Y ?? 0, b?.Z ?? 0) || 1;
-        const dot = ((a?.X ?? 0) * (b?.X ?? 0) + (a?.Y ?? 0) * (b?.Y ?? 0) + (a?.Z ?? 0) * (b?.Z ?? 0)) / (ma * mb);
-        return Math.acos(Math.max(-1, Math.min(1, dot)));
-      },
-      clamp: (v, minV, maxV) => makeVector3(
-        Math.max(minV?.X ?? -Infinity, Math.min(maxV?.X ?? Infinity, v?.X ?? 0)),
-        Math.max(minV?.Y ?? -Infinity, Math.min(maxV?.Y ?? Infinity, v?.Y ?? 0)),
-        Math.max(minV?.Z ?? -Infinity, Math.min(maxV?.Z ?? Infinity, v?.Z ?? 0))
-      ),
-      lerp: (a, b, t) => makeVector3(a?.X ?? 0, a?.Y ?? 0, a?.Z ?? 0).Lerp(b || { X: 0, Y: 0, Z: 0 }, t),
-      max: (a, b) => makeVector3(Math.max(a?.X ?? 0, b?.X ?? 0), Math.max(a?.Y ?? 0, b?.Y ?? 0), Math.max(a?.Z ?? 0, b?.Z ?? 0)),
-      min: (a, b) => makeVector3(Math.min(a?.X ?? 0, b?.X ?? 0), Math.min(a?.Y ?? 0, b?.Y ?? 0), Math.min(a?.Z ?? 0, b?.Z ?? 0)),
-      floor: (v) => makeVector3(Math.floor(v?.X ?? 0), Math.floor(v?.Y ?? 0), Math.floor(v?.Z ?? 0)),
-      ceil: (v) => makeVector3(Math.ceil(v?.X ?? 0), Math.ceil(v?.Y ?? 0), Math.ceil(v?.Z ?? 0)),
-      abs: (v) => makeVector3(Math.abs(v?.X ?? 0), Math.abs(v?.Y ?? 0), Math.abs(v?.Z ?? 0)),
-      sign: (v) => makeVector3(Math.sign(v?.X ?? 0), Math.sign(v?.Y ?? 0), Math.sign(v?.Z ?? 0))
-    },
-    CFrame: {
-      new: makeCFrame,
-      identity: makeCFrame(0, 0, 0, 0, 0, 0),
-      Angles: (rx = 0, ry = 0, rz = 0) => makeCFrame(0, 0, 0, rx, ry, rz),
-      fromEulerAnglesYXZ: (ry = 0, rx = 0, rz = 0) => makeCFrame(0, 0, 0, rx, ry, rz),
-      fromEulerAnglesXYZ: (rx = 0, ry = 0, rz = 0) => makeCFrame(0, 0, 0, rx, ry, rz),
-      lookAt: (pos, lookAtPos) => makeCFrame(pos?.X ?? 0, pos?.Y ?? 0, pos?.Z ?? 0, 0, Math.atan2((lookAtPos?.X ?? 0) - (pos?.X ?? 0), (lookAtPos?.Z ?? 0) - (pos?.Z ?? 0)), 0)
-    },
-    Color3: {
-      new: (r = 1, g = 1, b = 1) => ({ R: Number(r) || 0, G: Number(g) || 0, B: Number(b) || 0, __typeof: "Color3" }),
-      fromRGB: (r = 255, g = 255, b = 255) => ({ R: (Number(r) || 0) / 255, G: (Number(g) || 0) / 255, B: (Number(b) || 0) / 255, __typeof: "Color3" }),
-      fromHSV: (h = 0, s = 1, v = 1) => {
-        const c = new THREE.Color().setHSL(Number(h) || 0, Number(s) || 0, Number(v) || 0);
-        return { R: c.r, G: c.g, B: c.b, __typeof: "Color3" };
-      },
-      fromHex: (hexStr) => {
-        const c = new THREE.Color(String(hexStr || "#ffffff"));
-        return { R: c.r, G: c.g, B: c.b, __typeof: "Color3" };
-      }
-    },
-    BrickColor: {
-      new: (codeOrName) => {
-        if (typeof codeOrName === "number" && BRICK_COLORS[codeOrName] !== undefined) {
-          const hex = BRICK_COLORS[codeOrName];
-          return { Number: codeOrName, Color: { R: ((hex >> 16) & 255) / 255, G: ((hex >> 8) & 255) / 255, B: (hex & 255) / 255 }, __typeof: "BrickColor" };
-        }
-        return { Number: 21, Color: { R: 0.768, G: 0.156, B: 0.105 }, __typeof: "BrickColor" };
-      },
-      Random: () => ({ Number: 21, Color: { R: 0.768, G: 0.156, B: 0.105 }, __typeof: "BrickColor" })
-    },
+    Vector2: { new: (x = 0, y = 0) => ({ X: Number(x) || 0, Y: Number(y) || 0, Magnitude: Math.hypot(Number(x) || 0, Number(y) || 0), __typeof: "Vector2" }), zero: { X: 0, Y: 0, Magnitude: 0, __typeof: "Vector2" }, one: { X: 1, Y: 1, Magnitude: Math.SQRT2, __typeof: "Vector2" } },
+    Vector3: { new: makeVector3, zero: makeVector3(0, 0, 0), one: makeVector3(1, 1, 1), xAxis: makeVector3(1, 0, 0), yAxis: makeVector3(0, 1, 0), zAxis: makeVector3(0, 0, 1) },
+    vector: { create: makeVector3, zero: makeVector3(0, 0, 0), one: makeVector3(1, 1, 1), magnitude: (v) => Math.hypot(v?.X ?? 0, v?.Y ?? 0, v?.Z ?? 0), normalize: (v) => makeVector3(v?.X ?? 0, v?.Y ?? 0, v?.Z ?? 0).Unit(), dot: (a, b) => (a?.X ?? 0) * (b?.X ?? 0) + (a?.Y ?? 0) * (b?.Y ?? 0) + (a?.Z ?? 0) * (b?.Z ?? 0), cross: (a, b) => makeVector3((a?.Y ?? 0) * (b?.Z ?? 0) - (a?.Z ?? 0) * (b?.Y ?? 0), (a?.Z ?? 0) * (b?.X ?? 0) - (a?.X ?? 0) * (b?.Z ?? 0), (a?.X ?? 0) * (b?.Y ?? 0) - (a?.Y ?? 0) * (b?.X ?? 0)) },
+    CFrame: { new: makeCFrame, identity: makeCFrame(0, 0, 0, 0, 0, 0), Angles: (rx = 0, ry = 0, rz = 0) => makeCFrame(0, 0, 0, rx, ry, rz), fromEulerAnglesYXZ: (ry = 0, rx = 0, rz = 0) => makeCFrame(0, 0, 0, rx, ry, rz), lookAt: (pos, lookAtPos) => makeCFrame(pos?.X ?? 0, pos?.Y ?? 0, pos?.Z ?? 0, 0, Math.atan2((lookAtPos?.X ?? 0) - (pos?.X ?? 0), (lookAtPos?.Z ?? 0) - (pos?.Z ?? 0)), 0) },
+    Color3: { new: (r = 1, g = 1, b = 1) => ({ R: Number(r) || 0, G: Number(g) || 0, B: Number(b) || 0, __typeof: "Color3" }), fromRGB: (r = 255, g = 255, b = 255) => ({ R: (Number(r) || 0) / 255, G: (Number(g) || 0) / 255, B: (Number(b) || 0) / 255, __typeof: "Color3" }), fromHSV: (h = 0, s = 1, v = 1) => { const c = new THREE.Color().setHSL(Number(h) || 0, Number(s) || 0, Number(v) || 0); return { R: c.r, G: c.g, B: c.b, __typeof: "Color3" }; } },
+    BrickColor: { new: (codeOrName) => { if (typeof codeOrName === "number" && BRICK_COLORS[codeOrName] !== undefined) { const hex = BRICK_COLORS[codeOrName]; return { Number: codeOrName, Color: { R: ((hex >> 16) & 255) / 255, G: ((hex >> 8) & 255) / 255, B: (hex & 255) / 255 }, __typeof: "BrickColor" }; } return { Number: 21, Color: { R: 0.768, G: 0.156, B: 0.105 }, __typeof: "BrickColor" }; }, Random: () => ({ Number: 21, Color: { R: 0.768, G: 0.156, B: 0.105 }, __typeof: "BrickColor" }) },
     UDim: { new: (s = 0, o = 0) => ({ Scale: Number(s) || 0, Offset: Number(o) || 0, __typeof: "UDim" }) },
-    UDim2: {
-      new: (xs = 0, xo = 0, ys = 0, yo = 0) => ({ X: { Scale: xs, Offset: xo }, Y: { Scale: ys, Offset: yo }, __typeof: "UDim2" }),
-      fromScale: (xs = 0, ys = 0) => ({ X: { Scale: xs, Offset: 0 }, Y: { Scale: ys, Offset: 0 }, __typeof: "UDim2" }),
-      fromOffset: (xo = 0, yo = 0) => ({ X: { Scale: 0, Offset: xo }, Y: { Scale: 0, Offset: yo }, __typeof: "UDim2" })
-    },
+    UDim2: { new: (xs = 0, xo = 0, ys = 0, yo = 0) => ({ X: { Scale: xs, Offset: xo }, Y: { Scale: ys, Offset: yo }, __typeof: "UDim2" }), fromScale: (xs = 0, ys = 0) => ({ X: { Scale: xs, Offset: 0 }, Y: { Scale: ys, Offset: 0 }, __typeof: "UDim2" }), fromOffset: (xo = 0, yo = 0) => ({ X: { Scale: 0, Offset: xo }, Y: { Scale: 0, Offset: yo }, __typeof: "UDim2" }) },
     TweenInfo: { new: (t = 1, style = "Quad", dir = "Out", rep = 0, rev = false, delay = 0) => ({ Time: t, EasingStyle: style, EasingDirection: dir, RepeatCount: rep, Reverses: rev, DelayTime: delay, __typeof: "TweenInfo" }) },
     NumberRange: { new: (min = 0, max) => ({ Min: Number(min) || 0, Max: max === undefined ? (Number(min) || 0) : (Number(max) || 0), __typeof: "NumberRange" }) },
     Rect: { new: (minX = 0, minY = 0, maxX = 0, maxY = 0) => ({ Min: { X: minX, Y: minY }, Max: { X: maxX, Y: maxY }, __typeof: "Rect" }) },
-    Ray: {
-      new: (origin, dir) => ({
-        Origin: origin || makeVector3(),
-        Direction: dir || makeVector3(0, 0, -1),
-        Unit: { Origin: origin || makeVector3(), Direction: makeVector3(dir?.X ?? 0, dir?.Y ?? 0, dir?.Z ?? -1).Unit() },
-        __typeof: "Ray"
-      })
-    },
+    Ray: { new: (origin, dir) => ({ Origin: origin || makeVector3(), Direction: dir || makeVector3(0, 0, -1), __typeof: "Ray" }) },
     RaycastParams: { new: () => ({ FilterType: "Enum.RaycastFilterType.Exclude", FilterDescendantsInstances: [], IgnoreWater: true, __typeof: "RaycastParams" }) },
     Enum: new Proxy({}, { get: (_, k) => new Proxy({}, { get: (__, v) => `Enum.${String(k)}.${String(v)}` }) }),
     math: Object.assign(Object.create(Math), {
-      clamp: (n, min, max) => Math.max(min, Math.min(max, n)),
-      sign: (n) => (n > 0 ? 1 : (n < 0 ? -1 : 0)),
-      rad: (d) => (d * Math.PI) / 180,
-      deg: (r) => (r * 180) / Math.PI,
-      round: (n) => Math.round(n),
-      lerp: (a, b, t) => a + (b - a) * t,
+      clamp: (n, min, max) => Math.max(min, Math.min(max, n)), sign: (n) => (n > 0 ? 1 : (n < 0 ? -1 : 0)),
+      rad: (d) => (d * Math.PI) / 180, deg: (r) => (r * 180) / Math.PI, round: (n) => Math.round(n), lerp: (a, b, t) => a + (b - a) * t,
       map: (x, inMin, inMax, outMin, outMax) => outMin + ((x - inMin) / ((inMax - inMin) || 1)) * (outMax - outMin),
       noise: (x = 0, y = 0, z = 0) => Math.sin(x * 1.7 + y * 2.3 + z * 1.1) * 0.5,
       randomseed: (s) => { randSeed = (Number(s) || 1) >>> 0; },
-      random: (...args) => {
-        const r = seededRandom();
-        if (args.length === 0) return r;
-        if (args.length === 1) return Math.floor(r * Math.floor(args[0])) + 1;
-        const lo = Math.ceil(args[0]);
-        const hi = Math.floor(args[1]);
-        return Math.floor(r * (hi - lo + 1)) + lo;
-      }
+      random: (...args) => { const r = seededRandom(); if (args.length === 0) return r; if (args.length === 1) return Math.floor(r * Math.floor(args[0])) + 1; const lo = Math.ceil(args[0]); const hi = Math.floor(args[1]); return Math.floor(r * (hi - lo + 1)) + lo; }
     }),
     string: {
-      sub: (s, i, j) => {
-        const str = String(s ?? "");
-        const start = i >= 0 ? i - 1 : Math.max(0, str.length + i);
-        const end = j === undefined ? str.length : (j >= 0 ? j : str.length + j + 1);
-        return str.slice(start, end);
-      },
-      find: (s, pat, init = 1) => {
-        const str = String(s ?? "");
-        const idx = str.indexOf(String(pat ?? ""), Math.max(0, init - 1));
-        return idx === -1 ? null : [idx + 1, idx + String(pat).length];
-      },
-      match: (s, pat) => {
-        const m = String(s ?? "").match(new RegExp(String(pat ?? "")));
-        return m ? m[0] : null;
-      },
-      gmatch: (s, pat) => {
-        const matches = Array.from(String(s ?? "").matchAll(new RegExp(String(pat ?? ""), "g")));
-        return matches.map((m) => [m[0]]);
-      },
-      gsub: (s, pat, rep) => {
-        const str = String(s ?? "");
-        if (typeof rep === "function") return str.replaceAll(String(pat ?? ""), (...args) => String(rep(...args) ?? ""));
-        return str.replaceAll(String(pat ?? ""), String(rep ?? ""));
-      },
+      sub: (s, i, j) => { const str = String(s ?? ""); const start = i >= 0 ? i - 1 : Math.max(0, str.length + i); const end = j === undefined ? str.length : (j >= 0 ? j : str.length + j + 1); return str.slice(start, end); },
+      find: (s, pat, init = 1) => { const str = String(s ?? ""); const idx = str.indexOf(String(pat ?? ""), Math.max(0, init - 1)); return idx === -1 ? null : [idx + 1, idx + String(pat).length]; },
+      match: (s, pat) => { const m = String(s ?? "").match(new RegExp(String(pat ?? ""))); return m ? m[0] : null; },
+      gmatch: (s, pat) => Array.from(String(s ?? "").matchAll(new RegExp(String(pat ?? ""), "g"))).map((m) => [m[0]]),
+      gsub: (s, pat, rep) => { const str = String(s ?? ""); if (typeof rep === "function") return str.replaceAll(String(pat ?? ""), (...args) => String(rep(...args) ?? "")); return str.replaceAll(String(pat ?? ""), String(rep ?? "")); },
       split: (s, sep = ",") => createLuaTable(String(s ?? "").split(String(sep))),
-      lower: (s) => String(s ?? "").toLowerCase(),
-      upper: (s) => String(s ?? "").toUpperCase(),
-      len: (s) => String(s ?? "").length,
-      format: (fmt, ...args) => {
-        let idx = 0;
-        return String(fmt ?? "").replace(/%[sdifq]/g, () => String(args[idx++] ?? ""));
-      },
-      rep: (s, n) => String(s ?? "").repeat(Math.max(0, Math.floor(Number(n) || 0))),
-      reverse: (s) => String(s ?? "").split("").reverse().join(""),
-      byte: (s, i = 1) => String(s ?? "").charCodeAt(Math.max(0, Number(i) - 1)) || null,
-      char: (...codes) => codes.map((c) => String.fromCharCode(Number(c) || 0)).join("")
+      lower: (s) => String(s ?? "").toLowerCase(), upper: (s) => String(s ?? "").toUpperCase(), len: (s) => String(s ?? "").length,
+      format: (fmt, ...args) => { let idx = 0; return String(fmt ?? "").replace(/%[sdifq]/g, () => String(args[idx++] ?? "")); },
+      rep: (s, n) => String(s ?? "").repeat(Math.max(0, Math.floor(Number(n) || 0))), reverse: (s) => String(s ?? "").split("").reverse().join(""),
+      byte: (s, i = 1) => String(s ?? "").charCodeAt(Math.max(0, Number(i) - 1)) || null, char: (...codes) => codes.map((c) => String.fromCharCode(Number(c) || 0)).join("")
     },
     table: {
-      insert: (t, posOrVal, val) => {
-        if (!t) return;
-        const arr = t.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : null);
-        if (!arr) return;
-        if (val === undefined) arr.push(posOrVal);
-        else arr.splice(Math.max(0, Number(posOrVal) - 1), 0, val);
-      },
-      remove: (t, pos) => {
-        if (!t) return null;
-        const arr = t.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : null);
-        if (!arr) return null;
-        if (pos === undefined) return arr.pop() ?? null;
-        const removed = arr.splice(Math.max(0, Number(pos) - 1), 1);
-        return removed[0] ?? null;
-      },
-      find: (t, needle) => {
-        const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : []);
-        const i = arr.indexOf(needle);
-        return i === -1 ? null : i + 1;
-      },
-      clear: (t) => {
-        if (!t) return;
-        if (t.__isLuaTable) {
-          t.__arr.length = 0;
-          Object.keys(t.__map).forEach((k) => delete t.__map[k]);
-        } else if (Array.isArray(t)) t.length = 0;
-        else if (typeof t === "object") Object.keys(t).forEach((k) => delete t[k]);
-      },
-      concat: (t, sep = "", i = 1, j) => {
-        const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : []);
-        const start = Math.max(0, Number(i) - 1);
-        const end = j === undefined ? arr.length : Number(j);
-        return arr.slice(start, end).map(luauTostring).join(String(sep));
-      },
-      sort: (t, comp) => {
-        const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : null);
-        if (!arr) return;
-        if (typeof comp === "function") arr.sort((a, b) => (luauTruthy(comp(a, b)) ? -1 : 1));
-        else arr.sort();
-      },
-      clone: (t) => {
-        if (!t) return createLuaTable();
-        if (t.__isLuaTable) return createLuaTable([...t.__arr], { ...t.__map });
-        return Array.isArray(t) ? createLuaTable([...t]) : createLuaTable([], { ...t });
-      },
-      create: (count, val) => {
-        const n = Math.max(0, Math.floor(Number(count) || 0));
-        const arr = Array.from({ length: n }, () => (typeof val === "function" ? val() : val));
-        return createLuaTable(arr);
-      },
+      insert: (t, posOrVal, val) => { const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : null); if (!arr) return; if (val === undefined) arr.push(posOrVal); else arr.splice(Math.max(0, Number(posOrVal) - 1), 0, val); },
+      remove: (t, pos) => { const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : null); if (!arr) return null; if (pos === undefined) return arr.pop() ?? null; return arr.splice(Math.max(0, Number(pos) - 1), 1)[0] ?? null; },
+      find: (t, needle) => { const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : []); const i = arr.indexOf(needle); return i === -1 ? null : i + 1; },
+      clear: (t) => { if (!t) return; if (t.__isLuaTable) { t.__arr.length = 0; Object.keys(t.__map).forEach((k) => delete t.__map[k]); } else if (Array.isArray(t)) t.length = 0; else if (typeof t === "object") Object.keys(t).forEach((k) => delete t[k]); },
+      concat: (t, sep = "", i = 1, j) => { const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : []); return arr.slice(Math.max(0, Number(i) - 1), j === undefined ? arr.length : Number(j)).map(luauTostring).join(String(sep)); },
+      sort: (t, comp) => { const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : null); if (!arr) return; if (typeof comp === "function") arr.sort((a, b) => (luauTruthy(comp(a, b)) ? -1 : 1)); else arr.sort(); },
+      clone: (t) => !t ? createLuaTable() : (t.__isLuaTable ? createLuaTable([...t.__arr], { ...t.__map }) : (Array.isArray(t) ? createLuaTable([...t]) : createLuaTable([], { ...t }))),
+      create: (count, val) => createLuaTable(Array.from({ length: Math.max(0, Math.floor(Number(count) || 0)) }, () => (typeof val === "function" ? val() : val))),
       pack: (...args) => createLuaTable(args, { n: args.length }),
-      unpack: (t, i = 1, j) => {
-        const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : []);
-        return arr.slice(Math.max(0, Number(i) - 1), j === undefined ? arr.length : Number(j));
-      },
-      maxn: (t) => {
-        const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : []);
-        return arr.length;
-      },
-      move: (a1, f, e, tIdx, a2 = a1) => {
-        const src = a1?.__isLuaTable ? a1.__arr : a1;
-        const dst = a2?.__isLuaTable ? a2.__arr : a2;
-        if (!Array.isArray(src) || !Array.isArray(dst)) return a2;
-        const count = Math.max(0, Number(e) - Number(f) + 1);
-        for (let k = 0; k < count; k++) {
-          dst[Number(tIdx) - 1 + k] = src[Number(f) - 1 + k];
-        }
-        return a2;
-      }
+      unpack: (t, i = 1, j) => { const arr = t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : []); return arr.slice(Math.max(0, Number(i) - 1), j === undefined ? arr.length : Number(j))[0]; },
+      maxn: (t) => (t?.__isLuaTable ? t.__arr : (Array.isArray(t) ? t : [])).length,
+      move: (a1, f, e, tIdx, a2 = a1) => { const src = a1?.__isLuaTable ? a1.__arr : a1; const dst = a2?.__isLuaTable ? a2.__arr : a2; if (!Array.isArray(src) || !Array.isArray(dst)) return a2; for (let k = 0; k < Math.max(0, Number(e) - Number(f) + 1); k++) dst[Number(tIdx) - 1 + k] = src[Number(f) - 1 + k]; return a2; }
     },
     bit32: {
       band: (...args) => (args.reduce((acc, v) => acc & (Number(v) >>> 0), 0xffffffff)) >>> 0,
@@ -3604,177 +2926,44 @@ function runLuauScriptSource(code, scriptName = "Script") {
       lshift: (a, n) => ((Number(a) >>> 0) << (Number(n) || 0)) >>> 0,
       rshift: (a, n) => ((Number(a) >>> 0) >>> (Number(n) || 0)) >>> 0,
       arshift: (a, n) => ((Number(a) | 0) >> (Number(n) || 0)) >>> 0,
-      lrotate: (a, n) => {
-        const x = Number(a) >>> 0;
-        const d = ((Number(n) || 0) % 32 + 32) % 32;
-        return ((x << d) | (x >>> (32 - d))) >>> 0;
-      },
-      rrotate: (a, n) => {
-        const x = Number(a) >>> 0;
-        const d = ((Number(n) || 0) % 32 + 32) % 32;
-        return ((x >>> d) | (x << (32 - d))) >>> 0;
-      },
+      lrotate: (a, n) => { const x = Number(a) >>> 0, d = ((Number(n) || 0) % 32 + 32) % 32; return ((x << d) | (x >>> (32 - d))) >>> 0; },
+      rrotate: (a, n) => { const x = Number(a) >>> 0, d = ((Number(n) || 0) % 32 + 32) % 32; return ((x >>> d) | (x << (32 - d))) >>> 0; },
       btest: (...args) => (args.reduce((acc, v) => acc & (Number(v) >>> 0), 0xffffffff)) !== 0,
-      extract: (n, field, width = 1) => {
-        const mask = width >= 32 ? 0xffffffff : ((1 << width) - 1);
-        return ((Number(n) >>> (Number(field) || 0)) & mask) >>> 0;
-      },
-      replace: (n, v, field, width = 1) => {
-        const f = Number(field) || 0;
-        const w = Number(width) || 1;
-        const mask = (w >= 32 ? 0xffffffff : ((1 << w) - 1)) << f;
-        return (((Number(n) >>> 0) & ~mask) | (((Number(v) >>> 0) << f) & mask)) >>> 0;
-      },
+      extract: (n, field, width = 1) => ((Number(n) >>> (Number(field) || 0)) & (width >= 32 ? 0xffffffff : ((1 << width) - 1))) >>> 0,
+      replace: (n, v, field, width = 1) => { const f = Number(field) || 0, w = Number(width) || 1, mask = (w >= 32 ? 0xffffffff : ((1 << w) - 1)) << f; return (((Number(n) >>> 0) & ~mask) | (((Number(v) >>> 0) << f) & mask)) >>> 0; },
       countlz: (n) => Math.clz32(Number(n) >>> 0),
-      countrz: (n) => {
-        const x = Number(n) >>> 0;
-        if (x === 0) return 32;
-        return 31 - Math.clz32(x & -x);
-      }
+      countrz: (n) => { const x = Number(n) >>> 0; return x === 0 ? 32 : 31 - Math.clz32(x & -x); }
     },
-    os: {
-      clock: () => performance.now() / 1000,
-      time: () => Math.floor(Date.now() / 1000),
-      difftime: (t2, t1) => Number(t2) - Number(t1),
-      date: (fmt, t) => new Date((t ? Number(t) * 1000 : Date.now())).toISOString()
-    },
-    debug: {
-      traceback: (msg = "") => String(msg) + "\n[stack traceback in " + scriptName + "]",
-      info: () => createLuaTable([], { name: scriptName, what: "Lua", line: 1 })
-    },
+    os: { clock: () => performance.now() / 1000, time: () => Math.floor(Date.now() / 1000), difftime: (t2, t1) => Number(t2) - Number(t1), date: (fmt, t) => new Date((t ? Number(t) * 1000 : Date.now())).toISOString() },
+    debug: { traceback: (msg = "") => String(msg) + "\n[stack traceback in " + scriptName + "]", info: () => createLuaTable([], { name: scriptName, what: "Lua", line: 1 }) },
     coroutine: {
       create: (fn) => ({ fn, status: "suspended", __typeof: "thread" }),
-      resume: (co, ...args) => {
-        try {
-          if (!co || typeof co.fn !== "function") return createLuaTable([false, "invalid coroutine"]);
-          co.status = "running";
-          const res = co.fn(...args);
-          co.status = "dead";
-          return createLuaTable([true, res]);
-        } catch (e) {
-          if (co) co.status = "dead";
-          return createLuaTable([false, e && e.message ? e.message : String(e)]);
-        }
-      },
-      wrap: (fn) => (...args) => fn(...args),
-      status: (co) => co?.status || "dead",
-      running: () => null,
-      isyieldable: () => true,
-      yield: () => undefined,
+      resume: (co, ...args) => { try { if (!co || typeof co.fn !== "function") return createLuaTable([false, "invalid coroutine"]); co.status = "running"; const res = co.fn(...args); co.status = "dead"; return createLuaTable([true, res]); } catch (e) { if (co) co.status = "dead"; return createLuaTable([false, e && e.message ? e.message : String(e)]); } },
+      wrap: (fn) => (...args) => fn(...args), status: (co) => co?.status || "dead", running: () => null, isyieldable: () => true, yield: () => undefined,
       close: (co) => { if (co) co.status = "dead"; return createLuaTable([true]); }
     },
-    setmetatable: (tbl, mt) => {
-      if (tbl && typeof tbl.__setMt === "function") tbl.__setMt(mt);
-      return tbl;
-    },
-    getmetatable: (tbl) => {
-      if (tbl && typeof tbl.__getMt === "function") return tbl.__getMt();
-      return null;
-    },
-    rawget: (tbl, k) => {
-      if (!tbl) return undefined;
-      if (tbl.__isLuaTable) return tbl.__map[k] ?? tbl.__arr[Number(k) - 1];
-      return tbl[k];
-    },
-    rawset: (tbl, k, v) => {
-      if (!tbl) return tbl;
-      if (tbl.__isLuaTable) {
-        if (typeof k === "number" && k >= 1) tbl.__arr[k - 1] = v;
-        else tbl.__map[k] = v;
-      } else {
-        tbl[k] = v;
-      }
-      return tbl;
-    },
-    rawequal: (a, b) => a === b,
-    rawlen: (v) => luaLength(v),
-    tonumber: (v, base) => {
-      const n = base ? parseInt(String(v), Number(base)) : Number(v);
-      return Number.isFinite(n) ? n : null;
-    },
-    tostring: luauTostring,
-    type: luauType,
-    typeof: luauTypeof,
+    setmetatable: (tbl, mt) => { if (tbl && typeof tbl.__setMt === "function") tbl.__setMt(mt); return tbl; },
+    getmetatable: (tbl) => (tbl && typeof tbl.__getMt === "function") ? tbl.__getMt() : null,
+    rawget: (tbl, k) => !tbl ? undefined : (tbl.__isLuaTable ? (tbl.__map[k] ?? tbl.__arr[Number(k) - 1]) : tbl[k]),
+    rawset: (tbl, k, v) => { if (!tbl) return tbl; if (tbl.__isLuaTable) { if (typeof k === "number" && k >= 1) tbl.__arr[k - 1] = v; else tbl.__map[k] = v; } else tbl[k] = v; return tbl; },
+    rawequal: (a, b) => a === b, rawlen: (v) => luaLength(v),
+    tonumber: (v, base) => { const n = base ? parseInt(String(v), Number(base)) : Number(v); return Number.isFinite(n) ? n : null; },
+    tostring: luauTostring, type: luauType, typeof: luauTypeof,
     assert: (cond, msg = "assertion failed!") => { if (!luauTruthy(cond)) throw new Error(String(msg)); return cond; },
     error: (msg) => { throw new Error(luauTostring(msg ?? "error")); },
-    pcall: (fn, ...args) => {
-      try {
-        const res = fn(...args);
-        return createLuaTable([true, res]);
-      } catch (err) {
-        return createLuaTable([false, err && err.message ? err.message : String(err)]);
-      }
-    },
-    xpcall: (fn, errHandler, ...args) => {
-      try {
-        const res = fn(...args);
-        return createLuaTable([true, res]);
-      } catch (err) {
-        const msg = err && err.message ? err.message : String(err);
-        try { if (typeof errHandler === "function") errHandler(msg); } catch (_) {}
-        return createLuaTable([false, msg]);
-      }
-    },
-    select: (index, ...args) => {
-      if (index === "#") return args.length;
-      const i = Math.max(0, Number(index) - 1);
-      return args[i];
-    },
-    unpack: (t) => {
-      if (t && t.__isLuaTable) return t.__arr[0];
-      return Array.isArray(t) ? t[0] : undefined;
-    },
-    ipairs: (t) => {
-      if (t && t.__isLuaTable) {
-        const rows = [];
-        for (let i = 0; i < t.__arr.length; i++) {
-          if (t.__arr[i] !== undefined) rows.push([i + 1, t.__arr[i]]);
-        }
-        return rows;
-      }
-      const arr = Array.isArray(t) ? t : Object.values(t || {});
-      return arr.map((v, idx) => [idx + 1, v]);
-    },
-    pairs: (t) => {
-      if (t && t.__isLuaTable) {
-        const rows = [];
-        for (let i = 0; i < t.__arr.length; i++) {
-          if (t.__arr[i] !== undefined) rows.push([i + 1, t.__arr[i]]);
-        }
-        for (const [k, v] of Object.entries(t.__map)) {
-          rows.push([k, v]);
-        }
-        return rows;
-      }
-      if (Array.isArray(t)) return t.map((v, idx) => [idx + 1, v]);
-      return Object.entries(t || {});
-    },
-    tick: () => performance.now() / 1000,
-    time: () => performance.now() / 1000,
-    elapsedTime: () => performance.now() / 1000,
+    pcall: (fn, ...args) => { try { return createLuaTable([true, fn(...args)]); } catch (err) { return createLuaTable([false, err && err.message ? err.message : String(err)]); } },
+    xpcall: (fn, errHandler, ...args) => { try { return createLuaTable([true, fn(...args)]); } catch (err) { const msg = err && err.message ? err.message : String(err); try { if (typeof errHandler === "function") errHandler(msg); } catch (_) {} return createLuaTable([false, msg]); } },
+    select: (index, ...args) => (index === "#" ? args.length : args[Math.max(0, Number(index) - 1)]),
+    unpack: (t) => (t && t.__isLuaTable) ? t.__arr[0] : (Array.isArray(t) ? t[0] : undefined),
+    ipairs: (t) => { if (t && t.__isLuaTable) { const rows = []; for (let i = 0; i < t.__arr.length; i++) if (t.__arr[i] !== undefined) rows.push([i + 1, t.__arr[i]]); return rows; } const arr = Array.isArray(t) ? t : Object.values(t || {}); return arr.map((v, idx) => [idx + 1, v]); },
+    pairs: (t) => { if (t && t.__isLuaTable) { const rows = []; for (let i = 0; i < t.__arr.length; i++) if (t.__arr[i] !== undefined) rows.push([i + 1, t.__arr[i]]); for (const [k, v] of Object.entries(t.__map)) rows.push([k, v]); return rows; } if (Array.isArray(t)) return t.map((v, idx) => [idx + 1, v]); return Object.entries(t || {}); },
+    tick: () => performance.now() / 1000, time: () => performance.now() / 1000, elapsedTime: () => performance.now() / 1000,
     wait: (sec = 0.05) => new Promise((r) => setTimeout(r, Math.max(10, Number(sec || 0.05) * 1000))),
     task: {
       wait: (sec = 0.05) => new Promise((r) => setTimeout(r, Math.max(10, Number(sec || 0.05) * 1000))),
-      spawn: (fn, ...args) => {
-        if (typeof fn === "function") {
-          Promise.resolve().then(() => fn(...args)).catch((e) => addChat("ScriptWarn", String(e)));
-        }
-      },
-      defer: (fn, ...args) => {
-        if (typeof fn === "function") {
-          queueMicrotask(() => {
-            try { fn(...args); } catch (e) { addChat("ScriptWarn", String(e)); }
-          });
-        }
-      },
-      delay: (sec, fn, ...args) => {
-        const ms = Math.max(10, Number(sec || 0.05) * 1000);
-        setTimeout(() => {
-          if (typeof fn === "function") {
-            try { fn(...args); } catch (e) { addChat("ScriptWarn", String(e)); }
-          }
-        }, ms);
-      }
+      spawn: (fn, ...args) => { if (typeof fn === "function") Promise.resolve().then(() => fn(...args)).catch((e) => addChat("ScriptWarn", String(e))); },
+      defer: (fn, ...args) => { if (typeof fn === "function") queueMicrotask(() => { try { fn(...args); } catch (e) { addChat("ScriptWarn", String(e)); } }); },
+      delay: (sec, fn, ...args) => { const ms = Math.max(10, Number(sec || 0.05) * 1000); setTimeout(() => { if (typeof fn === "function") { try { fn(...args); } catch (e) { addChat("ScriptWarn", String(e)); } } }, ms); }
     },
     delay: (sec, fn) => setTimeout(() => { if (typeof fn === "function") { try { fn(); } catch (_) {} } }, Math.max(10, Number(sec || 0.05) * 1000)),
     spawn: (fn) => { if (typeof fn === "function") Promise.resolve().then(() => { try { fn(); } catch (_) {} }); },
@@ -3787,6 +2976,101 @@ function runLuauScriptSource(code, scriptName = "Script") {
   } catch (err) {
     addChat("ScriptError", scriptName + ": " + (err && err.message ? err.message : String(err)));
   }
+}
+
+/* =========================================================================
+   BROWSER-READABLE SCRIPT EXTRACTION & AUTO-INJECTION
+   ========================================================================= */
+
+function decodeScriptSourceText(rawText) {
+  if (typeof rawText !== "string") return "";
+  let text = rawText.trim();
+  if (!text) return "";
+
+  if (/^data:text\/[^;,]+;base64,/i.test(text)) {
+    try {
+      const b64 = text.split(",")[1] || "";
+      text = atob(b64);
+    } catch (_) {}
+  } else if (/^base64:/i.test(text)) {
+    try {
+      text = atob(text.slice(7).trim());
+    } catch (_) {}
+  }
+
+  return text
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'");
+}
+
+function extractScriptCodeFromItem(item, props) {
+  if (props) {
+    const direct =
+      readStr(props, "Source", "") ||
+      readStr(props, "Code", "") ||
+      readStr(props, "ScriptSource", "") ||
+      readStr(props, "Luau", "") ||
+      readStr(props, "Lua", "");
+    if (direct && direct.trim()) return decodeScriptSourceText(direct);
+
+    for (const el of Array.from(props.children)) {
+      const tag = (el.tagName || "").toLowerCase();
+      const attrName = (el.getAttribute("name") || "").toLowerCase();
+      if (["source", "code", "scriptsource", "luau", "lua", "protectedstring"].includes(tag) ||
+          ["source", "code", "scriptsource", "luau", "lua"].includes(attrName)) {
+        const txt = (el.textContent || "").trim();
+        if (txt) return decodeScriptSourceText(txt);
+      }
+    }
+  }
+
+  if (item) {
+    for (const ch of Array.from(item.children)) {
+      if (ch.tagName !== "Item") {
+        const txt = (ch.textContent || "").trim();
+        if (txt && (txt.includes("local ") || txt.includes("function ") || txt.includes("game") || txt.includes("workspace"))) {
+          return decodeScriptSourceText(txt);
+        }
+      }
+    }
+  }
+  return "";
+}
+
+function resolveTargetParentForScript(scriptName, parentGroup, xmlItem) {
+  const lower = (scriptName || "").toLowerCase();
+  for (let i = dynamicParts.length - 1; i >= 0; i--) {
+    const dp = dynamicParts[i];
+    if (dp && !dp.destroyed && dp.holder && dp.holder.parent === parentGroup) {
+      const pName = (dp.name || "").toLowerCase();
+      if (lower.includes(pName) || pName.includes(lower.replace(/(script|localscript|modulescript)/g, "").trim())) {
+        return {
+          parentType: "Part",
+          name: dp.name,
+          holder: dp.holder,
+          proxy: {
+            Name: dp.name,
+            ClassName: "Part",
+            __typeof: "Instance",
+            get Position() { return makeVector3(dp.holder.position.x, dp.holder.position.y, dp.holder.position.z); },
+            set Position(v) { if (v) { dp.holder.position.set(Number(v.X ?? v.x ?? dp.holder.position.x), Number(v.Y ?? v.y ?? dp.holder.position.y), Number(v.Z ?? v.z ?? dp.holder.position.z)); invalidateFloorCache(); } },
+            get CFrame() { return makeCFrame(dp.holder.position.x, dp.holder.position.y, dp.holder.position.z, dp.holder.rotation.x, dp.holder.rotation.y, dp.holder.rotation.z); },
+            set CFrame(cf) { if (cf) { dp.holder.position.set(Number(cf.X ?? cf.Position?.X ?? dp.holder.position.x), Number(cf.Y ?? cf.Position?.Y ?? dp.holder.position.y), Number(cf.Z ?? cf.Position?.Z ?? dp.holder.position.z)); invalidateFloorCache(); } },
+            Touched: makeSignal(dp.touchedCallbacks || [])
+          }
+        };
+      }
+    }
+  }
+  return {
+    parentType: "Workspace",
+    name: "Workspace",
+    holder: parentGroup,
+    proxy: null
+  };
 }
 
 function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsCollector) {
@@ -3803,11 +3087,10 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
   }
 
   if (cls === "Script" || cls === "LocalScript" || cls === "ModuleScript") {
-    if (props) {
-      const src = readStr(props, "Source", "") || readStr(props, "Code", "") || readStr(props, "ScriptSource", "");
-      if (src.trim()) {
-        queuedScripts.push({ name, source: src });
-      }
+    const src = extractScriptCodeFromItem(item, props);
+    if (src.trim()) {
+      const targetInfo = resolveTargetParentForScript(name, parentGroup, item);
+      queuedScripts.push({ name, source: src, targetInfo });
     }
     return;
   }
@@ -3828,9 +3111,7 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
 
   if (cls === "Lighting" && props) {
     const ambientHex = parseColorFromProps(props, null);
-    if (ambientHex !== null) {
-      studioConfig.ambientColor = ambientHex;
-    }
+    if (ambientHex !== null) studioConfig.ambientColor = ambientHex;
     const skyHex = parseColor3Value(findPropElement(props, "OutdoorAmbient") || findPropElement(props, "FogColor"), null);
     if (skyHex !== null) {
       studioConfig.outdoorAmbientColor = skyHex;
@@ -3872,7 +3153,7 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
     );
     const visual = createVisualItemMesh(item, props);
     const colorHex = parseColorFromProps(props, 0xc0c8d0);
-    const { texUrl } = extractTextureOrMeshUrl(item, props);
+    const { texUrl, meshUrl } = extractTextureOrMeshUrl(item, props);
 
     if (hasExplicitWorldPos) {
       const { matrix4 } = parseCFrameMatrix(cfEl);
@@ -3884,10 +3165,10 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
       visual.quaternion.copy(quat);
       parentGroup.add(visual);
       if (worldItemsCollector) {
-        worldItemsCollector.push({ name, colorHex, texUrl, mesh: visual, pickupPos: posVec.clone(), collected: false });
+        worldItemsCollector.push({ name, colorHex, texUrl, meshUrl, mesh: visual, pickupPos: posVec.clone(), collected: false });
       }
     } else {
-      giveItemToBackpack(name, colorHex, backpackItems.length === 0, texUrl);
+      giveItemToBackpack(name, colorHex, backpackItems.length === 0, texUrl, meshUrl);
     }
   }
 
@@ -3921,13 +3202,9 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
         baseplate.geometry.dispose();
         baseplate.geometry = new THREE.BoxGeometry(bx, by, bz);
       }
-      if (cfEl) {
-        baseplate.position.set(readNum(cfEl, "X", 0), readNum(cfEl, "Y", -1), readNum(cfEl, "Z", 0));
-      }
+      if (cfEl) baseplate.position.set(readNum(cfEl, "X", 0), readNum(cfEl, "Y", -1), readNum(cfEl, "Z", 0));
       const bpColor = parseColorFromProps(props, null);
-      if (bpColor !== null && baseplate.material) {
-        baseplate.material.color.setHex(bpColor);
-      }
+      if (bpColor !== null && baseplate.material) baseplate.material.color.setHex(bpColor);
       baseplate.userData.canCollide = canCollide;
       baseplate.userData.anchored = anchored;
       return;
@@ -3957,24 +3234,14 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
 
     const partHolder = new THREE.Group();
     if (geomOrGroup.isGroup) {
-      geomOrGroup.traverse((child) => {
-        if (child.isMesh) {
-          child.material = mat;
-          child.castShadow = true;
-          child.receiveShadow = true;
-        }
-      });
+      geomOrGroup.traverse((child) => { if (child.isMesh) { child.material = mat; child.castShadow = true; child.receiveShadow = true; } });
       partHolder.add(geomOrGroup);
     } else {
       const mesh = new THREE.Mesh(geomOrGroup, mat);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      partHolder.add(mesh);
+      mesh.castShadow = true; mesh.receiveShadow = true; partHolder.add(mesh);
     }
 
-    const posVec = new THREE.Vector3();
-    const quat = new THREE.Quaternion();
-    const scaleVec = new THREE.Vector3();
+    const posVec = new THREE.Vector3(), quat = new THREE.Quaternion(), scaleVec = new THREE.Vector3();
     matrix4.decompose(posVec, quat, scaleVec);
     partHolder.position.copy(posVec);
     partHolder.quaternion.copy(quat);
@@ -3984,7 +3251,7 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
     attachLightsFromItem(item, partHolder);
     parentGroup.add(partHolder);
 
-    dynamicParts.push({
+    const partRec = {
       name,
       holder: partHolder,
       anchored,
@@ -3993,7 +3260,40 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
       halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2),
       touchedCallbacks: [],
       destroyed: false
-    });
+    };
+    dynamicParts.push(partRec);
+
+    for (const child of Array.from(item.children)) {
+      if (child.tagName === "Item") {
+        const cCls = child.getAttribute("class") || "";
+        if (cCls === "Script" || cCls === "LocalScript" || cCls === "ModuleScript") {
+          const cProps = findPropElement(child, "Properties") || child.firstElementChild;
+          const cName = cProps ? readStr(cProps, "Name", cCls) : cCls;
+          const cSrc = extractScriptCodeFromItem(child, cProps);
+          if (cSrc.trim()) {
+            queuedScripts.push({
+              name: `${name}.${cName}`,
+              source: cSrc,
+              targetInfo: {
+                parentType: "Part",
+                name,
+                holder: partHolder,
+                proxy: {
+                  Name: name,
+                  ClassName: "Part",
+                  __typeof: "Instance",
+                  get Position() { return makeVector3(partHolder.position.x, partHolder.position.y, partHolder.position.z); },
+                  set Position(v) { if (v) { partHolder.position.set(Number(v.X ?? v.x ?? partHolder.position.x), Number(v.Y ?? v.y ?? partHolder.position.y), Number(v.Z ?? v.z ?? partHolder.position.z)); invalidateFloorCache(); } },
+                  get CFrame() { return makeCFrame(partHolder.position.x, partHolder.position.y, partHolder.position.z, partHolder.rotation.x, partHolder.rotation.y, partHolder.rotation.z); },
+                  set CFrame(cf) { if (cf) { partHolder.position.set(Number(cf.X ?? cf.Position?.X ?? partHolder.position.x), Number(cf.Y ?? cf.Position?.Y ?? partHolder.position.y), Number(cf.Z ?? cf.Position?.Z ?? partHolder.position.z)); invalidateFloorCache(); } },
+                  Touched: makeSignal(partRec.touchedCallbacks)
+                }
+              }
+            });
+          }
+        }
+      }
+    }
 
     const lowerName = name.toLowerCase();
     if (lowerName.includes("kill") || lowerName.includes("lava") || lowerName.includes("acid") || lowerName.includes("spike")) {
@@ -4005,22 +3305,14 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
     }
 
     if (meshUrl && /^https?:\/\//i.test(meshUrl) && meshUrl.toLowerCase().endsWith(".glb")) {
-      gltfLoader.load(
-        meshUrl,
-        (gltf) => {
-          while (partHolder.children.length > 0) partHolder.remove(partHolder.children[0]);
-          const mScene = gltf.scene;
-          mScene.scale.set(sx / 2, sy / 2, sz / 2);
-          partHolder.add(mScene);
-        },
-        undefined,
-        () => {}
-      );
+      gltfLoader.load(meshUrl, (gltf) => { while (partHolder.children.length > 0) partHolder.remove(partHolder.children[0]); const mScene = gltf.scene; mScene.scale.set(sx / 2, sy / 2, sz / 2); partHolder.add(mScene); }, undefined, () => {});
     }
   }
 
   for (const child of Array.from(item.children)) {
     if (child.tagName === "Item") {
+      const cCls = child.getAttribute("class") || "";
+      if (isPartLike && (cCls === "Script" || cCls === "LocalScript" || cCls === "ModuleScript")) continue;
       processStudioItem(child, parentGroup, defaultSpawnPosRef, worldItemsCollector);
     }
   }
@@ -4029,6 +3321,11 @@ function processStudioItem(item, parentGroup, defaultSpawnPosRef, worldItemsColl
 const playerPos = new THREE.Vector3(0, 0.5, 0);
 const playerVel = new THREE.Vector3(0, 0, 0);
 let playerYaw = 0;
+let cameraYaw = 0;
+let camPitch = 0.16;
+let camDist = 4.2;
+const shiftLockEnabled = true;
+
 let isGrounded = false;
 let isJumping = false;
 let isAttacking = false;
@@ -4132,7 +3429,7 @@ function loadPlaceXmlString(xmlText, gameRow = null) {
     respawnLocalPlayer();
 
     for (const sc of queuedScripts) {
-      runLuauScriptSource(sc.source, sc.name);
+      runLuauScriptSource(sc.source, sc.name, sc.targetInfo?.proxy || null);
     }
   } catch (err) {
     addChat("WorldError", String(err?.message || err));
@@ -4647,47 +3944,50 @@ window.addEventListener("keyup", (e) => {
   userInputEndedCallbacks.forEach((f) => { try { f({ KeyCode: e.code }); } catch (_) {} });
 });
 
-canvas.addEventListener("mousedown", (e) => {
-  if (e.button === 0 && equippedIndex >= 0) {
-    isAttacking = true;
-    attackTimer = 0.25;
-    broadcastSelfState();
-  }
-});
-
 let isRightDragging = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
-let camPitch = 0.16;
-let camDist = 4.2;
 
 canvas.addEventListener("mousedown", (e) => {
-  if (e.button === 2) {
+  if (e.button === 0) {
+    if (equippedIndex >= 0) {
+      isAttacking = true;
+      attackTimer = 0.25;
+      broadcastSelfState();
+    }
+  } else if (e.button === 2) {
     isRightDragging = true;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
     canvas.style.cursor = "grabbing";
   }
 });
+
 window.addEventListener("mouseup", (e) => {
   if (!e || e.button === 2 || e.button === undefined) {
     isRightDragging = false;
     canvas.style.cursor = "default";
   }
 });
+
 window.addEventListener("mousemove", (e) => {
   if (!isRightDragging) return;
   const dx = e.clientX - lastMouseX;
   const dy = e.clientY - lastMouseY;
   lastMouseX = e.clientX;
   lastMouseY = e.clientY;
-  playerYaw -= dx * 0.0045;
+  cameraYaw -= dx * 0.0045;
   camPitch = Math.max(-0.55, Math.min(1.15, camPitch + dy * 0.004));
 });
+
 canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
 canvas.addEventListener("wheel", (e) => {
-  camDist = Math.max(1.8, Math.min(14, camDist + e.deltaY * 0.006));
-});
+  e.preventDefault();
+  const fovDelta = e.deltaY * 0.04;
+  camera.fov = Math.max(30, Math.min(115, camera.fov + fovDelta));
+  camera.updateProjectionMatrix();
+}, { passive: false });
 
 window.addEventListener("resize", () => {
   const w = canvas.clientWidth;
@@ -4777,13 +4077,26 @@ function updatePhysicsAndPlayer(dt, now) {
     if (keysDown.has("KeyA") || keysDown.has("ArrowLeft")) moveRight -= 1;
 
     const activeSpeed = speedBoostTimer > 0 ? 34 : studioConfig.walkSpeed;
-    const forwardVec = new THREE.Vector3(-Math.sin(playerYaw), 0, -Math.cos(playerYaw));
-    const rightVec = new THREE.Vector3(Math.cos(playerYaw), 0, -Math.sin(playerYaw));
+    const camForward = new THREE.Vector3(-Math.sin(cameraYaw), 0, -Math.cos(cameraYaw));
+    const camRight = new THREE.Vector3(Math.cos(cameraYaw), 0, -Math.sin(cameraYaw));
 
     const wishDir = new THREE.Vector3()
-      .addScaledVector(forwardVec, moveForward)
-      .addScaledVector(rightVec, moveRight);
-    if (wishDir.lengthSq() > 0) wishDir.normalize();
+      .addScaledVector(camForward, moveForward)
+      .addScaledVector(camRight, moveRight);
+
+    if (wishDir.lengthSq() > 0) {
+      wishDir.normalize();
+      const targetMoveYaw = Math.atan2(-wishDir.x, -wishDir.z);
+      let diff = targetMoveYaw - playerYaw;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      playerYaw += diff * Math.min(1, dt * 16);
+    } else if (shiftLockEnabled) {
+      let diff = cameraYaw - playerYaw;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      playerYaw += diff * Math.min(1, dt * 10);
+    }
 
     playerVel.x = wishDir.x * activeSpeed;
     playerVel.z = wishDir.z * activeSpeed;
@@ -4814,7 +4127,7 @@ function updatePhysicsAndPlayer(dt, now) {
       if (playerPos.distanceTo(pItem.pickupPos) < 4.0) {
         pItem.collected = true;
         pItem.mesh.visible = false;
-        giveItemToBackpack(pItem.name, pItem.colorHex || 0xc0c8d0, true, pItem.texUrl || "");
+        giveItemToBackpack(pItem.name, pItem.colorHex || 0xc0c8d0, true, pItem.texUrl || "", pItem.meshUrl || "");
         addChat("System", "Picked up " + pItem.name + "!");
       }
     }
@@ -4851,13 +4164,18 @@ function updatePhysicsAndPlayer(dt, now) {
 
   const horizDist = Math.cos(camPitch) * camDist;
   const vertDist = Math.sin(camPitch) * camDist;
+  const rightOffset = shiftLockEnabled ? 1.15 : 0;
+
+  const focusX = playerCameraRig.position.x + Math.cos(cameraYaw) * rightOffset;
+  const focusY = playerCameraRig.position.y + 0.35;
+  const focusZ = playerCameraRig.position.z - Math.sin(cameraYaw) * rightOffset;
 
   camera.position.set(
-    playerCameraRig.position.x + Math.sin(playerYaw) * horizDist,
-    playerCameraRig.position.y + vertDist + 0.35,
-    playerCameraRig.position.z + Math.cos(playerYaw) * horizDist
+    focusX + Math.sin(cameraYaw) * horizDist,
+    focusY + vertDist,
+    focusZ + Math.cos(cameraYaw) * horizDist
   );
-  camera.lookAt(playerCameraRig.position.x, playerCameraRig.position.y + 0.35, playerCameraRig.position.z);
+  camera.lookAt(focusX, focusY, focusZ);
   skyDome.position.copy(camera.position);
 
   renderSteppedCallbacks.forEach((f) => { try { f(dt); } catch (_) {} });
