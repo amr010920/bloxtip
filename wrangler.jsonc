@@ -3,7 +3,7 @@
   "name": "bloxtip",
   "main": "/asset.js",
   "not_found_handling": "404-page"
-  "compatibility_date": "2026-11-26",
+  "compatibility_date" "2026-11-26",
   "assets": {
     "directory": ".",
     "binding": "ASSETS"
