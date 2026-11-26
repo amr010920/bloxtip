@@ -10,8 +10,7 @@
 html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; color: #ffffff; }
 #topbar {
   height: 36px;
-  background: linear-gradient(rgba(255, 255, 255, 0.35));
-  border-bottom: 1px solid #0e1013;
+  background: linear-gradient(rgba(0, 0, 0, 0.21));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -24,7 +23,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; c
 .tb-group { display: flex; align-items: center; gap: 10px; }
 #top-games-bar {
   position: absolute;
-  left: 50%;
+  left: 76.5%;
   top: 50%;
   transform: translate(-50%, -50%);
   display: flex;
@@ -73,35 +72,6 @@ canvas { display: block; width: 100%; height: 100%; }
 }
 .rblx-button:active {
   filter: brightness(0.9);
-}
-
-#shiftlock-reticle {
-  display: none;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 18px;
-  height: 18px;
-  transform: translate(-50%, -50%);
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.85);
-  pointer-events: none;
-  z-index: 18;
-}
-#shiftlock-reticle.active {
-  display: block;
-}
-#shiftlock-reticle::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 4px;
-  height: 4px;
-  transform: translate(-50%, -50%);
-  background: #00a2ff;
-  border-radius: 50%;
 }
 
 #loading-screen {
@@ -203,198 +173,12 @@ canvas { display: block; width: 100%; height: 100%; }
   font-size: 11px;
   color: #4b5565;
 }
-
-#esc-menu {
-  display: none;
-  position: absolute;
-  inset: 0;
-  background: rgba(15, 18, 24, 0.78);
-  backdrop-filter: blur(4px);
-  z-index: 50;
-  align-items: center;
-  justify-content: center;
-  user-select: none;
-}
-#esc-menu.open {
-  display: flex;
-}
-#esc-main-frame {
-  width: 720px;
-  max-width: 94%;
-  height: 520px;
-  max-height: 90%;
-  background: #1f242d;
-  border: 1px solid #3c4556;
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.65);
-}
-#esc-top-tabs {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #161920;
-  border-bottom: 1px solid #323a4a;
-  padding: 0 12px;
-  height: 46px;
-}
-.esc-tab-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 100%;
-}
-.esc-tab-btn {
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  color: #b4becd;
-  height: 100%;
-  padding: 0 14px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.esc-tab-btn:hover {
-  color: #ffffff;
-}
-.esc-tab-btn.active {
-  color: #ffffff;
-  border-bottom-color: #00a2ff;
-}
-#esc-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.esc-section-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #9ec5ff;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-}
-#esc-players-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
-  gap: 10px;
-}
-.esc-player-card {
-  background: #272d38;
-  border: 1px solid #3b4454;
-  border-radius: 5px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  text-align: center;
-}
-.esc-player-avatar {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background: #181c23;
-  border: 2px solid #00a2ff;
-  object-fit: cover;
-}
-.esc-player-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: #ffffff;
-  word-break: break-word;
-}
-.esc-player-badge {
-  font-size: 10px;
-  padding: 2px 7px;
-  border-radius: 10px;
-  background: rgba(0, 162, 255, 0.2);
-  color: #6bc6ff;
-}
-.esc-panel-box {
-  background: #272d38;
-  border: 1px solid #3b4454;
-  border-radius: 5px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  font-size: 13px;
-}
-.esc-setting-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.esc-slider-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 190px;
-}
-.esc-toggle-btn {
-  background: #384152;
-  border: 1px solid #525e75;
-  color: #ffffff;
-  padding: 5px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.esc-toggle-btn.on {
-  background: #00a2ff;
-  border-color: #38b8ff;
-}
-#esc-bottom-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  padding: 12px 16px;
-  background: #161920;
-  border-top: 1px solid #323a4a;
-}
-.esc-action-btn {
-  min-width: 120px;
-  padding: 8px 18px;
-  border-radius: 4px;
-  border: 1px solid #4d586e;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  color: #ffffff;
-  background: #2d3543;
-}
-.esc-action-btn:hover {
-  filter: brightness(1.12);
-}
-#esc-resume-btn {
-  background: #0084d4;
-  border-color: #29a9ff;
-}
-#esc-reset-btn {
-  background: #8a5a14;
-  border-color: #c28222;
-}
-#esc-leave-btn {
-  background: #9e2727;
-  border-color: #d44242;
-}
-
 #leaderboard {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 5px;
   width: 210px;
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(0, 0, 0, 0);
   border-radius: 1.5px;
   overflow: hidden;
   font-size: 12px;
@@ -419,9 +203,7 @@ canvas { display: block; width: 100%; height: 100%; }
   top: 52px;
   left: 10px;
   width: 310px;
-  background: rgba(255, 255, 255, 0.76);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 4px;
+  background: rgba(5, 0, 0, 0.221);
   display: flex;
   flex-direction: column;
   z-index: 15;
@@ -488,10 +270,8 @@ canvas { display: block; width: 100%; height: 100%; }
   </div>
   <div id="top-games-bar">
     <button class="tb-btn" id="open-games-btn" type="button">Games</button>
-    <button class="tb-btn" id="open-esc-btn" type="button">Menu (Esc)</button>
   </div>
   <div class="tb-group">
-    <span id="player-label">ur user here</span>
     <button class="tb-btn" id="reset-btn" type="button">Reset</button>
     <button class="tb-btn" id="leave-btn" type="button">Leave</button>
   </div>
@@ -500,12 +280,11 @@ canvas { display: block; width: 100%; height: 100%; }
 <div id="viewport">
   <canvas id="game-canvas"></canvas>
   <div id="roblox-gui-layer"></div>
-  <div id="shiftlock-reticle"></div>
 
   <div id="loading-screen">
     <div class="loader-spinner"></div>
-    <div id="loading-title">Loading Game...</div>
-    <div id="loading-status">Reading xml from games table...</div>
+    <div id="loading-title">Loading da game</div>
+    <div id="loading-status">Reading game</div>
   </div>
 
   <div id="games-modal">
@@ -516,34 +295,6 @@ canvas { display: block; width: 100%; height: 100%; }
     <div id="games-grid"></div>
   </div>
 
-  <div id="esc-menu">
-    <div id="esc-main-frame">
-      <div id="esc-top-tabs">
-        <div class="esc-tab-group">
-          <button class="esc-tab-btn active" data-esc-tab="guidance" type="button">Guidance</button>
-          <button class="esc-tab-btn" data-esc-tab="settings" type="button">Settings</button>
-          <button class="esc-tab-btn" data-esc-tab="more" type="button">More</button>
-        </div>
-        <span style="font-size:12px;color:#8fa0b8;" id="esc-server-info">Bloxtip Menu</span>
-      </div>
-
-      <div id="esc-body">
-        <div id="esc-tab-content"></div>
-
-        <div>
-          <div class="esc-section-title">Players in Server</div>
-          <div id="esc-players-grid"></div>
-        </div>
-      </div>
-
-      <div id="esc-bottom-actions">
-        <button class="esc-action-btn" id="esc-leave-btn" type="button">Leave</button>
-        <button class="esc-action-btn" id="esc-reset-btn" type="button">Reset</button>
-        <button class="esc-action-btn" id="esc-resume-btn" type="button">Resume</button>
-      </div>
-    </div>
-  </div>
-
   <div id="chat-box">
     <div id="chat-log"></div>
     <form id="chat-form">
@@ -552,7 +303,7 @@ canvas { display: block; width: 100%; height: 100%; }
   </div>
 
   <div id="leaderboard">
-    <div id="leaderboard-header"><span>Players</span><span id="player-count"></span></div>
+    <div id="leaderboard-header"><span>Players</span>
     <div id="leaderboard-body"></div>
   </div>
 
@@ -595,71 +346,17 @@ let activeServerId = params.get("server") || "";
 const peerId = "peer_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
 const username = params.get("user") || localStorage.getItem("bloxtip_username") || ("Guest_" + peerId.slice(-4));
 
-let masterVolume = Number(localStorage.getItem("bloxtip_volume") ?? "0.6");
-if (!Number.isFinite(masterVolume) || masterVolume < 0 || masterVolume > 1) masterVolume = 0.6;
-let shiftLockEnabled = localStorage.getItem("bloxtip_shiftlock") === "1";
-let activeEscTab = "guidance";
-
-let audioCtx = null;
-function playUiSound(freq = 520, duration = 0.06, type = "sine") {
-  if (masterVolume <= 0.001) return;
-  try {
-    if (!audioCtx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) audioCtx = new AC();
-    }
-    if (!audioCtx) return;
-    if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(Math.min(0.25, masterVolume * 0.18), audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch (_) {}
-}
-
 const serverRoleLabel = document.getElementById("server-role-label");
 const openGamesBtn = document.getElementById("open-games-btn");
-const openEscBtn = document.getElementById("open-esc-btn");
 const closeGamesBtn = document.getElementById("close-games-btn");
 const gamesModal = document.getElementById("games-modal");
 const gamesGrid = document.getElementById("games-grid");
-const escMenu = document.getElementById("esc-menu");
-const escTabContent = document.getElementById("esc-tab-content");
-const escPlayersGrid = document.getElementById("esc-players-grid");
-const escServerInfo = document.getElementById("esc-server-info");
-const shiftlockReticle = document.getElementById("shiftlock-reticle");
 const robloxGuiLayer = document.getElementById("roblox-gui-layer");
 const loadingScreen = document.getElementById("loading-screen");
 const loadingTitle = document.getElementById("loading-title");
 const loadingStatus = document.getElementById("loading-status");
 const leaderboardBody = document.getElementById("leaderboard-body");
-const playerCountEl = document.getElementById("player-count");
 const hotbarEl = document.getElementById("hotbar");
-
-function syncShiftLockUI() {
-  shiftlockReticle.classList.toggle("active", shiftLockEnabled && !escMenu.classList.contains("open"));
-}
-
-function setShiftLock(enabled) {
-  shiftLockEnabled = Boolean(enabled);
-  localStorage.setItem("bloxtip_shiftlock", shiftLockEnabled ? "1" : "0");
-  syncShiftLockUI();
-  playUiSound(shiftLockEnabled ? 740 : 440, 0.07, "triangle");
-  if (escMenu.classList.contains("open") && activeEscTab === "settings") {
-    renderEscTabContent();
-  }
-}
-
-function setMasterVolume(val) {
-  masterVolume = Math.max(0, Math.min(1, Number(val) || 0));
-  localStorage.setItem("bloxtip_volume", String(masterVolume));
-}
 
 function showLoading(titleText, statusText) {
   loadingTitle.textContent = titleText || "Loading Game...";
@@ -675,10 +372,7 @@ function hideLoading() {
   loadingScreen.classList.remove("active");
 }
 
-document.getElementById("player-label").textContent = "Player: " + username;
-
 openGamesBtn.addEventListener("click", async () => {
-  playUiSound(560, 0.05);
   gamesModal.classList.toggle("open");
   if (gamesModal.classList.contains("open")) {
     await renderGamesModalList();
@@ -686,7 +380,6 @@ openGamesBtn.addEventListener("click", async () => {
 });
 
 closeGamesBtn.addEventListener("click", () => {
-  playUiSound(440, 0.05);
   gamesModal.classList.remove("open");
 });
 
@@ -719,13 +412,14 @@ scene.background = new THREE.Color(0x87c6ff);
 scene.fog = new THREE.Fog(0x87c6ff, 80, 260);
 
 const camera = new THREE.PerspectiveCamera(65, canvas.clientWidth / canvas.clientHeight, 0.1, 600);
-const glbTorsoCameraGroup = new THREE.Group();
-glbTorsoCameraGroup.name = "GlbTorsoCameraGroup";
-glbTorsoCameraGroup.add(camera);
+const playerCameraRig = new THREE.Group();
+playerCameraRig.name = "PlayerCameraRig";
+playerCameraRig.add(camera);
+scene.add(playerCameraRig);
 
-const hemi = new THREE.HemisphereLight(0xffffff, 0x4b5563, 1.15);
+const hemi = new THREE.HemisphereLight(0xffffff, 0x4b5563, 1.25);
 scene.add(hemi);
-const dir = new THREE.DirectionalLight(0xffffff, 1.1);
+const dir = new THREE.DirectionalLight(0xffffff, 1.2);
 dir.position.set(40, 70, 30);
 dir.castShadow = true;
 scene.add(dir);
@@ -828,7 +522,6 @@ updateSkyAndLighting();
 
 let cachedAvatarTemplate = null;
 let avatarTemplatePromise = null;
-let cachedAvatarPortraitUrl = "";
 
 function buildFallbackRobloxRig() {
   const rig = new THREE.Group();
@@ -924,8 +617,15 @@ function extractRigParts(obj) {
   let rightLegPivot = null;
 
   obj.traverse((node) => {
+    node.visible = true;
     node.castShadow = true;
     node.receiveShadow = true;
+    if (node.isMesh && node.material) {
+      node.material.transparent = false;
+      node.material.opacity = 1;
+      node.material.side = THREE.DoubleSide;
+      node.material.needsUpdate = true;
+    }
     const n = (node.name || "").toLowerCase();
     if (!torso && (n.includes("torso") || n.includes("uppertorso") || n.includes("chest") || n.includes("body"))) {
       torso = node;
@@ -953,30 +653,38 @@ function extractRigParts(obj) {
   return { root, torso, headPivot, leftArmPivot, rightArmPivot, leftLegPivot, rightLegPivot };
 }
 
-function generateAvatarPortraitDataUrl(template) {
-  try {
-    const pScene = new THREE.Scene();
-    pScene.background = new THREE.Color(0x1b212c);
-    pScene.add(new THREE.AmbientLight(0xffffff, 1.4));
-    const pLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    pLight.position.set(2, 4, 4);
-    pScene.add(pLight);
+function normalizeLoadedGlbScene(glbScene) {
+  glbScene.position.set(0, 0, 0);
+  glbScene.rotation.set(0, 0, 0);
+  glbScene.scale.set(1, 1, 1);
+  glbScene.updateMatrixWorld(true);
 
-    const pCam = new THREE.PerspectiveCamera(45, 1, 0.1, 50);
-    pCam.position.set(0, 3.6, 5.4);
-    pCam.lookAt(0, 3.0, 0);
+  const rawBox = new THREE.Box3().setFromObject(glbScene);
+  const rawSize = new THREE.Vector3();
+  rawBox.getSize(rawSize);
+  const maxDim = Math.max(rawSize.x, rawSize.y, rawSize.z, 0.001);
+  const targetHeight = 5.0;
+  const scaleFactor = rawSize.y > 0.01 ? (targetHeight / rawSize.y) : (targetHeight / maxDim);
+  glbScene.scale.setScalar(scaleFactor);
+  glbScene.updateMatrixWorld(true);
 
-    const pRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-    pRenderer.setSize(96, 96);
-    const clone = template.scene.clone(true);
-    pScene.add(clone);
-    pRenderer.render(pScene, pCam);
-    const url = pRenderer.domElement.toDataURL("image/png");
-    pRenderer.dispose();
-    return url;
-  } catch (_) {
-    return "";
+  const scaledBox = new THREE.Box3().setFromObject(glbScene);
+  const center = new THREE.Vector3();
+  scaledBox.getCenter(center);
+
+  if (Number.isFinite(center.x) && Number.isFinite(center.z)) {
+    glbScene.position.x -= center.x;
+    glbScene.position.z -= center.z;
+    glbScene.updateMatrixWorld(true);
   }
+
+  const finalBox = new THREE.Box3().setFromObject(glbScene);
+  const minY = Number.isFinite(finalBox.min.y) ? finalBox.min.y : 0;
+  const maxY = Number.isFinite(finalBox.max.y) ? finalBox.max.y : targetHeight;
+  const footOffset = Math.max(0.05, -minY + 0.05);
+  const height = Math.max(1.0, maxY - minY);
+
+  return { footOffset, height };
 }
 
 function loadAvatarTemplate(glbUrl = AVATAR_GLB_URL) {
@@ -988,49 +696,72 @@ function loadAvatarTemplate(glbUrl = AVATAR_GLB_URL) {
   }
 
   const p = new Promise((resolve) => {
-    gltfLoader.load(
-      glbUrl,
-      (gltf) => {
-        const rawBox = new THREE.Box3().setFromObject(gltf.scene);
-        const rawSize = new THREE.Vector3();
-        rawBox.getSize(rawSize);
-        const maxDim = Math.max(rawSize.x, rawSize.y, rawSize.z, 0.001);
-        const targetHeight = 5.0;
-        const scaleFactor = rawSize.y > 0.01 ? (targetHeight / rawSize.y) : (targetHeight / maxDim);
-        gltf.scene.scale.multiplyScalar(scaleFactor);
-
-        gltf.scene.updateMatrixWorld(true);
-        const scaledBox = new THREE.Box3().setFromObject(gltf.scene);
-        const minY = Number.isFinite(scaledBox.min.y) ? scaledBox.min.y : 0;
-        const maxY = Number.isFinite(scaledBox.max.y) ? scaledBox.max.y : targetHeight;
-        const footOffset = Math.max(0.05, -minY + 0.05);
-        const height = Math.max(1.0, maxY - minY);
-
-        const parts = extractRigParts(gltf.scene);
-        const result = {
-          scene: gltf.scene,
-          clips: gltf.animations || [],
-          ...parts,
-          footOffset,
-          height,
-          isFallback: false
-        };
-        if (glbUrl === AVATAR_GLB_URL) {
-          cachedAvatarTemplate = result;
-          cachedAvatarPortraitUrl = generateAvatarPortraitDataUrl(result);
-        }
-        resolve(result);
-      },
-      undefined,
-      () => {
-        const fallback = buildFallbackRobloxRig();
-        if (glbUrl === AVATAR_GLB_URL) {
-          cachedAvatarTemplate = fallback;
-          cachedAvatarPortraitUrl = generateAvatarPortraitDataUrl(fallback);
-        }
-        resolve(fallback);
+    let settled = false;
+    const finish = (val) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(fallbackTimer);
+      if (glbUrl === AVATAR_GLB_URL) {
+        cachedAvatarTemplate = val;
       }
-    );
+      resolve(val);
+    };
+
+    const fallbackTimer = setTimeout(() => {
+      finish(buildFallbackRobloxRig());
+    }, 6000);
+
+    fetch(glbUrl, { mode: "cors" })
+      .then((res) => {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.arrayBuffer();
+      })
+      .then((buf) => {
+        gltfLoader.parse(
+          buf,
+          "",
+          (gltf) => {
+            if (!gltf || !gltf.scene) {
+              finish(buildFallbackRobloxRig());
+              return;
+            }
+            const { footOffset, height } = normalizeLoadedGlbScene(gltf.scene);
+            const parts = extractRigParts(gltf.scene);
+            finish({
+              scene: gltf.scene,
+              clips: gltf.animations || [],
+              ...parts,
+              footOffset,
+              height,
+              isFallback: false
+            });
+          },
+          () => finish(buildFallbackRobloxRig())
+        );
+      })
+      .catch(() => {
+        gltfLoader.load(
+          glbUrl,
+          (gltf) => {
+            if (!gltf || !gltf.scene) {
+              finish(buildFallbackRobloxRig());
+              return;
+            }
+            const { footOffset, height } = normalizeLoadedGlbScene(gltf.scene);
+            const parts = extractRigParts(gltf.scene);
+            finish({
+              scene: gltf.scene,
+              clips: gltf.animations || [],
+              ...parts,
+              footOffset,
+              height,
+              isFallback: false
+            });
+          },
+          undefined,
+          () => finish(buildFallbackRobloxRig())
+        );
+      });
   });
 
   if (glbUrl === AVATAR_GLB_URL) {
@@ -1062,6 +793,7 @@ function createNameplateSprite(name, topY = 5.6) {
 
 function createAnimatedAvatarInstance(template, playerName) {
   const container = new THREE.Group();
+  container.name = "PlayerAvatarContainer";
   const cloned = template.scene.clone(true);
   cloned.name = "AvatarGlbMesh";
   container.add(cloned);
@@ -1104,16 +836,6 @@ function createAnimatedAvatarInstance(template, playerName) {
     animTime: 0,
     equippedToolName: ""
   };
-}
-
-function attachCameraDirectlyToGlbTorso(avatarInst) {
-  if (!avatarInst) return;
-  const torsoTarget = avatarInst.parts?.torso || avatarInst.parts?.root || avatarInst.cloned || avatarInst.container;
-  if (glbTorsoCameraGroup.parent !== torsoTarget) {
-    torsoTarget.add(glbTorsoCameraGroup);
-  }
-  glbTorsoCameraGroup.position.set(0, 0, 0);
-  glbTorsoCameraGroup.rotation.set(0, 0, 0);
 }
 
 function stepAvatarAnimation(avatarInst, dt, speedRatio, isGrounded, isJumping, isAttacking) {
@@ -1373,27 +1095,6 @@ function parseColorFromProps(props, fallbackHex = 0x00a2ff) {
     }
   }
   return fallbackHex;
-}
-
-function parseUDim2Css(propEl, fallback = { sx: 0, ox: 100, sy: 0, oy: 40 }) {
-  if (!propEl) {
-    return {
-      left: fallback.ox + "px",
-      top: fallback.oy + "px",
-      width: (fallback.sx * 100) + "%",
-      height: fallback.sy + "px"
-    };
-  }
-  const xs = readNum(propEl, "XS", fallback.sx);
-  const xo = readNum(propEl, "XO", fallback.ox);
-  const ys = readNum(propEl, "YS", fallback.sy);
-  const yo = readNum(propEl, "YO", fallback.oy);
-  return {
-    left: `calc(${xs * 100}% + ${xo}px)`,
-    top: `calc(${ys * 100}% + ${yo}px)`,
-    width: `calc(${xs * 100}% + ${xo}px)`,
-    height: `calc(${ys * 100}% + ${yo}px)`
-  };
 }
 
 function parseCFrameMatrix(cfEl) {
@@ -1687,6 +1388,14 @@ let pickupItems = [];
 let interactiveParts = [];
 let dynamicParts = [];
 let queuedScripts = [];
+const heartbeatCallbacks = [];
+const steppedCallbacks = [];
+const renderSteppedCallbacks = [];
+const userInputBeganCallbacks = [];
+const userInputEndedCallbacks = [];
+const remoteEventCallbacks = new Map();
+const bindableEventCallbacks = new Map();
+const tweenServiceActive = [];
 
 function renderHotbar() {
   hotbarEl.innerHTML = "";
@@ -1949,7 +1658,6 @@ function buildGuiHierarchy(item, parentDom) {
     btn.className = "rblx-el rblx-button";
     if (props) applyGuiElementProps(btn, props, cls);
     btn.addEventListener("click", () => {
-      playUiSound(660, 0.05);
       btn.dispatchEvent(new CustomEvent("MouseButton1Click"));
     });
     currentDom.appendChild(btn);
@@ -1960,7 +1668,6 @@ function buildGuiHierarchy(item, parentDom) {
     im.className = "rblx-el rblx-button";
     if (props) applyGuiElementProps(im, props, cls);
     im.addEventListener("click", () => {
-      playUiSound(660, 0.05);
       im.dispatchEvent(new CustomEvent("MouseButton1Click"));
     });
     currentDom.appendChild(im);
@@ -1982,26 +1689,730 @@ function buildGuiHierarchy(item, parentDom) {
   }
 }
 
+function makeVector3(x = 0, y = 0, z = 0) {
+  const vx = Number(x) || 0;
+  const vy = Number(y) || 0;
+  const vz = Number(z) || 0;
+  return {
+    X: vx, Y: vy, Z: vz,
+    x: vx, y: vy, z: vz,
+    Magnitude: Math.hypot(vx, vy, vz),
+    Unit: () => {
+      const len = Math.hypot(vx, vy, vz) || 1;
+      return makeVector3(vx / len, vy / len, vz / len);
+    },
+    Lerp(goal, alpha) {
+      const a = Math.max(0, Math.min(1, Number(alpha) || 0));
+      return makeVector3(vx + ((goal.X ?? goal.x ?? 0) - vx) * a, vy + ((goal.Y ?? goal.y ?? 0) - vy) * a, vz + ((goal.Z ?? goal.z ?? 0) - vz) * a);
+    },
+    __add(o) { return makeVector3(vx + (o.X ?? o.x ?? 0), vy + (o.Y ?? o.y ?? 0), vz + (o.Z ?? o.z ?? 0)); },
+    __sub(o) { return makeVector3(vx - (o.X ?? o.x ?? 0), vy - (o.Y ?? o.y ?? 0), vz - (o.Z ?? o.z ?? 0)); },
+    __mul(s) {
+      if (typeof s === "number") return makeVector3(vx * s, vy * s, vz * s);
+      return makeVector3(vx * (s.X ?? s.x ?? 1), vy * (s.Y ?? s.y ?? 1), vz * (s.Z ?? s.z ?? 1));
+    }
+  };
+}
+
+function makeCFrame(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) {
+  const cx = Number(x) || 0;
+  const cy = Number(y) || 0;
+  const cz = Number(z) || 0;
+  const euler = new THREE.Euler(Number(rx) || 0, Number(ry) || 0, Number(rz) || 0, "YXZ");
+  const quat = new THREE.Quaternion().setFromEuler(euler);
+  return {
+    X: cx, Y: cy, Z: cz,
+    Position: makeVector3(cx, cy, cz),
+    p: makeVector3(cx, cy, cz),
+    Rotation: { X: rx, Y: ry, Z: rz },
+    LookVector: makeVector3(-Math.sin(ry || 0), 0, -Math.cos(ry || 0)),
+    RightVector: makeVector3(Math.cos(ry || 0), 0, -Math.sin(ry || 0)),
+    UpVector: makeVector3(0, 1, 0),
+    Lerp(goal, alpha) {
+      const a = Math.max(0, Math.min(1, Number(alpha) || 0));
+      const gx = goal.X ?? goal.Position?.X ?? cx;
+      const gy = goal.Y ?? goal.Position?.Y ?? cy;
+      const gz = goal.Z ?? goal.Position?.Z ?? cz;
+      return makeCFrame(cx + (gx - cx) * a, cy + (gy - cy) * a, cz + (gz - cz) * a, rx, ry, rz);
+    },
+    ToWorldSpace(offsetCf) {
+      const v = new THREE.Vector3(offsetCf.X ?? 0, offsetCf.Y ?? 0, offsetCf.Z ?? 0).applyQuaternion(quat);
+      return makeCFrame(cx + v.x, cy + v.y, cz + v.z, rx, ry, rz);
+    },
+    __add(v) {
+      return makeCFrame(cx + (v.X ?? v.x ?? 0), cy + (v.Y ?? v.y ?? 0), cz + (v.Z ?? v.z ?? 0), rx, ry, rz);
+    },
+    __mul(other) {
+      if (other && typeof other.X === "number" && other.LookVector === undefined) {
+        return makeCFrame(cx + (other.X ?? 0), cy + (other.Y ?? 0), cz + (other.Z ?? 0), rx, ry, rz);
+      }
+      return makeCFrame(cx + (other?.X ?? 0), cy + (other?.Y ?? 0), cz + (other?.Z ?? 0), rx + (other?.Rotation?.X ?? 0), ry + (other?.Rotation?.Y ?? 0), rz + (other?.Rotation?.Z ?? 0));
+    }
+  };
+}
+
+function makeSignal(cbList) {
+  return {
+    Connect(fn) {
+      if (typeof fn === "function") cbList.push(fn);
+      return {
+        Connected: true,
+        Disconnect() {
+          this.Connected = false;
+          const idx = cbList.indexOf(fn);
+          if (idx !== -1) cbList.splice(idx, 1);
+        }
+      };
+    },
+    Once(fn) {
+      const wrapper = (...args) => {
+        const idx = cbList.indexOf(wrapper);
+        if (idx !== -1) cbList.splice(idx, 1);
+        if (typeof fn === "function") return fn(...args);
+      };
+      cbList.push(wrapper);
+      return { Disconnect() { const i = cbList.indexOf(wrapper); if (i !== -1) cbList.splice(i, 1); } };
+    },
+    Wait() {
+      return new Promise((resolve) => {
+        const wrapper = (...args) => {
+          const i = cbList.indexOf(wrapper);
+          if (i !== -1) cbList.splice(i, 1);
+          resolve(args[0]);
+        };
+        cbList.push(wrapper);
+      });
+    },
+    Fire(...args) {
+      [...cbList].forEach((fn) => {
+        try { fn(...args); } catch (_) {}
+      });
+    }
+  };
+}
+
 function runLuauScriptSource(code, scriptName = "Script") {
   if (!code || !code.trim()) return;
 
-  let js = String(code);
+  let lua = String(code);
+  lua = lua.replace(/\bcontinue\b/g, "goto __luau_continue__");
+
+  const makePartProxy = (partRecord) => {
+    const holder = partRecord.holder;
+    const proxy = {
+      isPartProxy: true,
+      Name: partRecord.name,
+      ClassName: "Part",
+      get Anchored() { return Boolean(partRecord.anchored); },
+      set Anchored(v) { partRecord.anchored = Boolean(v); },
+      get CanCollide() { return Boolean(partRecord.canCollide); },
+      set CanCollide(v) { partRecord.canCollide = Boolean(v); invalidateFloorCache(); },
+      get Transparency() {
+        let tr = 0;
+        holder.traverse((m) => { if (m.isMesh && m.material) tr = 1 - (m.material.opacity ?? 1); });
+        return tr;
+      },
+      set Transparency(v) {
+        const op = Math.max(0, Math.min(1, 1 - Number(v || 0)));
+        holder.traverse((m) => {
+          if (m.isMesh && m.material) {
+            m.material.transparent = op < 0.999;
+            m.material.opacity = op;
+            m.material.needsUpdate = true;
+          }
+        });
+      },
+      get Color() {
+        let hex = 0x00a2ff;
+        holder.traverse((m) => { if (m.isMesh && m.material && m.material.color) hex = m.material.color.getHex(); });
+        return { R: ((hex >> 16) & 255) / 255, G: ((hex >> 8) & 255) / 255, B: (hex & 255) / 255 };
+      },
+      set Color(c) {
+        if (!c) return;
+        const r = Math.max(0, Math.min(1, Number(c.R ?? c.r ?? 0)));
+        const g = Math.max(0, Math.min(1, Number(c.G ?? c.g ?? 0)));
+        const b = Math.max(0, Math.min(1, Number(c.B ?? c.b ?? 0)));
+        const col = new THREE.Color(r, g, b);
+        holder.traverse((m) => { if (m.isMesh && m.material && m.material.color) m.material.color.copy(col); });
+      },
+      get Size() { return makeVector3(partRecord.halfExtents.x * 2, partRecord.halfExtents.y * 2, partRecord.halfExtents.z * 2); },
+      set Size(v) {
+        if (!v) return;
+        const sx = Math.max(0.05, Number(v.X ?? v.x ?? 4));
+        const sy = Math.max(0.05, Number(v.Y ?? v.y ?? 2));
+        const sz = Math.max(0.05, Number(v.Z ?? v.z ?? 4));
+        partRecord.halfExtents.set(sx / 2, sy / 2, sz / 2);
+        holder.scale.set(sx / 4, sy / 2, sz / 4);
+        invalidateFloorCache();
+      },
+      get Position() { return makeVector3(holder.position.x, holder.position.y, holder.position.z); },
+      set Position(vec) {
+        if (!vec) return;
+        holder.position.set(Number(vec.X ?? vec.x ?? holder.position.x), Number(vec.Y ?? vec.y ?? holder.position.y), Number(vec.Z ?? vec.z ?? holder.position.z));
+        invalidateFloorCache();
+      },
+      get CFrame() { return makeCFrame(holder.position.x, holder.position.y, holder.position.z, holder.rotation.x, holder.rotation.y, holder.rotation.z); },
+      set CFrame(cf) {
+        if (!cf) return;
+        const px = cf.X ?? cf.Position?.X ?? holder.position.x;
+        const py = cf.Y ?? cf.Position?.Y ?? holder.position.y;
+        const pz = cf.Z ?? cf.Position?.Z ?? holder.position.z;
+        holder.position.set(Number(px), Number(py), Number(pz));
+        if (cf.Rotation) {
+          holder.rotation.set(Number(cf.Rotation.X || 0), Number(cf.Rotation.Y || 0), Number(cf.Rotation.Z || 0));
+        }
+        invalidateFloorCache();
+      },
+      Destroy() {
+        if (holder.parent) holder.parent.remove(holder);
+        partRecord.destroyed = true;
+        invalidateFloorCache();
+      },
+      Clone() {
+        const cloneHolder = holder.clone(true);
+        cloneHolder.position.copy(holder.position);
+        worldGroup.add(cloneHolder);
+        const cloneRec = { ...partRecord, holder: cloneHolder, touchedCallbacks: [], destroyed: false };
+        dynamicParts.push(cloneRec);
+        invalidateFloorCache();
+        return makePartProxy(cloneRec);
+      },
+      FindFirstChild(childName) {
+        if (childName === "TouchInterest") return {};
+        return null;
+      },
+      Touched: makeSignal(partRecord.touchedCallbacks)
+    };
+    return proxy;
+  };
+
+  const workspaceProxy = {
+    Name: "Workspace",
+    get Gravity() { return studioConfig.gravity; },
+    set Gravity(v) { const n = Number(v); if (Number.isFinite(n) && n >= 0) studioConfig.gravity = n; },
+    get CurrentCamera() {
+      return {
+        get CFrame() { return makeCFrame(camera.position.x, camera.position.y, camera.position.z, 0, playerYaw, 0); },
+        set CFrame(cf) {
+          if (!cf) return;
+          camera.position.set(Number(cf.X ?? cf.Position?.X ?? camera.position.x), Number(cf.Y ?? cf.Position?.Y ?? camera.position.y), Number(cf.Z ?? cf.Position?.Z ?? camera.position.z));
+        },
+        get FieldOfView() { return camera.fov; },
+        set FieldOfView(v) { camera.fov = Number(v) || 65; camera.updateProjectionMatrix(); }
+      };
+    },
+    FindFirstChild(name) {
+      const found = dynamicParts.find((p) => !p.destroyed && p.name === name);
+      return found ? makePartProxy(found) : null;
+    },
+    GetChildren() {
+      return dynamicParts.filter((p) => !p.destroyed).map((p) => makePartProxy(p));
+    },
+    GetDescendants() {
+      return workspaceProxy.GetChildren();
+    }
+  };
+
+  const humanoidProxy = {
+    Name: "Humanoid",
+    get WalkSpeed() { return studioConfig.walkSpeed; },
+    set WalkSpeed(v) { const n = Number(v); if (Number.isFinite(n) && n > 0) studioConfig.walkSpeed = n; },
+    get JumpPower() { return studioConfig.jumpPower; },
+    set JumpPower(v) { const n = Number(v); if (Number.isFinite(n) && n > 0) studioConfig.jumpPower = n; },
+    get Jump() { return isJumping; },
+    set Jump(v) { if (v && isGrounded) { playerVel.y = studioConfig.jumpPower; isGrounded = false; isJumping = true; } },
+    Health: 100,
+    MaxHealth: 100,
+    MoveTo(targetVec) {
+      if (!targetVec) return;
+      playerPos.x = Number(targetVec.X ?? targetVec.x ?? playerPos.x);
+      playerPos.z = Number(targetVec.Z ?? targetVec.z ?? playerPos.z);
+      syncLocalAvatarTransform();
+    },
+    TakeDamage(dmg) {
+      humanoidProxy.Health = Math.max(0, humanoidProxy.Health - Number(dmg || 0));
+      if (humanoidProxy.Health <= 0) {
+        humanoidProxy.Health = humanoidProxy.MaxHealth;
+        respawnLocalPlayer();
+      }
+    }
+  };
+
+  const characterProxy = {
+    Name: username,
+    Humanoid: humanoidProxy,
+    HumanoidRootPart: {
+      Name: "HumanoidRootPart",
+      get Position() { return makeVector3(playerPos.x, playerPos.y, playerPos.z); },
+      set Position(v) {
+        if (!v) return;
+        playerPos.set(Number(v.X ?? v.x ?? playerPos.x), Number(v.Y ?? v.y ?? playerPos.y), Number(v.Z ?? v.z ?? playerPos.z));
+        syncLocalAvatarTransform();
+      },
+      get CFrame() { return makeCFrame(playerPos.x, playerPos.y, playerPos.z, 0, playerYaw, 0); },
+      set CFrame(cf) {
+        if (!cf) return;
+        playerPos.set(Number(cf.X ?? cf.Position?.X ?? playerPos.x), Number(cf.Y ?? cf.Position?.Y ?? playerPos.y), Number(cf.Z ?? cf.Position?.Z ?? playerPos.z));
+        syncLocalAvatarTransform();
+      }
+    },
+    FindFirstChild(n) {
+      if (n === "Humanoid") return humanoidProxy;
+      if (n === "HumanoidRootPart") return characterProxy.HumanoidRootPart;
+      return null;
+    }
+  };
+
+  const localPlayerProxy = {
+    Name: username,
+    UserId: 1,
+    Character: characterProxy,
+    Backpack: {
+      GetChildren() { return backpackItems.map((b) => ({ Name: b.name })); }
+    },
+    leaderstats: {
+      FindFirstChild(statName) { return this[statName] || null; }
+    }
+  };
+
+  const runServiceProxy = {
+    Heartbeat: makeSignal(heartbeatCallbacks),
+    Stepped: makeSignal(steppedCallbacks),
+    RenderStepped: makeSignal(renderSteppedCallbacks),
+    IsStudio() { return false; },
+    IsClient() { return true; },
+    IsServer() { return false; }
+  };
+
+  const userInputServiceProxy = {
+    InputBegan: makeSignal(userInputBeganCallbacks),
+    InputEnded: makeSignal(userInputEndedCallbacks),
+    IsKeyDown(keyCode) {
+      const k = String(keyCode || "").replace(/^Enum\.KeyCode\./, "");
+      if (k === "W") return keysDown.has("KeyW");
+      if (k === "A") return keysDown.has("KeyA");
+      if (k === "S") return keysDown.has("KeyS");
+      if (k === "D") return keysDown.has("KeyD");
+      if (k === "Space") return keysDown.has("Space");
+      return keysDown.has(k);
+    }
+  };
+
+  const tweenServiceProxy = {
+    Create(inst, tweenInfo, goalProps) {
+      const dur = Math.max(0.01, Number(tweenInfo?.Time ?? tweenInfo?.[0] ?? 1));
+      return {
+        Play() {
+          const startPos = { x: inst.Position?.X ?? 0, y: inst.Position?.Y ?? 0, z: inst.Position?.Z ?? 0 };
+          const endPos = goalProps?.Position ? { x: goalProps.Position.X ?? startPos.x, y: goalProps.Position.Y ?? startPos.y, z: goalProps.Position.Z ?? startPos.z } : startPos;
+          const startTr = Number(inst.Transparency ?? 0);
+          const endTr = goalProps?.Transparency !== undefined ? Number(goalProps.Transparency) : startTr;
+          tweenServiceActive.push({
+            elapsed: 0,
+            dur,
+            onStep(alpha) {
+              if (goalProps?.Position) {
+                inst.Position = makeVector3(
+                  startPos.x + (endPos.x - startPos.x) * alpha,
+                  startPos.y + (endPos.y - startPos.y) * alpha,
+                  startPos.z + (endPos.z - startPos.z) * alpha
+                );
+              }
+              if (goalProps?.Transparency !== undefined) {
+                inst.Transparency = startTr + (endTr - startTr) * alpha;
+              }
+            }
+          });
+        },
+        Cancel() {}
+      };
+    }
+  };
+
+  const lightingProxy = {
+    get Ambient() { return { R: ((studioConfig.ambientColor >> 16) & 255) / 255, G: ((studioConfig.ambientColor >> 8) & 255) / 255, B: (studioConfig.ambientColor & 255) / 255 }; },
+    set Ambient(c) {
+      if (!c) return;
+      const r = Math.round((c.R ?? 0) * 255);
+      const g = Math.round((c.G ?? 0) * 255);
+      const b = Math.round((c.B ?? 0) * 255);
+      studioConfig.ambientColor = (r << 16) | (g << 8) | b;
+      updateSkyAndLighting();
+    },
+    get FogEnd() { return studioConfig.fogEnd; },
+    set FogEnd(v) { studioConfig.fogEnd = Number(v) || 260; updateSkyAndLighting(); },
+    get FogStart() { return studioConfig.fogStart; },
+    set FogStart(v) { studioConfig.fogStart = Number(v) || 80; updateSkyAndLighting(); },
+    get ClockTime() { return studioConfig.dayTimeMinutes / 60; },
+    set ClockTime(v) { studioConfig.dayTimeMinutes = (Number(v) || 14) * 60; updateSkyAndLighting(); }
+  };
+
+  const replicatedStorageProxy = {
+    Name: "ReplicatedStorage",
+    FindFirstChild() { return null; },
+    GetChildren() { return []; }
+  };
+
+  const playersServiceProxy = {
+    Name: "Players",
+    LocalPlayer: localPlayerProxy,
+    PlayerAdded: makeSignal([]),
+    PlayerRemoving: makeSignal([]),
+    GetPlayers() {
+      const arr = [localPlayerProxy];
+      remotePlayers.forEach((rp) => arr.push({ Name: rp.name || "Player", Character: null }));
+      return arr;
+    },
+    GetPlayerFromCharacter() { return localPlayerProxy; }
+  };
+
+  const gameProxy = {
+    PlaceId: Number(placeId) || 0,
+    Workspace: workspaceProxy,
+    Players: playersServiceProxy,
+    Lighting: lightingProxy,
+    ReplicatedStorage: replicatedStorageProxy,
+    GetService(svcName) {
+      if (svcName === "Workspace") return workspaceProxy;
+      if (svcName === "Players") return playersServiceProxy;
+      if (svcName === "RunService") return runServiceProxy;
+      if (svcName === "UserInputService") return userInputServiceProxy;
+      if (svcName === "TweenService") return tweenServiceProxy;
+      if (svcName === "Lighting") return lightingProxy;
+      if (svcName === "ReplicatedStorage") return replicatedStorageProxy;
+      return { Name: svcName, FindFirstChild: () => null, GetChildren: () => [] };
+    }
+  };
+
+  const instanceNew = (clsName) => {
+    if (clsName === "Part" || clsName === "WedgePart" || clsName === "Cylinder" || clsName === "Ball") {
+      const sx = 4, sy = 2, sz = 4;
+      const shape = clsName === "WedgePart" ? "Wedge" : clsName === "Cylinder" ? "Cylinder" : clsName === "Ball" ? "Ball" : "Block";
+      const geo = buildGeometryForPart(shape, sx, sy, sz);
+      const mat = new THREE.MeshStandardMaterial({ color: 0x00a2ff, roughness: 0.5 });
+      const holder = new THREE.Group();
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      holder.add(mesh);
+      holder.position.set(0, 4, -8);
+      worldGroup.add(holder);
+
+      const rec = {
+        name: clsName,
+        holder,
+        anchored: true,
+        canCollide: true,
+        velY: 0,
+        halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2),
+        touchedCallbacks: [],
+        destroyed: false
+      };
+      dynamicParts.push(rec);
+      invalidateFloorCache();
+      return makePartProxy(rec);
+    }
+    if (clsName === "TextLabel" || clsName === "TextButton" || clsName === "Frame" || clsName === "ImageLabel" || clsName === "ImageButton") {
+      let sg = robloxGuiLayer.querySelector(".rblx-screengui");
+      if (!sg) {
+        sg = document.createElement("div");
+        sg.className = "rblx-screengui";
+        robloxGuiLayer.appendChild(sg);
+      }
+      const el = document.createElement(clsName === "TextButton" || clsName === "ImageButton" ? "button" : "div");
+      el.className = "rblx-el " + (clsName === "TextButton" || clsName === "ImageButton" ? "rblx-button" : clsName === "TextLabel" ? "rblx-label" : "rblx-frame");
+      el.style.left = "20px";
+      el.style.top = "180px";
+      el.style.width = "160px";
+      el.style.height = "34px";
+      el.style.backgroundColor = "rgba(30, 36, 46, 0.85)";
+      el.style.color = "#ffffff";
+      el.style.borderRadius = "4px";
+      el.textContent = clsName;
+      sg.appendChild(el);
+      const clickCbs = [];
+      el.addEventListener("click", () => clickCbs.forEach((f) => { try { f(); } catch (_) {} }));
+      return {
+        Name: clsName,
+        get Text() { return el.textContent; },
+        set Text(v) { el.textContent = String(v ?? ""); },
+        get Visible() { return el.style.display !== "none"; },
+        set Visible(v) { el.style.display = v ? "flex" : "none"; },
+        MouseButton1Click: makeSignal(clickCbs),
+        Activated: makeSignal(clickCbs)
+      };
+    }
+    if (clsName === "RemoteEvent") {
+      const cbs = [];
+      const evName = "ev_" + Math.random().toString(36).slice(2, 8);
+      remoteEventCallbacks.set(evName, cbs);
+      return {
+        Name: clsName,
+        OnClientEvent: makeSignal(cbs),
+        OnServerEvent: makeSignal(cbs),
+        FireServer(...args) { cbs.forEach((f) => { try { f(localPlayerProxy, ...args); } catch (_) {} }); },
+        FireAllClients(...args) { cbs.forEach((f) => { try { f(...args); } catch (_) {} }); }
+      };
+    }
+    if (clsName === "BindableEvent") {
+      const cbs = [];
+      const evName = "bev_" + Math.random().toString(36).slice(2, 8);
+      bindableEventCallbacks.set(evName, cbs);
+      return {
+        Name: clsName,
+        Event: makeSignal(cbs),
+        Fire(...args) { cbs.forEach((f) => { try { f(...args); } catch (_) {} }); }
+      };
+    }
+    if (clsName === "Folder" || clsName === "Configuration" || clsName === "IntValue" || clsName === "NumberValue" || clsName === "StringValue" || clsName === "BoolValue") {
+      return { Name: clsName, Value: clsName === "BoolValue" ? false : (clsName === "StringValue" ? "" : 0), Changed: makeSignal([]) };
+    }
+    return { Name: clsName, Destroy() {} };
+  };
+
+  const envGlobals = {
+    workspace: workspaceProxy,
+    Workspace: workspaceProxy,
+    game: gameProxy,
+    script: { Name: scriptName, Parent: workspaceProxy },
+    Instance: { new: instanceNew },
+    Vector3: {
+      new: makeVector3,
+      zero: makeVector3(0, 0, 0),
+      one: makeVector3(1, 1, 1),
+      xAxis: makeVector3(1, 0, 0),
+      yAxis: makeVector3(0, 1, 0),
+      zAxis: makeVector3(0, 0, 1)
+    },
+    CFrame: {
+      new: makeCFrame,
+      identity: makeCFrame(0, 0, 0, 0, 0, 0),
+      Angles: (rx = 0, ry = 0, rz = 0) => makeCFrame(0, 0, 0, rx, ry, rz),
+      fromEulerAnglesYXZ: (ry = 0, rx = 0, rz = 0) => makeCFrame(0, 0, 0, rx, ry, rz),
+      lookAt: (pos, lookAtPos) => makeCFrame(pos?.X ?? 0, pos?.Y ?? 0, pos?.Z ?? 0, 0, Math.atan2((lookAtPos?.X ?? 0) - (pos?.X ?? 0), (lookAtPos?.Z ?? 0) - (pos?.Z ?? 0)), 0)
+    },
+    Color3: {
+      new: (r = 1, g = 1, b = 1) => ({ R: Number(r) || 0, G: Number(g) || 0, B: Number(b) || 0 }),
+      fromRGB: (r = 255, g = 255, b = 255) => ({ R: (Number(r) || 0) / 255, G: (Number(g) || 0) / 255, B: (Number(b) || 0) / 255 }),
+      fromHSV: (h = 0, s = 1, v = 1) => {
+        const c = new THREE.Color().setHSL(Number(h) || 0, Number(s) || 0, Number(v) || 0);
+        return { R: c.r, G: c.g, B: c.b };
+      }
+    },
+    BrickColor: {
+      new: (codeOrName) => {
+        if (typeof codeOrName === "number" && BRICK_COLORS[codeOrName] !== undefined) {
+          const hex = BRICK_COLORS[codeOrName];
+          return { Number: codeOrName, Color: { R: ((hex >> 16) & 255) / 255, G: ((hex >> 8) & 255) / 255, B: (hex & 255) / 255 } };
+        }
+        return { Number: 21, Color: { R: 0.768, G: 0.156, B: 0.105 } };
+      },
+      Random: () => ({ Number: 21, Color: { R: 0.768, G: 0.156, B: 0.105 } })
+    },
+    UDim: { new: (s = 0, o = 0) => ({ Scale: Number(s) || 0, Offset: Number(o) || 0 }) },
+    UDim2: { new: (xs = 0, xo = 0, ys = 0, yo = 0) => ({ X: { Scale: xs, Offset: xo }, Y: { Scale: ys, Offset: yo } }) },
+    TweenInfo: { new: (t = 1, style = "Quad", dir = "Out", rep = 0, rev = false, delay = 0) => ({ Time: t, EasingStyle: style, EasingDirection: dir, RepeatCount: rep, Reverses: rev, DelayTime: delay }) },
+    Enum: new Proxy({}, { get: (_, k) => new Proxy({}, { get: (__, v) => `Enum.${String(k)}.${String(v)}` }) }),
+    math: Object.assign(Object.create(Math), {
+      clamp: (n, min, max) => Math.max(min, Math.min(max, n)),
+      sign: (n) => (n > 0 ? 1 : (n < 0 ? -1 : 0)),
+      rad: (d) => (d * Math.PI) / 180,
+      deg: (r) => (r * 180) / Math.PI,
+      noise: (x = 0, y = 0, z = 0) => Math.sin(x * 1.7 + y * 2.3 + z * 1.1) * 0.5,
+      random: (...args) => {
+        if (args.length === 0) return Math.random();
+        if (args.length === 1) return Math.floor(Math.random() * Math.floor(args[0])) + 1;
+        const lo = Math.ceil(args[0]);
+        const hi = Math.floor(args[1]);
+        return Math.floor(Math.random() * (hi - lo + 1)) + lo;
+      }
+    }),
+    string: {
+      sub: (s, i, j) => {
+        const str = String(s ?? "");
+        const start = i >= 0 ? i - 1 : Math.max(0, str.length + i);
+        const end = j === undefined ? str.length : (j >= 0 ? j : str.length + j + 1);
+        return str.slice(start, end);
+      },
+      find: (s, pat, init = 1) => {
+        const str = String(s ?? "");
+        const idx = str.indexOf(String(pat ?? ""), Math.max(0, init - 1));
+        return idx === -1 ? null : [idx + 1, idx + String(pat).length];
+      },
+      gsub: (s, pat, rep) => String(s ?? "").replaceAll(String(pat ?? ""), String(rep ?? "")),
+      split: (s, sep = ",") => String(s ?? "").split(String(sep)),
+      lower: (s) => String(s ?? "").toLowerCase(),
+      upper: (s) => String(s ?? "").toUpperCase(),
+      len: (s) => String(s ?? "").length,
+      format: (fmt, ...args) => {
+        let idx = 0;
+        return String(fmt ?? "").replace(/%[sdif]/g, () => String(args[idx++] ?? ""));
+      },
+      rep: (s, n) => String(s ?? "").repeat(Math.max(0, Math.floor(Number(n) || 0))),
+      reverse: (s) => String(s ?? "").split("").reverse().join("")
+    },
+    table: {
+      insert: (t, posOrVal, val) => {
+        if (!Array.isArray(t)) return;
+        if (val === undefined) t.push(posOrVal);
+        else t.splice(Math.max(0, Number(posOrVal) - 1), 0, val);
+      },
+      remove: (t, pos) => {
+        if (!Array.isArray(t)) return null;
+        if (pos === undefined) return t.pop();
+        const removed = t.splice(Math.max(0, Number(pos) - 1), 1);
+        return removed[0] ?? null;
+      },
+      find: (t, needle) => {
+        if (!Array.isArray(t)) return null;
+        const i = t.indexOf(needle);
+        return i === -1 ? null : i + 1;
+      },
+      clear: (t) => {
+        if (Array.isArray(t)) t.length = 0;
+        else if (t && typeof t === "object") Object.keys(t).forEach((k) => delete t[k]);
+      },
+      concat: (t, sep = "", i = 1, j) => {
+        if (!Array.isArray(t)) return "";
+        const start = Math.max(0, Number(i) - 1);
+        const end = j === undefined ? t.length : Number(j);
+        return t.slice(start, end).join(String(sep));
+      },
+      sort: (t, comp) => {
+        if (!Array.isArray(t)) return;
+        if (typeof comp === "function") t.sort((a, b) => (comp(a, b) ? -1 : 1));
+        else t.sort();
+      },
+      clone: (t) => Array.isArray(t) ? [...t] : Object.assign({}, t),
+      create: (count, val) => Array.from({ length: Math.max(0, Math.floor(Number(count) || 0)) }, () => (typeof val === "function" ? val() : val))
+    },
+    bit32: {
+      band: (a, b) => (a & b) >>> 0,
+      bor: (a, b) => (a | b) >>> 0,
+      bxor: (a, b) => (a ^ b) >>> 0,
+      bnot: (a) => (~a) >>> 0,
+      lshift: (a, n) => (a << n) >>> 0,
+      rshift: (a, n) => (a >>> n) >>> 0
+    },
+    os: {
+      clock: () => performance.now() / 1000,
+      time: () => Math.floor(Date.now() / 1000),
+      difftime: (t2, t1) => Number(t2) - Number(t1),
+      date: (fmt, t) => new Date((t ? Number(t) * 1000 : Date.now())).toISOString()
+    },
+    coroutine: {
+      create: (fn) => ({ fn, status: "suspended" }),
+      resume: (co, ...args) => {
+        try {
+          co.status = "dead";
+          return [true, co.fn(...args)];
+        } catch (e) {
+          co.status = "dead";
+          return [false, String(e)];
+        }
+      },
+      wrap: (fn) => (...args) => fn(...args),
+      running: () => null,
+      yield: () => undefined
+    },
+    tonumber: (v, base) => {
+      const n = base ? parseInt(String(v), base) : Number(v);
+      return Number.isFinite(n) ? n : null;
+    },
+    tostring: (v) => (v === null || v === undefined ? "nil" : String(v)),
+    type: (v) => {
+      if (v === null || v === undefined) return "nil";
+      if (typeof v === "boolean") return "boolean";
+      if (typeof v === "number") return "number";
+      if (typeof v === "string") return "string";
+      if (typeof v === "function") return "function";
+      return "table";
+    },
+    typeof: (v) => {
+      if (v === null || v === undefined) return "nil";
+      if (v && v.isPartProxy) return "Instance";
+      if (v && typeof v.X === "number" && typeof v.Y === "number" && typeof v.Z === "number" && v.LookVector === undefined) return "Vector3";
+      if (v && v.LookVector !== undefined) return "CFrame";
+      if (v && typeof v.R === "number" && typeof v.G === "number" && typeof v.B === "number") return "Color3";
+      return typeof v;
+    },
+    assert: (cond, msg = "assertion failed!") => { if (!cond) throw new Error(String(msg)); return cond; },
+    error: (msg) => { throw new Error(String(msg ?? "error")); },
+    pcall: (fn, ...args) => {
+      try {
+        const res = fn(...args);
+        return [true, res];
+      } catch (err) {
+        return [false, err && err.message ? err.message : String(err)];
+      }
+    },
+    xpcall: (fn, errHandler, ...args) => {
+      try {
+        const res = fn(...args);
+        return [true, res];
+      } catch (err) {
+        const msg = err && err.message ? err.message : String(err);
+        try { if (typeof errHandler === "function") errHandler(msg); } catch (_) {}
+        return [false, msg];
+      }
+    },
+    select: (index, ...args) => {
+      if (index === "#") return args.length;
+      const i = Math.max(0, Number(index) - 1);
+      return args.slice(i);
+    },
+    unpack: (t) => (Array.isArray(t) ? [...t] : []),
+    ipairs: (t) => {
+      const arr = Array.isArray(t) ? t : Object.values(t || {});
+      return arr.map((v, idx) => [idx + 1, v]);
+    },
+    pairs: (t) => {
+      if (Array.isArray(t)) return t.map((v, idx) => [idx + 1, v]);
+      return Object.entries(t || {});
+    },
+    tick: () => performance.now() / 1000,
+    time: () => performance.now() / 1000,
+    elapsedTime: () => performance.now() / 1000,
+    wait: (sec = 0.05) => new Promise((r) => setTimeout(r, Math.max(10, Number(sec || 0.05) * 1000))),
+    task: {
+      wait: (sec = 0.05) => new Promise((r) => setTimeout(r, Math.max(10, Number(sec || 0.05) * 1000))),
+      spawn: (fn, ...args) => { if (typeof fn === "function") Promise.resolve().then(() => fn(...args)).catch((e) => addChat("ScriptWarn", String(e))); },
+      delay: (sec, fn, ...args) => {
+        const ms = Math.max(10, Number(sec || 0.05) * 1000);
+        setTimeout(() => { if (typeof fn === "function") Promise.resolve().then(() => fn(...args)).catch((e) => addChat("ScriptWarn", String(e))); }, ms);
+      }
+    },
+    delay: (sec, fn) => setTimeout(() => { if (typeof fn === "function") fn(); }, Math.max(10, Number(sec || 0.05) * 1000)),
+    spawn: (fn) => { if (typeof fn === "function") Promise.resolve().then(fn); },
+    print: (...args) => addChat(scriptName, args.map((a) => (typeof a === "object" && a !== null ? JSON.stringify(a) : String(a))).join(" ")),
+    warn: (...args) => addChat(scriptName + " [WARN]", args.join(" "))
+  };
+
+  let js = lua;
   js = js.replace(/--\[\[[\s\S]*?\]\]/g, "");
   js = js.replace(/--[^\n]*/g, "");
-
+  js = js.replace(/\[\[([\s\S]*?)\]\]/g, (_, inner) => JSON.stringify(inner));
   js = js.replace(/\belseif\b/g, "} else if (");
   js = js.replace(/\bthen\b/g, ") {");
   js = js.replace(/\bif\s+/g, "if (");
   js = js.replace(/\bwhile\s+/g, "while (");
+  js = js.replace(/\brepeat\b/g, "do {");
+  js = js.replace(/\buntil\s+([^\n;]+)/g, "} while (!($1));");
   js = js.replace(/\bfor\s+([a-zA-Z_]\w*)\s*=\s*([^,\n]+),\s*([^,\n]+)(?:,\s*([^\n]+))?\s+do\b/g, (_, v, start, end, step) => {
     const s = (step || "1").trim();
     const cond = Number(s) < 0 ? `${v} >= (${end.trim()})` : `${v} <= (${end.trim()})`;
     return `for (let ${v} = (${start.trim()}); ${cond}; ${v} += (${s})) {`;
   });
+  js = js.replace(/\bfor\s+([a-zA-Z_]\w*)\s*,\s*([a-zA-Z_]\w*)\s+in\s+ipairs\(([^)]+)\)\s+do\b/g, (_, k, v, arr) => {
+    return `for (const [${k}, ${v}] of ipairs(${arr})) {`;
+  });
+  js = js.replace(/\bfor\s+([a-zA-Z_]\w*)\s*,\s*([a-zA-Z_]\w*)\s+in\s+pairs\(([^)]+)\)\s+do\b/g, (_, k, v, obj) => {
+    return `for (const [${k}, ${v}] of pairs(${obj})) {`;
+  });
   js = js.replace(/\bdo\b/g, "{");
   js = js.replace(/\bfunction\s+([a-zA-Z0-9_.:]+)\s*\(([^)]*)\)/g, (_, fnName, fnArgs) => {
     if (fnName.includes(".") || fnName.includes(":")) {
-      return `${fnName} = async function(${fnArgs})`;
+      return `${fnName.replace(/:/g, ".")} = async function(${fnArgs})`;
     }
     return `async function ${fnName}(${fnArgs})`;
   });
@@ -2016,238 +2427,15 @@ function runLuauScriptSource(code, scriptName = "Script") {
   js = js.replace(/\.\./g, "+");
   js = js.replace(/\b([a-zA-Z0-9_.\]]+):([a-zA-Z_]\w*)\(/g, "$1.$2(");
 
-  const apiHelper = (obj) => {
-    if (!obj) return null;
-    if (obj.isPartProxy) return obj;
-    return obj;
-  };
-
-  const makePartProxy = (partRecord) => {
-    const holder = partRecord.holder;
-    return {
-      isPartProxy: true,
-      Name: partRecord.name,
-      get Anchored() { return Boolean(partRecord.anchored); },
-      set Anchored(v) { partRecord.anchored = Boolean(v); },
-      get CanCollide() { return Boolean(partRecord.canCollide); },
-      set CanCollide(v) { partRecord.canCollide = Boolean(v); invalidateFloorCache(); },
-      get Transparency() {
-        let tr = 0;
-        holder.traverse((m) => {
-          if (m.isMesh && m.material) tr = 1 - (m.material.opacity ?? 1);
-        });
-        return tr;
-      },
-      set Transparency(v) {
-        const op = Math.max(0, Math.min(1, 1 - Number(v || 0)));
-        holder.traverse((m) => {
-          if (m.isMesh && m.material) {
-            m.material.transparent = op < 0.999;
-            m.material.opacity = op;
-            m.material.needsUpdate = true;
-          }
-        });
-      },
-      get Position() {
-        return { X: holder.position.x, Y: holder.position.y, Z: holder.position.z };
-      },
-      set Position(vec) {
-        if (!vec) return;
-        holder.position.set(Number(vec.X ?? holder.position.x), Number(vec.Y ?? holder.position.y), Number(vec.Z ?? holder.position.z));
-        invalidateFloorCache();
-      },
-      Destroy() {
-        if (holder.parent) holder.parent.remove(holder);
-        partRecord.destroyed = true;
-        invalidateFloorCache();
-      },
-      FindFirstChild(childName) {
-        if (childName === "TouchInterest") return {};
-        return null;
-      },
-      Touched: {
-        Connect(cb) {
-          partRecord.touchedCallbacks.push(cb);
-          return { Disconnect() { partRecord.touchedCallbacks = partRecord.touchedCallbacks.filter((x) => x !== cb); } };
-        }
-      }
-    };
-  };
-
-  const workspaceProxy = {
-    Gravity: studioConfig.gravity,
-    FindFirstChild(name) {
-      const found = dynamicParts.find((p) => !p.destroyed && p.name === name);
-      return found ? makePartProxy(found) : null;
-    },
-    GetChildren() {
-      return dynamicParts.filter((p) => !p.destroyed).map((p) => makePartProxy(p));
-    }
-  };
-
-  const humanoidProxy = {
-    get WalkSpeed() { return studioConfig.walkSpeed; },
-    set WalkSpeed(v) { const n = Number(v); if (Number.isFinite(n) && n > 0) studioConfig.walkSpeed = n; },
-    get JumpPower() { return studioConfig.jumpPower; },
-    set JumpPower(v) { const n = Number(v); if (Number.isFinite(n) && n > 0) studioConfig.jumpPower = n; },
-    Health: 100,
-    MaxHealth: 100,
-    TakeDamage(dmg) {
-      humanoidProxy.Health = Math.max(0, humanoidProxy.Health - Number(dmg || 0));
-      if (humanoidProxy.Health <= 0) {
-        humanoidProxy.Health = humanoidProxy.MaxHealth;
-        respawnLocalPlayer();
-      }
-    }
-  };
-
-  const characterProxy = {
-    Name: username,
-    Humanoid: humanoidProxy,
-    HumanoidRootPart: {
-      get Position() { return { X: playerPos.x, Y: playerPos.y, Z: playerPos.z }; },
-      set Position(v) {
-        if (!v) return;
-        playerPos.set(Number(v.X ?? playerPos.x), Number(v.Y ?? playerPos.y), Number(v.Z ?? playerPos.z));
-        syncLocalAvatarTransform();
-      }
-    },
-    FindFirstChild(n) {
-      if (n === "Humanoid") return humanoidProxy;
-      if (n === "HumanoidRootPart") return characterProxy.HumanoidRootPart;
-      return null;
-    }
-  };
-
-  const localPlayerProxy = {
-    Name: username,
-    Character: characterProxy,
-    Backpack: {
-      GetChildren() {
-        return backpackItems.map((b) => ({ Name: b.name }));
-      }
-    }
-  };
-
-  const gameProxy = {
-    PlaceId: Number(placeId) || 0,
-    Workspace: workspaceProxy,
-    Players: {
-      LocalPlayer: localPlayerProxy,
-      GetPlayers() { return [localPlayerProxy]; }
-    },
-    GetService(svcName) {
-      if (svcName === "Workspace") return workspaceProxy;
-      if (svcName === "Players") return gameProxy.Players;
-      return {};
-    }
-  };
-
-  const InstanceProxy = {
-    new(clsName, parentObj) {
-      if (clsName === "Part" || clsName === "WedgePart" || clsName === "Cylinder" || clsName === "Ball") {
-        const sx = 4, sy = 2, sz = 4;
-        const shape = clsName === "WedgePart" ? "Wedge" : clsName === "Cylinder" ? "Cylinder" : clsName === "Ball" ? "Ball" : "Block";
-        const geo = buildGeometryForPart(shape, sx, sy, sz);
-        const mat = new THREE.MeshStandardMaterial({ color: 0x00a2ff, roughness: 0.5 });
-        const holder = new THREE.Group();
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        holder.add(mesh);
-        holder.position.set(0, 4, -8);
-        worldGroup.add(holder);
-
-        const rec = {
-          name: clsName,
-          holder,
-          anchored: true,
-          canCollide: true,
-          velY: 0,
-          halfExtents: new THREE.Vector3(sx / 2, sy / 2, sz / 2),
-          touchedCallbacks: [],
-          destroyed: false
-        };
-        dynamicParts.push(rec);
-        invalidateFloorCache();
-        const proxy = makePartProxy(rec);
-        if (parentObj && typeof parentObj.FindFirstChild === "function") {
-          return proxy;
-        }
-        return proxy;
-      }
-      if (clsName === "TextLabel" || clsName === "TextButton" || clsName === "Frame") {
-        let sg = robloxGuiLayer.querySelector(".rblx-screengui");
-        if (!sg) {
-          sg = document.createElement("div");
-          sg.className = "rblx-screengui";
-          robloxGuiLayer.appendChild(sg);
-        }
-        const el = document.createElement(clsName === "TextButton" ? "button" : "div");
-        el.className = "rblx-el " + (clsName === "TextButton" ? "rblx-button" : clsName === "TextLabel" ? "rblx-label" : "rblx-frame");
-        el.style.left = "20px";
-        el.style.top = "180px";
-        el.style.width = "160px";
-        el.style.height = "34px";
-        el.style.backgroundColor = "rgba(30, 36, 46, 0.85)";
-        el.style.color = "#ffffff";
-        el.style.borderRadius = "4px";
-        el.textContent = clsName;
-        sg.appendChild(el);
-        return {
-          get Text() { return el.textContent; },
-          set Text(v) { el.textContent = String(v ?? ""); },
-          get Visible() { return el.style.display !== "none"; },
-          set Visible(v) { el.style.display = v ? "flex" : "none"; },
-          MouseButton1Click: {
-            Connect(cb) { el.addEventListener("click", cb); }
-          }
-        };
-      }
-      return { Name: clsName };
-    }
-  };
-
-  const Vector3Proxy = {
-    new(x = 0, y = 0, z = 0) { return { X: Number(x) || 0, Y: Number(y) || 0, Z: Number(z) || 0 }; }
-  };
-  const CFrameProxy = {
-    new(x = 0, y = 0, z = 0) { return { X: Number(x) || 0, Y: Number(y) || 0, Z: Number(z) || 0 }; }
-  };
-  const Color3Proxy = {
-    new(r = 1, g = 1, b = 1) { return { R: Number(r) || 0, G: Number(g) || 0, B: Number(b) || 0 }; },
-    fromRGB(r = 255, g = 255, b = 255) { return { R: (Number(r) || 0) / 255, G: (Number(g) || 0) / 255, B: (Number(b) || 0) / 255 }; }
-  };
-  const BrickColorProxy = {
-    new(c) { return c; }
-  };
-
-  const waitFn = (sec = 0.05) => new Promise((r) => setTimeout(r, Math.max(10, Number(sec || 0.05) * 1000)));
-  const taskProxy = {
-    wait: waitFn,
-    spawn(fn) { Promise.resolve().then(fn).catch((err) => addChat("ScriptWarn", String(err))); }
-  };
+  const argNames = Object.keys(envGlobals);
+  const argVals = Object.values(envGlobals);
 
   try {
     const fn = new Function(
-      "workspace", "game", "script", "Instance", "Vector3", "CFrame", "Color3", "BrickColor", "wait", "task", "print", "warn", "apiHelper",
+      ...argNames,
       `"use strict"; return (async () => { ${js} })();`
     );
-    fn(
-      workspaceProxy,
-      gameProxy,
-      { Name: scriptName, Parent: workspaceProxy },
-      InstanceProxy,
-      Vector3Proxy,
-      CFrameProxy,
-      Color3Proxy,
-      BrickColorProxy,
-      waitFn,
-      taskProxy,
-      (...args) => addChat(scriptName, args.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" ")),
-      (...args) => addChat(scriptName + " (warn)", args.join(" ")),
-      apiHelper
-    ).catch((err) => {
+    fn(...argVals).catch((err) => {
       addChat("ScriptError", scriptName + ": " + (err && err.message ? err.message : String(err)));
     });
   } catch (err) {
@@ -2512,9 +2700,15 @@ function invalidateFloorCache() {
 
 function syncLocalAvatarTransform() {
   if (!localAvatarInst) return;
-  attachCameraDirectlyToGlbTorso(localAvatarInst);
+  localAvatarInst.container.visible = true;
   localAvatarInst.container.position.set(playerPos.x, playerPos.y + localAvatarInst.footOffset, playerPos.z);
   localAvatarInst.container.rotation.y = playerYaw;
+
+  const anchorTarget = localAvatarInst.parts?.torso || localAvatarInst.parts?.root || localAvatarInst.container;
+  anchorTarget.updateWorldMatrix(true, false);
+  const anchorWorldPos = new THREE.Vector3();
+  anchorTarget.getWorldPosition(anchorWorldPos);
+  playerCameraRig.position.copy(anchorWorldPos);
 }
 
 function respawnLocalPlayer() {
@@ -2537,6 +2731,12 @@ function loadPlaceXmlString(xmlText, gameRow = null) {
   interactiveParts = [];
   dynamicParts = [];
   queuedScripts = [];
+  heartbeatCallbacks.length = 0;
+  steppedCallbacks.length = 0;
+  renderSteppedCallbacks.length = 0;
+  userInputBeganCallbacks.length = 0;
+  userInputEndedCallbacks.length = 0;
+  tweenServiceActive.length = 0;
   backpackItems = [];
   equippedIndex = -1;
   applyToolVisualToRig(localAvatarInst, "");
@@ -2657,171 +2857,6 @@ async function resolveXmlFromGameRow(place) {
   };
 }
 
-function renderEscTabContent() {
-  escServerInfo.textContent = activeServerId ? `Server: ${activeServerId}` : "Bloxtip Menu";
-
-  if (activeEscTab === "guidance") {
-    escTabContent.innerHTML = `
-      <div class="esc-section-title">Controls & Guidance</div>
-      <div class="esc-panel-box">
-        <div><strong>Move & Jump:</strong> W / A / S / D or Arrow Keys to move, Space to jump, 1–9 to equip items.</div>
-        <div><strong>Roblox Right-Click Orbit:</strong> Hold Right-Click and drag to orbit camera smoothly around your GLB character.</div>
-        <div><strong>Shift Lock:</strong> Toggle Shift Lock in <em>Settings</em> to lock your camera aim and center crosshair.</div>
-        <div><strong>XML & Luau Support:</strong> Parses <code>Anchored</code>, <code>CanCollide</code>, <code>ScreenGui</code> / <code>Frame</code> / <code>TextLabel</code> / <code>TextButton</code>, XML images, and Luau scripts.</div>
-      </div>
-    `;
-  } else if (activeEscTab === "settings") {
-    escTabContent.innerHTML = `
-      <div class="esc-section-title">Client Settings</div>
-      <div class="esc-panel-box">
-        <div class="esc-setting-row">
-          <div>
-            <div><strong>Master Volume</strong></div>
-            <div style="font-size:11px;color:#a8b4c7;">Adjust UI and gameplay sound effects</div>
-          </div>
-          <div class="esc-slider-wrap">
-            <input id="esc-volume-slider" type="range" min="0" max="100" value="${Math.round(masterVolume * 100)}">
-            <span id="esc-volume-label">${Math.round(masterVolume * 100)}%</span>
-          </div>
-        </div>
-        <div class="esc-setting-row">
-          <div>
-            <div><strong>Shift Lock</strong></div>
-            <div style="font-size:11px;color:#a8b4c7;">Align character facing with camera direction and show reticle</div>
-          </div>
-          <button id="esc-shiftlock-toggle" class="esc-toggle-btn ${shiftLockEnabled ? "on" : ""}" type="button">
-            ${shiftLockEnabled ? "ON" : "OFF"}
-          </button>
-        </div>
-      </div>
-    `;
-
-    const slider = document.getElementById("esc-volume-slider");
-    const volLbl = document.getElementById("esc-volume-label");
-    if (slider) {
-      slider.addEventListener("input", () => {
-        const pct = Number(slider.value) || 0;
-        setMasterVolume(pct / 100);
-        if (volLbl) volLbl.textContent = pct + "%";
-      });
-    }
-
-    const slBtn = document.getElementById("esc-shiftlock-toggle");
-    if (slBtn) {
-      slBtn.addEventListener("click", () => {
-        setShiftLock(!shiftLockEnabled);
-      });
-    }
-  } else {
-    escTabContent.innerHTML = `
-      <div class="esc-section-title">More Info</div>
-      <div class="esc-panel-box">
-        <div><strong>Player:</strong> ${escapeHtml(username)}</div>
-        <div><strong>Place ID:</strong> ${escapeHtml(placeId || "default")}</div>
-        <div><strong>Role:</strong> ${isHost ? "Host" : "Peer"}</div>
-      </div>
-    `;
-  }
-}
-
-function renderEscPlayersList() {
-  const avatarSrc = cachedAvatarPortraitUrl || "";
-  const list = [{ id: peerId, name: username, role: isHost ? "Host (You)" : "You", avatarUrl: avatarSrc }];
-  remotePlayers.forEach((rp, id) => {
-    list.push({ id, name: rp.name || "Player", role: "Player", avatarUrl: avatarSrc });
-  });
-
-  escPlayersGrid.innerHTML = "";
-  list.forEach((p) => {
-    const card = document.createElement("div");
-    card.className = "esc-player-card";
-
-    if (p.avatarUrl) {
-      const img = document.createElement("img");
-      img.className = "esc-player-avatar";
-      img.src = p.avatarUrl;
-      img.alt = p.name;
-      card.appendChild(img);
-    } else {
-      const ph = document.createElement("div");
-      ph.className = "esc-player-avatar";
-      ph.style.display = "flex";
-      ph.style.alignItems = "center";
-      ph.style.justifyContent = "center";
-      ph.style.fontWeight = "700";
-      ph.textContent = (p.name || "P").slice(0, 2).toUpperCase();
-      card.appendChild(ph);
-    }
-
-    const nm = document.createElement("div");
-    nm.className = "esc-player-name";
-    nm.textContent = p.name;
-
-    const bg = document.createElement("div");
-    bg.className = "esc-player-badge";
-    bg.textContent = p.role;
-
-    card.appendChild(nm);
-    card.appendChild(bg);
-    escPlayersGrid.appendChild(card);
-  });
-}
-
-function openEscMenu(tabName = null) {
-  if (tabName) activeEscTab = tabName;
-  document.querySelectorAll(".esc-tab-btn").forEach((b) => {
-    b.classList.toggle("active", b.dataset.escTab === activeEscTab);
-  });
-  renderEscTabContent();
-  renderEscPlayersList();
-  escMenu.classList.add("open");
-  syncShiftLockUI();
-  playUiSound(500, 0.05);
-}
-
-function closeEscMenu() {
-  escMenu.classList.remove("open");
-  syncShiftLockUI();
-  playUiSound(620, 0.05);
-}
-
-openEscBtn.addEventListener("click", () => {
-  if (escMenu.classList.contains("open")) closeEscMenu();
-  else openEscMenu();
-});
-
-document.querySelectorAll(".esc-tab-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    activeEscTab = btn.dataset.escTab || "guidance";
-    document.querySelectorAll(".esc-tab-btn").forEach((b) => {
-      b.classList.toggle("active", b === btn);
-    });
-    renderEscTabContent();
-    playUiSound(580, 0.04);
-  });
-});
-
-document.getElementById("esc-resume-btn").addEventListener("click", () => {
-  closeEscMenu();
-});
-
-document.getElementById("esc-reset-btn").addEventListener("click", () => {
-  closeEscMenu();
-  respawnLocalPlayer();
-});
-
-document.getElementById("esc-leave-btn").addEventListener("click", async () => {
-  closeEscMenu();
-  if (activeChannel) {
-    channelSubscribed = false;
-    try { await sb.removeChannel(activeChannel); } catch (_) {}
-    activeChannel = null;
-  }
-  remotePlayers.forEach((_, id) => removeRemotePlayer(id));
-  serverRoleLabel.textContent = "disconnected";
-  updateLeaderboard();
-});
-
 function updateLeaderboard() {
   const entries = [{ id: peerId, name: username, isSelf: true }];
   remotePlayers.forEach((rp, id) => {
@@ -2840,9 +2875,6 @@ function updateLeaderboard() {
     row.appendChild(right);
     leaderboardBody.appendChild(row);
   });
-  if (escMenu.classList.contains("open")) {
-    renderEscPlayersList();
-  }
 }
 
 function addOrUpdateRemotePlayer(id, payload) {
@@ -3190,19 +3222,9 @@ chatForm.addEventListener("submit", (e) => {
 
 const keysDown = new Set();
 window.addEventListener("keydown", (e) => {
-  if (e.code === "Escape") {
-    e.preventDefault();
-    if (gamesModal.classList.contains("open")) {
-      gamesModal.classList.remove("open");
-      return;
-    }
-    if (escMenu.classList.contains("open")) closeEscMenu();
-    else openEscMenu();
-    return;
-  }
-
-  if (document.activeElement === chatInput || escMenu.classList.contains("open")) return;
+  if (document.activeElement === chatInput) return;
   keysDown.add(e.code);
+  userInputBeganCallbacks.forEach((f) => { try { f({ KeyCode: e.code }); } catch (_) {} });
 
   if (e.code.startsWith("Digit")) {
     const num = parseInt(e.code.replace("Digit", ""), 10);
@@ -3214,20 +3236,18 @@ window.addEventListener("keydown", (e) => {
     playerVel.y = studioConfig.jumpPower;
     isGrounded = false;
     isJumping = true;
-    playUiSound(360, 0.08, "sine");
   }
 });
 
 window.addEventListener("keyup", (e) => {
   keysDown.delete(e.code);
+  userInputEndedCallbacks.forEach((f) => { try { f({ KeyCode: e.code }); } catch (_) {} });
 });
 
 canvas.addEventListener("mousedown", (e) => {
-  if (escMenu.classList.contains("open")) return;
   if (e.button === 0 && equippedIndex >= 0) {
     isAttacking = true;
     attackTimer = 0.25;
-    playUiSound(290, 0.07, "sawtooth");
     broadcastSelfState();
   }
 });
@@ -3239,7 +3259,6 @@ let camPitch = 0.16;
 let camDist = 4.2;
 
 canvas.addEventListener("mousedown", (e) => {
-  if (escMenu.classList.contains("open")) return;
   if (e.button === 2) {
     isRightDragging = true;
     lastMouseX = e.clientX;
@@ -3254,26 +3273,16 @@ window.addEventListener("mouseup", (e) => {
   }
 });
 window.addEventListener("mousemove", (e) => {
-  if (escMenu.classList.contains("open")) return;
-  if (isRightDragging) {
-    const dx = e.clientX - lastMouseX;
-    const dy = e.clientY - lastMouseY;
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-    playerYaw -= dx * 0.0045;
-    camPitch = Math.max(-0.55, Math.min(1.15, camPitch + dy * 0.004));
-  } else if (shiftLockEnabled) {
-    const dx = e.movementX || 0;
-    const dy = e.movementY || 0;
-    if (dx !== 0 || dy !== 0) {
-      playerYaw -= dx * 0.0032;
-      camPitch = Math.max(-0.55, Math.min(1.15, camPitch + dy * 0.003));
-    }
-  }
+  if (!isRightDragging) return;
+  const dx = e.clientX - lastMouseX;
+  const dy = e.clientY - lastMouseY;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+  playerYaw -= dx * 0.0045;
+  camPitch = Math.max(-0.55, Math.min(1.15, camPitch + dy * 0.004));
 });
 canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 canvas.addEventListener("wheel", (e) => {
-  if (escMenu.classList.contains("open")) return;
   camDist = Math.max(1.8, Math.min(14, camDist + e.deltaY * 0.006));
 });
 
@@ -3316,6 +3325,14 @@ function getFloorHeightAt(x, z, currentY) {
 
 function updatePhysicsAndPlayer(dt, now) {
   refreshFloorBoxes(now);
+
+  for (let i = tweenServiceActive.length - 1; i >= 0; i--) {
+    const tw = tweenServiceActive[i];
+    tw.elapsed += dt;
+    const alpha = Math.min(1, tw.elapsed / tw.dur);
+    tw.onStep(alpha);
+    if (alpha >= 1) tweenServiceActive.splice(i, 1);
+  }
 
   for (const partRec of dynamicParts) {
     if (partRec.destroyed) continue;
@@ -3425,20 +3442,21 @@ function updatePhysicsAndPlayer(dt, now) {
     stepAvatarAnimation(localAvatarInst, dt, speedRatio, isGrounded, isJumping, isAttacking);
   }
 
-  glbTorsoCameraGroup.getWorldPosition(glbTorsoCameraGroup.userData.worldPos || (glbTorsoCameraGroup.userData.worldPos = new THREE.Vector3()));
-  const torsoWorld = glbTorsoCameraGroup.userData.worldPos;
+  steppedCallbacks.forEach((f) => { try { f(dt); } catch (_) {} });
+  heartbeatCallbacks.forEach((f) => { try { f(dt); } catch (_) {} });
+
   const horizDist = Math.cos(camPitch) * camDist;
   const vertDist = Math.sin(camPitch) * camDist;
-  const shoulderOffsetX = shiftLockEnabled ? Math.cos(playerYaw) * 0.75 : 0;
-  const shoulderOffsetZ = shiftLockEnabled ? -Math.sin(playerYaw) * 0.75 : 0;
 
   camera.position.set(
-    torsoWorld.x + shoulderOffsetX + Math.sin(playerYaw) * horizDist,
-    torsoWorld.y + vertDist + 0.35,
-    torsoWorld.z + shoulderOffsetZ + Math.cos(playerYaw) * horizDist
+    playerCameraRig.position.x + Math.sin(playerYaw) * horizDist,
+    playerCameraRig.position.y + vertDist + 0.35,
+    playerCameraRig.position.z + Math.cos(playerYaw) * horizDist
   );
-  camera.lookAt(torsoWorld.x + shoulderOffsetX, torsoWorld.y + 0.35, torsoWorld.z + shoulderOffsetZ);
-  camera.getWorldPosition(skyDome.position);
+  camera.lookAt(playerCameraRig.position.x, playerCameraRig.position.y + 0.35, playerCameraRig.position.z);
+  skyDome.position.copy(camera.position);
+
+  renderSteppedCallbacks.forEach((f) => { try { f(dt); } catch (_) {} });
 }
 
 let lastFrameTime = performance.now();
@@ -3466,12 +3484,10 @@ function animate(now) {
 }
 
 (async function init() {
-  syncShiftLockUI();
-  showLoading("Starting Bloxtip...", "Loading avatar GLB...");
+  showLoading("Starting Webclient...", "Loading");
   const tpl = await loadAvatarTemplate(AVATAR_GLB_URL);
   localAvatarInst = createAnimatedAvatarInstance(tpl, username);
   scene.add(localAvatarInst.container);
-  attachCameraDirectlyToGlbTorso(localAvatarInst);
   syncLocalAvatarTransform();
   renderHotbar();
   updateLeaderboard();
@@ -3486,4 +3502,4 @@ function animate(now) {
 </script>
 </body>
 </html>
-<!-- OH MY FUCKING BRAIN -->
+<!-- oh my brainnnnnnnnnnn --!>
