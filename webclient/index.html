@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="amr010920">
-<title>Bloxtip Web Player (Multiplayer)</title>
+<title>Bloxtip web client</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; color: #ffffff; }
@@ -176,7 +176,7 @@ const AVATAR_GLB_URL = "https://novrex.lol/roblox-noob.glb";
 const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 const params = new URLSearchParams(window.location.search);
-let placeId = params.get("placeId") || params.get("id") || "1";
+let placeId = params.get("placeId") || params.get("id") || "";
 const peerId = "peer_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
 const username = params.get("user") || localStorage.getItem("bloxtip_username") || ("Guest_" + peerId.slice(-4));
 
@@ -184,7 +184,6 @@ const placeLabel = document.getElementById("place-label");
 const serverRoleLabel = document.getElementById("server-role-label");
 const gameSelect = document.getElementById("game-select");
 const loadGameBtn = document.getElementById("load-game-btn");
-const downloadRbxlBtn = document.getElementById("download-rbxl-btn");
 const leaderboardBody = document.getElementById("leaderboard-body");
 const playerCountEl = document.getElementById("player-count");
 
@@ -268,101 +267,15 @@ const remotePlayers = new Map();
 let activeChannel = null;
 let isHost = false;
 let hostId = peerId;
-let lastRbxlBlob = null;
-let lastRbxlFilename = "place_" + placeId + ".rbxl";
 let gamesCache = [];
 
-function escapeXml(str) {
+function escapeHtml(str) {
   return String(str ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
-}
-
-function gameRowToRobloxXml(game) {
-  const title = escapeXml(game.title || ("Place " + (game.id || placeId)));
-  const creator = escapeXml(game.creator_name || "Novrex");
-  const thumb = escapeXml(game.thumbnail_url || ("https://btip.cc.cd/asset/?id=" + (game.id || placeId)));
-  const parts = Array.isArray(game.parts) ? game.parts : [];
-
-  const partXml = parts.length > 0
-    ? parts.map((p, idx) => {
-        const px = Number(p.x ?? 0);
-        const py = Number(p.y ?? 2);
-        const pz = Number(p.z ?? -10 - idx * 4);
-        const sx = Number(p.sx ?? 4);
-        const sy = Number(p.sy ?? 2);
-        const sz = Number(p.sz ?? 4);
-        const col = Number(p.color ?? 0x00a2ff);
-        return `
-      <Item class="Part">
-        <Properties>
-          <string name="Name">${escapeXml(p.name || ("Part" + (idx + 1)))}</string>
-          <bool name="Anchored">${p.anchored !== false}</bool>
-          <CoordinateFrame name="CFrame">
-            <X>${px}</X><Y>${py}</Y><Z>${pz}</Z>
-            <R00>1</R00><R01>0</R01><R02>0</R02>
-            <R10>0</R10><R11>1</R11><R12>0</R12>
-            <R20>0</R20><R21>0</R21><R22>1</R22>
-          </CoordinateFrame>
-          <Vector3 name="size">
-            <X>${sx}</X><Y>${sy}</Y><Z>${sz}</Z>
-          </Vector3>
-          <int name="BrickColor">${col}</int>
-        </Properties>
-      </Item>`;
-      }).join("")
-    : `
-      <Item class="Part">
-        <Properties>
-          <string name="Name">GameSign</string>
-          <bool name="Anchored">true</bool>
-          <CoordinateFrame name="CFrame">
-            <X>0</X><Y>4</Y><Z>-12</Z>
-            <R00>1</R00><R01>0</R01><R02>0</R02>
-            <R10>0</R10><R11>1</R11><R12>0</R12>
-            <R20>0</R20><R21>0</R21><R22>1</R22>
-          </CoordinateFrame>
-          <Vector3 name="size">
-            <X>6</X><Y>6</Y><Z>0.4</Z>
-          </Vector3>
-          <string name="TextureUrl">${thumb}</string>
-        </Properties>
-      </Item>`;
-
-  return `<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
-  <External>null</External>
-  <External>nil</External>
-  <Item class="Workspace">
-    <Properties>
-      <string name="Name">Workspace</string>
-      <string name="GameTitle">${title}</string>
-      <string name="CreatorName">${creator}</string>
-    </Properties>
-    <Item class="Part">
-      <Properties>
-        <string name="Name">Baseplate</string>
-        <bool name="Anchored">true</bool>
-        <CoordinateFrame name="CFrame">
-          <X>0</X><Y>-1</Y><Z>0</Z>
-          <R00>1</R00><R01>0</R01><R02>0</R02>
-          <R10>0</R10><R11>1</R11><R12>0</R12>
-          <R20>0</R20><R21>0</R21><R22>1</R22>
-        </CoordinateFrame>
-        <Vector3 name="size">
-          <X>128</X><Y>2</Y><Z>128</Z>
-        </Vector3>
-      </Properties>
-    </Item>${partXml}
-  </Item>
-</roblox>`;
-}
-
-function xmlToRbxlBlob(xmlString) {
-  const bytes = new TextEncoder().encode(xmlString);
-  return new Blob([bytes], { type: "application/x-roblox-place" });
 }
 
 const textureLoader = new THREE.TextureLoader();
@@ -374,81 +287,91 @@ function clearWorldGroup() {
   }
 }
 
-function renderRbxlInBrowser(rbxlBlob, fallbackThumbUrl) {
-  clearWorldGroup();
-  const reader = new FileReader();
-  reader.onload = () => {
-    const rawText = String(reader.result || "");
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(rawText, "text/xml");
-    const items = Array.from(doc.getElementsByTagName("Item"));
+function readNum(parent, tagName, fallback) {
+  const el = parent.getElementsByTagName(tagName)[0];
+  if (!el) return fallback;
+  const n = Number(el.textContent);
+  return Number.isFinite(n) ? n : fallback;
+}
 
-    let builtAny = false;
-    items.forEach((item) => {
-      if (item.getAttribute("class") !== "Part") return;
-      const props = item.firstElementChild;
-      if (!props) return;
-
-      let name = "";
-      let sx = 4, sy = 2, sz = 4;
-      let px = 0, py = 2, pz = -12;
-      let texUrl = "";
-
-      Array.from(props.children).forEach((propEl) => {
-        const propName = propEl.getAttribute("name");
-        if (propName === "Name") name = propEl.textContent || "";
-        if (propName === "size") {
-          sx = Number(propEl.getElementsByTagName("X")[0]?.textContent || sx);
-          sy = Number(propEl.getElementsByTagName("Y")[0]?.textContent || sy);
-          sz = Number(propEl.getElementsByTagName("Z")[0]?.textContent || sz);
-        }
-        if (propName === "CFrame") {
-          px = Number(propEl.getElementsByTagName("X")[0]?.textContent || px);
-          py = Number(propEl.getElementsByTagName("Y")[0]?.textContent || py);
-          pz = Number(propEl.getElementsByTagName("Z")[0]?.textContent || pz);
-        }
-        if (propName === "TextureUrl") {
-          texUrl = propEl.textContent || "";
-        }
-      });
-
-      if (name === "Baseplate") return;
-      builtAny = true;
-
-      const matOpts = { color: 0xffffff };
-      const resolvedTex = texUrl || fallbackThumbUrl;
-      if (resolvedTex) {
-        const tex = textureLoader.load(resolvedTex);
-        tex.colorSpace = THREE.SRGBColorSpace;
-        matOpts.map = tex;
-      }
-
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(sx, sy, sz),
-        new THREE.MeshStandardMaterial(matOpts)
-      );
-      mesh.position.set(px, py, pz);
-      worldGroup.add(mesh);
-    });
-
-    if (!builtAny) {
-      const signTex = fallbackThumbUrl ? textureLoader.load(fallbackThumbUrl) : null;
-      if (signTex) signTex.colorSpace = THREE.SRGBColorSpace;
-      const sign = new THREE.Mesh(
-        new THREE.BoxGeometry(6, 6, 0.4),
-        new THREE.MeshStandardMaterial({ map: signTex || null, color: 0xffffff })
-      );
-      sign.position.set(0, 4, -12);
-      worldGroup.add(sign);
+function readStr(parent, propName, fallback = "") {
+  const children = Array.from(parent.children);
+  for (const el of children) {
+    if (el.getAttribute("name") === propName) {
+      return el.textContent ?? fallback;
     }
-  };
-  reader.readAsText(rbxlBlob);
+  }
+  return fallback;
+}
+
+function findPropElement(parent, propName) {
+  const children = Array.from(parent.children);
+  for (const el of children) {
+    if (el.getAttribute("name") === propName) return el;
+  }
+  return null;
+}
+
+function applyXmlToScene(xmlText) {
+  clearWorldGroup();
+  if (!xmlText || !String(xmlText).trim()) return;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(String(xmlText), "text/xml");
+  const items = Array.from(doc.getElementsByTagName("Item"));
+
+  items.forEach((item) => {
+    const cls = item.getAttribute("class");
+    if (cls !== "Part" && cls !== "SpawnLocation" && cls !== "WedgePart" && cls !== "TrussPart") return;
+    const props = findPropElement(item, "Properties") || item.firstElementChild;
+    if (!props) return;
+
+    const name = readStr(props, "Name", cls);
+    if (name === "Baseplate") return;
+
+    const sizeEl = findPropElement(props, "size") || findPropElement(props, "Size");
+    const sx = sizeEl ? readNum(sizeEl, "X", 4) : 4;
+    const sy = sizeEl ? readNum(sizeEl, "Y", 2) : 2;
+    const sz = sizeEl ? readNum(sizeEl, "Z", 4) : 4;
+
+    const cfEl = findPropElement(props, "CFrame");
+    const px = cfEl ? readNum(cfEl, "X", 0) : 0;
+    const py = cfEl ? readNum(cfEl, "Y", 2) : 2;
+    const pz = cfEl ? readNum(cfEl, "Z", -12) : -12;
+
+    const texUrl = readStr(props, "TextureUrl", "") || readStr(props, "Texture", "") || readStr(props, "Image", "");
+    const colorStr = readStr(props, "Color", "") || readStr(props, "BrickColor", "");
+    let colorHex = 0x00a2ff;
+    if (colorStr) {
+      const parsedNum = Number(colorStr);
+      if (Number.isFinite(parsedNum) && parsedNum > 0) {
+        colorHex = parsedNum <= 0xffffff ? parsedNum : 0x00a2ff;
+      } else if (/^#?[0-9a-fA-F]{6}$/.test(colorStr.trim())) {
+        colorHex = parseInt(colorStr.trim().replace("#", ""), 16);
+      }
+    }
+
+    const matOpts = { color: texUrl ? 0xffffff : colorHex };
+    if (texUrl) {
+      const tex = textureLoader.load(texUrl);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      matOpts.map = tex;
+    }
+
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(Math.max(0.1, sx), Math.max(0.1, sy), Math.max(0.1, sz)),
+      new THREE.MeshStandardMaterial(matOpts)
+    );
+    mesh.position.set(px, py, pz);
+    worldGroup.add(mesh);
+  });
 }
 
 const character = new THREE.Group();
 scene.add(character);
 
 const gltfLoader = new GLTFLoader();
+gltfLoader.setCrossOrigin("anonymous");
 let cachedAvatarTemplate = null;
 
 function createAvatarInstance(tintColor = null) {
@@ -481,23 +404,27 @@ function createAvatarInstance(tintColor = null) {
   return holder;
 }
 
-gltfLoader.load(
-  AVATAR_GLB_URL,
-  (gltf) => {
-    cachedAvatarTemplate = gltf.scene;
-    while (character.children.length > 0) character.remove(character.children[0]);
-    character.add(createAvatarInstance(null));
-    remotePlayers.forEach((entry, id) => {
-      while (entry.group.children.length > 0) entry.group.remove(entry.group.children[0]);
-      entry.group.add(createAvatarInstance(colorForPeer(id)));
-    });
-  },
-  undefined,
-  () => {
-    while (character.children.length > 0) character.remove(character.children[0]);
-    character.add(createAvatarInstance(null));
-  }
-);
+function loadNoobAvatarGlb() {
+  gltfLoader.load(
+    AVATAR_GLB_URL,
+    (gltf) => {
+      cachedAvatarTemplate = gltf.scene;
+      while (character.children.length > 0) character.remove(character.children[0]);
+      character.add(createAvatarInstance(null));
+      remotePlayers.forEach((entry, id) => {
+        while (entry.group.children.length > 0) entry.group.remove(entry.group.children[0]);
+        entry.group.add(createAvatarInstance(colorForPeer(id)));
+      });
+    },
+    undefined,
+    (err) => {
+      console.error("Failed to load avatar GLB:", AVATAR_GLB_URL, err);
+      while (character.children.length > 0) character.remove(character.children[0]);
+      character.add(createAvatarInstance(null));
+    }
+  );
+}
+loadNoobAvatarGlb();
 
 function colorForPeer(id) {
   let h = 0;
@@ -529,7 +456,7 @@ function updateLeaderboard(presenceState) {
 
   playerCountEl.textContent = String(rows.length);
   leaderboardBody.innerHTML = rows
-    .map((r) => `<div class="lb-row"><span>${escapeXml(r.name)}</span><span>${r.score}</span></div>`)
+    .map((r) => `<div class="lb-row"><span>${escapeHtml(r.name)}</span><span>${r.score}</span></div>`)
     .join("");
 }
 
@@ -580,35 +507,25 @@ function upsertRemotePlayer(id, name, x, y, z, rotY) {
 }
 
 async function joinMultiplayerServerForGame(idToLoad) {
-  placeId = String(idToLoad || "1");
+  placeId = String(idToLoad || "");
   if (placeLabel) placeLabel.textContent = "Place ID: " + placeId;
 
   let gameObj = gamesCache.find((g) => String(g.id) === placeId);
-  if (!gameObj && sb) {
+  if (!gameObj && sb && placeId) {
     try {
       const { data } = await sb
-        .from("novrex_games")
+        .from("games")
         .select("*")
         .eq("id", placeId)
         .limit(1);
       if (Array.isArray(data) && data[0]) gameObj = data[0];
-    } catch (_e) {}
-  }
-  if (!gameObj) {
-    gameObj = {
-      id: placeId,
-      title: "Place " + placeId,
-      creator_name: "Novrex",
-      thumbnail_url: "/asset/?id=" + encodeURIComponent(placeId)
-    };
+    } catch (err) {
+      console.error("Failed to fetch game from games table:", err);
+    }
   }
 
-  const xml = gameRowToRobloxXml(gameObj);
-  const rbxlBlob = xmlToRbxlBlob(xml);
-  lastRbxlBlob = rbxlBlob;
-  lastRbxlFilename = `place_${placeId}.rbxl`;
-  const thumb = gameObj.thumbnail_url || ("/asset/?id=" + encodeURIComponent(placeId));
-  renderRbxlInBrowser(rbxlBlob, thumb);
+  const xmlContent = gameObj?.xml ?? "";
+  applyXmlToScene(xmlContent);
 
   clearAllRemotePlayers();
   isHost = false;
@@ -620,9 +537,8 @@ async function joinMultiplayerServerForGame(idToLoad) {
     activeChannel = null;
   }
 
-  if (!sb) {
+  if (!sb || !placeId) {
     serverRoleLabel.textContent = "Server: Hosting Locally";
-    addChat("System", `Loaded "${gameObj.title}".`);
     return;
   }
 
@@ -665,7 +581,7 @@ async function joinMultiplayerServerForGame(idToLoad) {
           joinedAt: Date.now()
         });
         recomputeHostFromPresence(roomChannel.presenceState());
-        addChat("System", `Connected to server for "${gameObj.title}" (Place #${placeId}).`);
+        addChat("System", `Connected to server for "${gameObj?.title || ("Place #" + placeId)}".`);
       }
     });
 
@@ -689,29 +605,42 @@ chatForm.addEventListener("submit", (e) => {
 });
 
 async function populateGamesFromSupabase() {
-  if (sb) {
-    try {
-      const { data: rows, error } = await sb
-        .from("novrex_games")
-        .select("*")
-        .order("id", { ascending: true });
-      if (!error && Array.isArray(rows) && rows.length > 0) {
-        gamesCache = rows;
-        gameSelect.innerHTML = rows
-          .map((g) => `<option value="${escapeXml(g.id)}">${escapeXml(g.title || ("Place " + g.id))} (#${escapeXml(g.id)})</option>`)
-          .join("");
-        if (!rows.some((g) => String(g.id) === placeId)) {
-          placeId = String(rows[0].id);
-        }
-        gameSelect.value = placeId;
-        await joinMultiplayerServerForGame(placeId);
-        return;
-      }
-    } catch (_e) {}
+  if (!sb) {
+    gameSelect.innerHTML = `<option value="">Supabase not available</option>`;
+    return;
   }
 
-  gameSelect.innerHTML = `<option value="${escapeXml(placeId)}">Place #${escapeXml(placeId)}</option>`;
-  await joinMultiplayerServerForGame(placeId);
+  try {
+    const { data: rows, error } = await sb
+      .from("games")
+      .select("*")
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("Supabase games table error:", error);
+      gameSelect.innerHTML = `<option value="">Failed to load games</option>`;
+      return;
+    }
+
+    if (Array.isArray(rows) && rows.length > 0) {
+      gamesCache = rows;
+      gameSelect.innerHTML = rows
+        .map((g) => `<option value="${escapeHtml(g.id)}">${escapeHtml(g.title || g.name || ("Game #" + g.id))}</option>`)
+        .join("");
+
+      if (!placeId || !rows.some((g) => String(g.id) === String(placeId))) {
+        placeId = String(rows[0].id);
+      }
+      gameSelect.value = placeId;
+      await joinMultiplayerServerForGame(placeId);
+      return;
+    }
+
+    gameSelect.innerHTML = `<option value="">No games found</option>`;
+  } catch (err) {
+    console.error("Error reading games table:", err);
+    gameSelect.innerHTML = `<option value="">Error loading games</option>`;
+  }
 }
 
 loadGameBtn.addEventListener("click", () => {
@@ -722,18 +651,6 @@ loadGameBtn.addEventListener("click", () => {
     joinMultiplayerServerForGame(gameSelect.value);
   }
 });
-
-if (downloadRbxlBtn) {
-  downloadRbxlBtn.addEventListener("click", () => {
-    if (!lastRbxlBlob) return;
-    const url = URL.createObjectURL(lastRbxlBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = lastRbxlFilename;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  });
-}
 
 const keys = {};
 window.addEventListener("keydown", (e) => {
@@ -833,8 +750,8 @@ function animate(now) {
 
   velY -= 48 * dt;
   character.position.y += velY * dt;
-  if (character.position.y <= 0) {
-    character.position.y = 0;
+  if (character.position.y <= 0.4) {
+    character.position.y = 0.4;
     velY = 0;
     grounded = true;
   }
