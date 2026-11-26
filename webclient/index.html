@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="amr010920">
+<title>Bloxtip Web Player (Multiplayer)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #16181d; color: #ffffff; }
+  #topbar {
+    height: 36px;
+    background: linear-gradient(#ffffff8a);
+    border-bottom: 1px solid #0e1013;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    font-size: 13px;
+    user-select: none;
+  }
+  .tb-group { display: flex; align-items: center; gap: 10px; }
+  .tb-btn {
+    background: #343a46;
+    border: 1px solid #4a5262;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .tb-btn:hover { background: #00a2ff; border-color: #00a2ff; }
+  .tb-badge {
+    background: rgba(0, 162, 255, 0.2);
+    border: 1px solid #00a2ff;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 12px;
+  }
+  #viewport { position: relative; width: 100%; height: calc(100% - 36px); }
+  canvas { display: block; width: 100%; height: 100%; }
+  #game-selector {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 0px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  #game-select {
+    background: #252a34;
+    color: #fff;
+    border: 1px solid #4b5565;
+    border-radius: 2px;
+    padding: 5px 1px;
+    font-size: 12px;
+    min-width: 190px;
+  }
+  #leaderboard {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 210px;
+    background: rgba(255, 255, 255, 0.82);
+    border-radius: 1.5px;
+    overflow: hidden;
+    font-size: 12px;
+  }
+  #leaderboard-header {
+    background: rgba(0, 0, 0, 0.45);
+    padding: 6px 10px;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    justify-content: space-between;
+  }
+  .lb-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  #chat-box {
+    position: absolute;
+    top: 52px;
+    left: 10px;
+    width: 310px;
+    background: rgba(255, 255, 255, 0.76);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+  }
+  #chat-log {
+    height: 120px;
+    overflow-y: auto;
+    padding: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  #chat-form {
+    display: flex;
+    border-top: 1px solid rgb(0, 0, 0);
+  }
+  #chat-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0);
+    border: none;
+    color: #ff0000;
+    padding: 6px 8px;
+    font-size: 12px;
+    outline: none;
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="topbar">
+  <div class="tb-group">
+    <span id="server-role-label" style="color:#ffffff;">waiting</span>
+  </div>
+  <div class="tb-group">
+    <span id="player-label">ur user here</span>
+    <button class="tb-btn" id="reset-btn" type="button">Reset</button>
+    <button class="tb-btn" id="leave-btn" type="button">Leave</button>
+  </div>
+</div>
+
+<div id="viewport">
+  <canvas id="game-canvas"></canvas>
+
+  <div id="game-selector">
+    <select id="game-select">
+      <option value="">Loading Games</option>
+    </select>
+    <button class="tb-btn" id="load-game-btn" type="button">Join</button>
+  </div>
+
+  <div id="chat-box">
+    <div id="chat-log"></div>
+    <form id="chat-form">
+      <input id="chat-input" type="text" placeholder="Press Enter to chat..." maxlength="140" autocomplete="off">
+    </form>
+  </div>
+
+  <div id="leaderboard">
+    <div id="leaderboard-header"><span>Players</span><span id="player-count"></span></div>
+    <div id="leaderboard-body"></div>
+  </div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+const SUPABASE_URL = "https://vzkupnfktlyjmhjgzfli.supabase.co";
+const SUPABASE_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
+const AVATAR_GLB_URL = "https://novrex.lol/roblox-noob.glb";
+
+const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+const params = new URLSearchParams(window.location.search);
+let placeId = params.get("placeId") || params.get("id") || "1";
+const peerId = "peer_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
+const username = params.get("user") || localStorage.getItem("bloxtip_username") || ("Guest_" + peerId.slice(-4));
+
+const placeLabel = document.getElementById("place-label");
+const serverRoleLabel = document.getElementById("server-role-label");
+const gameSelect = document.getElementById("game-select");
+const loadGameBtn = document.getElementById("load-game-btn");
+const downloadRbxlBtn = document.getElementById("download-rbxl-btn");
+const leaderboardBody = document.getElementById("leaderboard-body");
+const playerCountEl = document.getElementById("player-count");
+
+placeLabel.textContent = "Place ID: " + placeId;
+document.getElementById("player-label").textContent = "Player: " + username;
+
+const chatLog = document.getElementById("chat-log");
+const chatForm = document.getElementById("chat-form");
+const chatInput = document.getElementById("chat-input");
+
+function addChat(sender, text) {
+  const line = document.createElement("div");
+  const strong = document.createElement("strong");
+  strong.style.color = "#4cc2ff";
+  strong.textContent = sender + ": ";
+  const msg = document.createElement("span");
+  msg.textContent = text;
+  line.appendChild(strong);
+  line.appendChild(msg);
+  chatLog.appendChild(line);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+const canvas = document.getElementById("game-canvas");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87c6ff);
+scene.fog = new THREE.Fog(0x87c6ff, 80, 260);
+
+const camera = new THREE.PerspectiveCamera(65, canvas.clientWidth / canvas.clientHeight, 0.1, 500);
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0x4b5563, 1.15);
+scene.add(hemi);
+const dir = new THREE.DirectionalLight(0xffffff, 1.1);
+dir.position.set(40, 70, 30);
+scene.add(dir);
+
+const studCanvas = document.createElement("canvas");
+studCanvas.width = 64;
+studCanvas.height = 64;
+const sctx = studCanvas.getContext("2d");
+sctx.fillStyle = "#5b626a";
+sctx.fillRect(0, 0, 64, 64);
+sctx.strokeStyle = "#484e55";
+sctx.lineWidth = 2;
+sctx.strokeRect(1, 1, 62, 62);
+sctx.fillStyle = "#6c747e";
+sctx.beginPath();
+sctx.arc(32, 32, 16, 0, Math.PI * 2);
+sctx.fill();
+
+const baseTex = new THREE.CanvasTexture(studCanvas);
+baseTex.wrapS = THREE.RepeatWrapping;
+baseTex.wrapT = THREE.RepeatWrapping;
+baseTex.repeat.set(64, 64);
+
+const baseplate = new THREE.Mesh(
+  new THREE.BoxGeometry(128, 2, 128),
+  new THREE.MeshStandardMaterial({ map: baseTex })
+);
+baseplate.position.y = -1;
+scene.add(baseplate);
+
+const spawnPad = new THREE.Mesh(
+  new THREE.BoxGeometry(8, 0.4, 8),
+  new THREE.MeshStandardMaterial({ color: 0xd9dde2 })
+);
+spawnPad.position.set(0, 0.2, 0);
+scene.add(spawnPad);
+
+const worldGroup = new THREE.Group();
+scene.add(worldGroup);
+
+const remotePlayersGroup = new THREE.Group();
+scene.add(remotePlayersGroup);
+
+const remotePlayers = new Map();
+let activeChannel = null;
+let isHost = false;
+let hostId = peerId;
+let lastRbxlBlob = null;
+let lastRbxlFilename = "place_" + placeId + ".rbxl";
+let gamesCache = [];
+
+function escapeXml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function gameRowToRobloxXml(game) {
+  const title = escapeXml(game.title || ("Place " + (game.id || placeId)));
+  const creator = escapeXml(game.creator_name || "Novrex");
+  const thumb = escapeXml(game.thumbnail_url || ("https://btip.cc.cd/asset/?id=" + (game.id || placeId)));
+  const parts = Array.isArray(game.parts) ? game.parts : [];
+
+  const partXml = parts.length > 0
+    ? parts.map((p, idx) => {
+        const px = Number(p.x ?? 0);
+        const py = Number(p.y ?? 2);
+        const pz = Number(p.z ?? -10 - idx * 4);
+        const sx = Number(p.sx ?? 4);
+        const sy = Number(p.sy ?? 2);
+        const sz = Number(p.sz ?? 4);
+        const col = Number(p.color ?? 0x00a2ff);
+        return `
+      <Item class="Part">
+        <Properties>
+          <string name="Name">${escapeXml(p.name || ("Part" + (idx + 1)))}</string>
+          <bool name="Anchored">${p.anchored !== false}</bool>
+          <CoordinateFrame name="CFrame">
+            <X>${px}</X><Y>${py}</Y><Z>${pz}</Z>
+            <R00>1</R00><R01>0</R01><R02>0</R02>
+            <R10>0</R10><R11>1</R11><R12>0</R12>
+            <R20>0</R20><R21>0</R21><R22>1</R22>
+          </CoordinateFrame>
+          <Vector3 name="size">
+            <X>${sx}</X><Y>${sy}</Y><Z>${sz}</Z>
+          </Vector3>
+          <int name="BrickColor">${col}</int>
+        </Properties>
+      </Item>`;
+      }).join("")
+    : `
+      <Item class="Part">
+        <Properties>
+          <string name="Name">GameSign</string>
+          <bool name="Anchored">true</bool>
+          <CoordinateFrame name="CFrame">
+            <X>0</X><Y>4</Y><Z>-12</Z>
+            <R00>1</R00><R01>0</R01><R02>0</R02>
+            <R10>0</R10><R11>1</R11><R12>0</R12>
+            <R20>0</R20><R21>0</R21><R22>1</R22>
+          </CoordinateFrame>
+          <Vector3 name="size">
+            <X>6</X><Y>6</Y><Z>0.4</Z>
+          </Vector3>
+          <string name="TextureUrl">${thumb}</string>
+        </Properties>
+      </Item>`;
+
+  return `<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+  <External>null</External>
+  <External>nil</External>
+  <Item class="Workspace">
+    <Properties>
+      <string name="Name">Workspace</string>
+      <string name="GameTitle">${title}</string>
+      <string name="CreatorName">${creator}</string>
+    </Properties>
+    <Item class="Part">
+      <Properties>
+        <string name="Name">Baseplate</string>
+        <bool name="Anchored">true</bool>
+        <CoordinateFrame name="CFrame">
+          <X>0</X><Y>-1</Y><Z>0</Z>
+          <R00>1</R00><R01>0</R01><R02>0</R02>
+          <R10>0</R10><R11>1</R11><R12>0</R12>
+          <R20>0</R20><R21>0</R21><R22>1</R22>
+        </CoordinateFrame>
+        <Vector3 name="size">
+          <X>128</X><Y>2</Y><Z>128</Z>
+        </Vector3>
+      </Properties>
+    </Item>${partXml}
+  </Item>
+</roblox>`;
+}
+
+function xmlToRbxlBlob(xmlString) {
+  const bytes = new TextEncoder().encode(xmlString);
+  return new Blob([bytes], { type: "application/x-roblox-place" });
+}
+
+const textureLoader = new THREE.TextureLoader();
+textureLoader.setCrossOrigin("anonymous");
+
+function clearWorldGroup() {
+  while (worldGroup.children.length > 0) {
+    worldGroup.remove(worldGroup.children[0]);
+  }
+}
+
+function renderRbxlInBrowser(rbxlBlob, fallbackThumbUrl) {
+  clearWorldGroup();
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rawText = String(reader.result || "");
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(rawText, "text/xml");
+    const items = Array.from(doc.getElementsByTagName("Item"));
+
+    let builtAny = false;
+    items.forEach((item) => {
+      if (item.getAttribute("class") !== "Part") return;
+      const props = item.firstElementChild;
+      if (!props) return;
+
+      let name = "";
+      let sx = 4, sy = 2, sz = 4;
+      let px = 0, py = 2, pz = -12;
+      let texUrl = "";
+
+      Array.from(props.children).forEach((propEl) => {
+        const propName = propEl.getAttribute("name");
+        if (propName === "Name") name = propEl.textContent || "";
+        if (propName === "size") {
+          sx = Number(propEl.getElementsByTagName("X")[0]?.textContent || sx);
+          sy = Number(propEl.getElementsByTagName("Y")[0]?.textContent || sy);
+          sz = Number(propEl.getElementsByTagName("Z")[0]?.textContent || sz);
+        }
+        if (propName === "CFrame") {
+          px = Number(propEl.getElementsByTagName("X")[0]?.textContent || px);
+          py = Number(propEl.getElementsByTagName("Y")[0]?.textContent || py);
+          pz = Number(propEl.getElementsByTagName("Z")[0]?.textContent || pz);
+        }
+        if (propName === "TextureUrl") {
+          texUrl = propEl.textContent || "";
+        }
+      });
+
+      if (name === "Baseplate") return;
+      builtAny = true;
+
+      const matOpts = { color: 0xffffff };
+      const resolvedTex = texUrl || fallbackThumbUrl;
+      if (resolvedTex) {
+        const tex = textureLoader.load(resolvedTex);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        matOpts.map = tex;
+      }
+
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(sx, sy, sz),
+        new THREE.MeshStandardMaterial(matOpts)
+      );
+      mesh.position.set(px, py, pz);
+      worldGroup.add(mesh);
+    });
+
+    if (!builtAny) {
+      const signTex = fallbackThumbUrl ? textureLoader.load(fallbackThumbUrl) : null;
+      if (signTex) signTex.colorSpace = THREE.SRGBColorSpace;
+      const sign = new THREE.Mesh(
+        new THREE.BoxGeometry(6, 6, 0.4),
+        new THREE.MeshStandardMaterial({ map: signTex || null, color: 0xffffff })
+      );
+      sign.position.set(0, 4, -12);
+      worldGroup.add(sign);
+    }
+  };
+  reader.readAsText(rbxlBlob);
+}
+
+const character = new THREE.Group();
+scene.add(character);
+
+const gltfLoader = new GLTFLoader();
+let cachedAvatarTemplate = null;
+
+function createAvatarInstance(tintColor = null) {
+  const holder = new THREE.Group();
+  if (cachedAvatarTemplate) {
+    const clone = cachedAvatarTemplate.clone(true);
+    clone.scale.set(1.8, 1.8, 1.8);
+    if (tintColor !== null) {
+      clone.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material = child.material.clone();
+          child.material.color.setHex(tintColor);
+        }
+      });
+    }
+    holder.add(clone);
+    return holder;
+  }
+  const head = new THREE.Mesh(
+    new THREE.BoxGeometry(1.2, 1.2, 1.2),
+    new THREE.MeshStandardMaterial({ color: tintColor ?? 0xf5cd30 })
+  );
+  head.position.y = 3.2;
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(2, 2.4, 1.2),
+    new THREE.MeshStandardMaterial({ color: tintColor ?? 0x0d69ac })
+  );
+  body.position.y = 1.4;
+  holder.add(head, body);
+  return holder;
+}
+
+gltfLoader.load(
+  AVATAR_GLB_URL,
+  (gltf) => {
+    cachedAvatarTemplate = gltf.scene;
+    while (character.children.length > 0) character.remove(character.children[0]);
+    character.add(createAvatarInstance(null));
+    remotePlayers.forEach((entry, id) => {
+      while (entry.group.children.length > 0) entry.group.remove(entry.group.children[0]);
+      entry.group.add(createAvatarInstance(colorForPeer(id)));
+    });
+  },
+  undefined,
+  () => {
+    while (character.children.length > 0) character.remove(character.children[0]);
+    character.add(createAvatarInstance(null));
+  }
+);
+
+function colorForPeer(id) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  const palette = [0xff6b6b, 0x4ecdc4, 0xffe66d, 0xa8e6cf, 0xff9f1c, 0xc77dff];
+  return palette[h % palette.length];
+}
+
+function updateLeaderboard(presenceState) {
+  const rows = [];
+  const seen = new Set();
+
+  rows.push({ id: peerId, name: username + (isHost ? " [Host]" : ""), score: 100 });
+  seen.add(peerId);
+
+  if (presenceState) {
+    Object.values(presenceState).forEach((list) => {
+      (list || []).forEach((meta) => {
+        if (!meta || !meta.peerId || seen.has(meta.peerId)) return;
+        seen.add(meta.peerId);
+        rows.push({
+          id: meta.peerId,
+          name: (meta.username || "Player") + (meta.peerId === hostId ? " [Host]" : ""),
+          score: 100
+        });
+      });
+    });
+  }
+
+  playerCountEl.textContent = String(rows.length);
+  leaderboardBody.innerHTML = rows
+    .map((r) => `<div class="lb-row"><span>${escapeXml(r.name)}</span><span>${r.score}</span></div>`)
+    .join("");
+}
+
+function recomputeHostFromPresence(state) {
+  const allPeers = new Set([peerId]);
+  if (state) {
+    Object.values(state).forEach((list) => {
+      (list || []).forEach((m) => {
+        if (m && m.peerId) allPeers.add(m.peerId);
+      });
+    });
+  }
+  const sorted = Array.from(allPeers).sort();
+  hostId = sorted[0] || peerId;
+  const wasHost = isHost;
+  isHost = hostId === peerId;
+  serverRoleLabel.textContent = isHost ? "Server: Hosting in Browser" : "Server: Connected to Host";
+  if (isHost && !wasHost && allPeers.size > 1) {
+    addChat("System", "You are now hosting this game server in your browser.");
+  }
+  updateLeaderboard(state);
+}
+
+function removeRemotePlayer(id) {
+  const entry = remotePlayers.get(id);
+  if (entry) {
+    remotePlayersGroup.remove(entry.group);
+    remotePlayers.delete(id);
+  }
+}
+
+function clearAllRemotePlayers() {
+  Array.from(remotePlayers.keys()).forEach(removeRemotePlayer);
+}
+
+function upsertRemotePlayer(id, name, x, y, z, rotY) {
+  if (!id || id === peerId) return;
+  let entry = remotePlayers.get(id);
+  if (!entry) {
+    const group = createAvatarInstance(colorForPeer(id));
+    remotePlayersGroup.add(group);
+    entry = { group, name: name || "Player" };
+    remotePlayers.set(id, entry);
+    addChat("System", `${name || "Player"} joined the server.`);
+  }
+  entry.group.position.set(Number(x) || 0, Number(y) || 0, Number(z) || 0);
+  entry.group.rotation.y = Number(rotY) || 0;
+}
+
+async function joinMultiplayerServerForGame(idToLoad) {
+  placeId = String(idToLoad || "1");
+  placeLabel.textContent = "Place ID: " + placeId;
+
+  let gameObj = gamesCache.find((g) => String(g.id) === placeId);
+  if (!gameObj && sb) {
+    try {
+      const { data } = await sb
+        .from("novrex_games")
+        .select("*")
+        .eq("id", placeId)
+        .limit(1);
+      if (Array.isArray(data) && data[0]) gameObj = data[0];
+    } catch (_e) {}
+  }
+  if (!gameObj) {
+    gameObj = {
+      id: placeId,
+      title: "Place " + placeId,
+      creator_name: "Novrex",
+      thumbnail_url: "/asset/?id=" + encodeURIComponent(placeId)
+    };
+  }
+
+  const xml = gameRowToRobloxXml(gameObj);
+  const rbxlBlob = xmlToRbxlBlob(xml);
+  lastRbxlBlob = rbxlBlob;
+  lastRbxlFilename = `place_${placeId}.rbxl`;
+  const thumb = gameObj.thumbnail_url || ("/asset/?id=" + encodeURIComponent(placeId));
+  renderRbxlInBrowser(rbxlBlob, thumb);
+
+  clearAllRemotePlayers();
+  isHost = false;
+  hostId = peerId;
+  serverRoleLabel.textContent = "Server: Joining...";
+
+  if (activeChannel && sb) {
+    await sb.removeChannel(activeChannel);
+    activeChannel = null;
+  }
+
+  if (!sb) {
+    serverRoleLabel.textContent = "Server: Hosting Locally";
+    addChat("System", `Loaded "${gameObj.title}".`);
+    return;
+  }
+
+  const roomChannel = sb.channel("bloxtip_server_place_" + placeId, {
+    config: { presence: { key: peerId } }
+  });
+
+  roomChannel
+    .on("presence", { event: "sync" }, () => {
+      const state = roomChannel.presenceState();
+      recomputeHostFromPresence(state);
+      const activeIds = new Set();
+      Object.values(state).forEach((list) => {
+        (list || []).forEach((m) => {
+          if (m && m.peerId && m.peerId !== peerId) activeIds.add(m.peerId);
+        });
+      });
+      Array.from(remotePlayers.keys()).forEach((id) => {
+        if (!activeIds.has(id)) {
+          const leftName = remotePlayers.get(id)?.name || "Player";
+          removeRemotePlayer(id);
+          addChat("System", `${leftName} left the server.`);
+        }
+      });
+    })
+    .on("broadcast", { event: "pos" }, ({ payload }) => {
+      if (!payload || payload.peerId === peerId) return;
+      upsertRemotePlayer(payload.peerId, payload.username, payload.x, payload.y, payload.z, payload.rotY);
+    })
+    .on("broadcast", { event: "chat" }, ({ payload }) => {
+      if (!payload || payload.peerId === peerId) return;
+      addChat(payload.username || "Player", payload.text || "");
+    })
+    .subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await roomChannel.track({
+          peerId,
+          username,
+          placeId,
+          joinedAt: Date.now()
+        });
+        recomputeHostFromPresence(roomChannel.presenceState());
+        addChat("System", `Connected to server for "${gameObj.title}" (Place #${placeId}).`);
+      }
+    });
+
+  activeChannel = roomChannel;
+}
+
+chatForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const val = chatInput.value.trim();
+  if (!val) return;
+  addChat(username, val);
+  if (activeChannel) {
+    activeChannel.send({
+      type: "broadcast",
+      event: "chat",
+      payload: { peerId, username, text: val }
+    });
+  }
+  chatInput.value = "";
+  chatInput.blur();
+});
+
+async function populateGamesFromSupabase() {
+  if (sb) {
+    try {
+      const { data: rows, error } = await sb
+        .from("novrex_games")
+        .select("*")
+        .order("id", { ascending: true });
+      if (!error && Array.isArray(rows) && rows.length > 0) {
+        gamesCache = rows;
+        gameSelect.innerHTML = rows
+          .map((g) => `<option value="${escapeXml(g.id)}">${escapeXml(g.title || ("Place " + g.id))} (#${escapeXml(g.id)})</option>`)
+          .join("");
+        if (!rows.some((g) => String(g.id) === placeId)) {
+          placeId = String(rows[0].id);
+        }
+        gameSelect.value = placeId;
+        await joinMultiplayerServerForGame(placeId);
+        return;
+      }
+    } catch (_e) {}
+  }
+
+  gameSelect.innerHTML = `<option value="${escapeXml(placeId)}">Place #${escapeXml(placeId)}</option>`;
+  await joinMultiplayerServerForGame(placeId);
+}
+
+loadGameBtn.addEventListener("click", () => {
+  if (gameSelect.value) {
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.set("placeId", gameSelect.value);
+    window.history.replaceState({}, "", nextUrl.toString());
+    joinMultiplayerServerForGame(gameSelect.value);
+  }
+});
+
+downloadRbxlBtn.addEventListener("click", () => {
+  if (!lastRbxlBlob) return;
+  const url = URL.createObjectURL(lastRbxlBlob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = lastRbxlFilename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+const keys = {};
+window.addEventListener("keydown", (e) => {
+  if (document.activeElement === chatInput) return;
+  keys[e.code] = true;
+});
+window.addEventListener("keyup", (e) => {
+  keys[e.code] = false;
+});
+
+let camYaw = 0;
+let camPitch = 0.35;
+let camDist = 14;
+let dragging = false;
+let lastX = 0;
+let lastY = 0;
+
+canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+canvas.addEventListener("mousedown", (e) => {
+  if (e.button === 2 || e.button === 0) {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+  }
+});
+window.addEventListener("mouseup", () => { dragging = false; });
+window.addEventListener("mousemove", (e) => {
+  if (!dragging) return;
+  camYaw -= (e.clientX - lastX) * 0.007;
+  camPitch = Math.max(0.08, Math.min(1.3, camPitch + (e.clientY - lastY) * 0.007));
+  lastX = e.clientX;
+  lastY = e.clientY;
+});
+canvas.addEventListener("wheel", (e) => {
+  camDist = Math.max(5, Math.min(35, camDist + e.deltaY * 0.01));
+});
+
+let velY = 0;
+let grounded = true;
+
+function resetCharacter() {
+  character.position.set(0, 0.4, 0);
+  velY = 0;
+  grounded = true;
+}
+resetCharacter();
+
+document.getElementById("reset-btn").addEventListener("click", resetCharacter);
+document.getElementById("leave-btn").addEventListener("click", async () => {
+  if (activeChannel && sb) {
+    await sb.removeChannel(activeChannel);
+  }
+  window.location.href = "/home.html";
+});
+
+window.addEventListener("resize", () => {
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h, false);
+});
+
+populateGamesFromSupabase();
+
+let prev = performance.now();
+let lastSyncTime = 0;
+
+function animate(now) {
+  const dt = Math.min(0.05, (now - prev) / 1000);
+  prev = now;
+
+  let moveX = 0;
+  let moveZ = 0;
+  if (keys["KeyW"] || keys["ArrowUp"]) moveZ -= 1;
+  if (keys["KeyS"] || keys["ArrowDown"]) moveZ += 1;
+  if (keys["KeyA"] || keys["ArrowLeft"]) moveX -= 1;
+  if (keys["KeyD"] || keys["ArrowRight"]) moveX += 1;
+
+  if (moveX !== 0 || moveZ !== 0) {
+    const len = Math.hypot(moveX, moveZ);
+    moveX /= len;
+    moveZ /= len;
+    const sin = Math.sin(camYaw);
+    const cos = Math.cos(camYaw);
+    const wx = moveX * cos + moveZ * sin;
+    const wz = moveZ * cos - moveX * sin;
+    character.position.x = Math.max(-62, Math.min(62, character.position.x + wx * 16 * dt));
+    character.position.z = Math.max(-62, Math.min(62, character.position.z + wz * 16 * dt));
+    character.rotation.y = Math.atan2(wx, wz);
+  }
+
+  if (keys["Space"] && grounded) {
+    velY = 18;
+    grounded = false;
+  }
+
+  velY -= 48 * dt;
+  character.position.y += velY * dt;
+  if (character.position.y <= 0) {
+    character.position.y = 0;
+    velY = 0;
+    grounded = true;
+  }
+
+  if (activeChannel && now - lastSyncTime > 65) {
+    lastSyncTime = now;
+    activeChannel.send({
+      type: "broadcast",
+      event: "pos",
+      payload: {
+        peerId,
+        username,
+        x: Number(character.position.x.toFixed(2)),
+        y: Number(character.position.y.toFixed(2)),
+        z: Number(character.position.z.toFixed(2)),
+        rotY: Number(character.rotation.y.toFixed(2))
+      }
+    });
+  }
+
+  const target = new THREE.Vector3(character.position.x, character.position.y + 3, character.position.z);
+  const horiz = Math.cos(camPitch) * camDist;
+  camera.position.set(
+    target.x + Math.sin(camYaw) * horiz,
+    target.y + Math.sin(camPitch) * camDist,
+    target.z + Math.cos(camYaw) * horiz
+  );
+  camera.lookAt(target);
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
